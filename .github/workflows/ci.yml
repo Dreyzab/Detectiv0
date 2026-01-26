@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+        
+    - name: Install Dependencies
+      run: bun install
+      
+    - name: Lint
+      # run: bun run lint # Uncomment when lint script is available
+      run: echo "Linting skipped for now"
+      
+    - name: Type Check
+      # run: bun run typecheck # Uncomment when typecheck script is available
+      run: echo "Typecheck skipped for now"
+      
+    - name: Test
+      run: bun test
