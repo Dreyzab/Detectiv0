@@ -1,0 +1,23 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface {{pascalCase name}}State {
+// Add your state properties here
+isLoading: boolean;
+}
+
+interface {{pascalCase name}}Actions {
+setLoading: (loading: boolean) => void;
+}
+
+export const use{{pascalCase name}}Store = create<{{pascalCase name}}State & {{pascalCase name}}Actions>()(
+    persist(
+    (set) => ({
+    isLoading: false,
+    setLoading: (loading) => set({ isLoading: loading }),
+    }),
+    {
+    name: '{{kebabCase name}}-storage',
+    }
+    )
+    );

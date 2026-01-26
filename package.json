@@ -3,8 +3,18 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "concurrently \"bun run --filter server dev\" \"bun run --filter web dev\"",
+    "build": "bun run --filter '*' build",
+    "prepare": "husky",
+    "generate": "plop"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "concurrently": "^9.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "plop": "^4.0.5"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -12,5 +22,16 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "lint-staged": {
+    "apps/web/src/**/*.{ts,tsx}": [
+      "eslint --fix --config apps/web/eslint.config.js"
+    ],
+    "apps/server/src/**/*.ts": [
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "zustand": "^5.0.10"
+  }
 }

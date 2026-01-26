@@ -1,0 +1,14 @@
+import type { FC } from 'react';
+import { cn } from '@/shared/lib/utils';
+
+interface {{pascalCase name}}Props {
+    className?: string;
+}
+
+export const {{pascalCase name}}: FC<{{pascalCase name}}Props> = ({ className }) => {
+    return (
+        <div className={cn('', className)}>
+            {{pascalCase name}} Component
+        </div>
+    );
+};

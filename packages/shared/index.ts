@@ -5,4 +5,5 @@ export * from "./locales/ru";
 export * from "./data/constants";
 export * from "./data/assets";
 
-
+export * from "./data/map";
+export * from "./lib/map-resolver";
