@@ -1,52 +1,82 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Map, { NavigationControl, type MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useInventoryStore } from '@/entities/inventory/model/store';
 import { REGIONS } from '@/shared/hexmap/regions';
 import { DetectiveModeLayer } from './DetectiveModeLayer';
 import { cn } from '@/shared/lib/utils';
 import { useDossierStore } from '@/features/detective/dossier/store';
-import { DETECTIVE_POINTS, type DetectivePoint } from '@/features/detective/points';
-import { Dossier } from '@/features/detective/dossier/Dossier';
-import { OnboardingModal } from '@/features/detective/onboarding/OnboardingModal';
-import { resolveAvailableInteractions, type AvailableInteraction, type MapPointBinding } from '@repo/shared';
-// import { InteractionWindow } from './InteractionWindow'; // Replaced by CaseCard
-import { CaseCard } from './CaseCard';
+import { resolveAvailableInteractions, type ResolverOption, type MapPointBinding, logger } from '@repo/shared';
+
 import { DetectiveMapPin } from './DetectiveMapPin';
-import { MapHUD } from '@/features/detective/ui/MapHUD';
-// import { ThreadLayer } from './ThreadLayer'; // TODO: Update ThreadLayer to new types
+import { ThreadLayer } from './ThreadLayer';
+import { CaseCard } from './CaseCard';
+import { useVNStore } from '@/entities/visual-novel/model/store';
+import { useMapPoints } from '@/features/detective/data/useMapPoints';
+import { useQuestStore } from '@/features/quests/store';
+import { useMemo } from 'react';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const INITIAL_REGION = REGIONS['FREIBURG_1905'];
 
 export const MapView = () => {
     const mapRef = useRef<MapRef>(null);
-    const navigate = useNavigate();
-    const playerName = useInventoryStore((state) => state.playerName);
-    const setPlayerName = useInventoryStore((state) => state.setPlayerName);
-    const pointStates = useDossierStore((state) => state.pointStates);
     const flags = useDossierStore((state) => state.flags);
-    // const activeCaseId = useDossierStore((state) => state.activeCaseId);
+    const startScenario = useVNStore(state => state.startScenario);
+
+    // Quest Logic
+    const quests = useQuestStore(state => state.quests);
+    const userQuests = useQuestStore(state => state.userQuests);
+
+    const activePointIds = useMemo(() => {
+        const ids = new Set<string>();
+        // Debug active quests state
+        const activeQuests = Object.values(userQuests).filter(q => q.status === 'active');
+        logger.debug("Recalculating Active Points", {
+            activeQuestsCount: activeQuests.length,
+            questIds: activeQuests.map(q => q.questId)
+        });
+
+        Object.values(userQuests).forEach(uq => {
+            if (uq.status !== 'active') return;
+            const quest = quests[uq.questId];
+            if (!quest) {
+                logger.warn(`Quest definition missing: ${uq.questId}`);
+                return;
+            }
+
+            quest.objectives.forEach(obj => {
+                // Check if objective is NOT completed and has a target point
+                if (!uq.completedObjectiveIds.includes(obj.id) && obj.targetPointId) {
+                    logger.debug(`Found active target: ${obj.targetPointId} (Quest: ${uq.questId}, Obj: ${obj.id})`);
+                    ids.add(obj.targetPointId);
+                }
+            });
+        });
+        logger.debug("Final Active Point IDs", { ids: Array.from(ids) });
+        return ids;
+    }, [userQuests, quests]);
+
+    useEffect(() => {
+        logger.debug("Active Points Updated Effect", { count: activePointIds.size, ids: Array.from(activePointIds) });
+    }, [activePointIds]);
+
+    // Unified Map Hook
+    const { points, pointStates } = useMapPoints();
 
     const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
-    const [availableActions, setAvailableActions] = useState<AvailableInteraction[]>([]);
+    const [availableActions, setAvailableActions] = useState<ResolverOption[]>([]);
+    const [isMapLoaded, setIsMapLoaded] = useState(false);
 
     // TODO: move inventory to a unified context
     const inventory = {};
 
-    const [isMapLoaded, setIsMapLoaded] = useState(false);
-
     const handlePointClick = (pointId: string) => {
-        const point = DETECTIVE_POINTS[pointId];
+        const point = points.find(p => p.id === pointId);
         if (!point) return;
 
-        // Legacy binding support shim (if points don't have new structure yet)
-        const bindings = (point as { bindings?: MapPointBinding[] }).bindings || [];
-
         const options = resolveAvailableInteractions(
-            bindings,
+            point.bindings || [],
             'marker_click',
             { flags, pointStates, inventory }
         );
@@ -57,7 +87,17 @@ export const MapView = () => {
 
     const handleExecuteAction = (binding: MapPointBinding) => {
         console.log('Execute Action:', binding);
-        // TODO: Implement execution logic (useMapActionHandler)
+
+        if (binding.actions) {
+            binding.actions.forEach(action => {
+                if (action.type === 'start_vn') {
+                    const legacyPayload = (action as { payload?: unknown }).payload;
+                    const id = typeof legacyPayload === 'string' ? legacyPayload : action.scenarioId;
+                    startScenario(id);
+                }
+            });
+        }
+
         setAvailableActions([]);
         setSelectedPointId(null);
     };
@@ -83,28 +123,21 @@ export const MapView = () => {
         return <div className="p-10 text-red-500">Error: VITE_MAPBOX_TOKEN is missing in .env</div>;
     }
 
-    const selectedPoint = selectedPointId ? DETECTIVE_POINTS[selectedPointId] : null;
+    const selectedPoint = selectedPointId ? points.find(p => p.id === selectedPointId) : null;
 
     return (
         <>
-            {!playerName && (
-                <OnboardingModal
-                    onComplete={(name) => setPlayerName(name)}
-                    onCancel={() => navigate('/')}
-                />
-            )}
-            {playerName && <Dossier />}
-            {playerName && <MapHUD />}
+
             <div className={mapContainerClasses}>
                 <div
-                    className="absolute inset-0 pointer-events-none z-50 mix-blend-multiply opacity-15 bg-[#d4c5a3]"
+                    className="absolute inset-0 pointer-events-none z-[var(--z-map-texture)] mix-blend-multiply opacity-15 bg-[#d4c5a3]"
                     style={{
                         backgroundImage: 'url("/images/paper-texture.png")',
                         backgroundSize: '200px'
                     }}
                 />
 
-                <div className={cn('absolute inset-0', isVintage && 'sepia-[.3] contrast-[1.05] brightness-95 saturate-[.9]')}>
+                <div className={cn('absolute inset-0 z-[var(--z-map-base)]', isVintage && 'sepia-[.3] contrast-[1.05] brightness-95 saturate-[.9]')}>
                     <Map
                         ref={mapRef}
                         initialViewState={{
@@ -122,40 +155,37 @@ export const MapView = () => {
                         {isMapLoaded && (
                             <>
                                 <DetectiveModeLayer />
-                                {/* <ThreadLayer /> */}
+                                <ThreadLayer points={points} />
                             </>
                         )}
 
-                        {Object.values(DETECTIVE_POINTS).map((point) => {
-                            // Using string literal types 'discovered' | 'locked'
+                        {points.map((point) => {
                             const state = pointStates[point.id] ?? 'discovered';
-
-                            // Pass state to pin, handle visibility there logic for hidden points
-
+                            if (point.isHiddenInitially && state === 'locked') return null;
 
                             return (
                                 <Marker
                                     key={point.id}
                                     longitude={point.lng}
                                     latitude={point.lat}
-                                    anchor="center" // Changed to center for pin alignment
+                                    anchor="center"
                                 >
                                     <DetectiveMapPin
                                         point={point}
                                         state={state as 'discovered' | 'locked'}
+                                        isActive={activePointIds.has(point.id)}
                                         onClick={() => handlePointClick(point.id)}
                                     />
                                 </Marker>
                             )
                         })}
-
                     </Map>
                 </div>
             </div>
 
             {selectedPoint && (
                 <CaseCard
-                    point={selectedPoint as DetectivePoint}
+                    point={selectedPoint}
                     actions={availableActions}
                     onExecute={handleExecuteAction}
                     onClose={() => {

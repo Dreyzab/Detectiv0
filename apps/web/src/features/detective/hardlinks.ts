@@ -24,7 +24,7 @@ export const HARDLINKS: Record<string, HardlinkAction[]> = {
     ],
     'CASE01_BANK_02': [
         { type: 'start_vn', scenarioId: 'detective_case1_bank_scene' },
-        { type: 'unlock_point', pointId: 'munsterplatz_bank' },
+        { type: 'unlock_point', pointId: 'p_bank' },
         {
             type: 'grant_evidence',
             evidence: {

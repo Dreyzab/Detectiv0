@@ -14,6 +14,10 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
+    "types": [
+      "node",
+      "bun"
+    ],
     // Path Aliases
     "baseUrl": ".",
     "paths": {

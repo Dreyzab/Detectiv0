@@ -3,14 +3,25 @@ import { cn } from '../../../shared/lib/utils';
 import { useState } from 'react';
 import { useInventoryStore } from '../../../entities/inventory/model/store';
 import { VOICE_GROUPS, VOICES, GROUP_ORDER } from '../lib/parliament';
+import { DeductionBoard } from '../ui/DeductionBoard';
 
 export const Dossier = () => {
-    const { entries, evidence, pointStates } = useDossierStore();
+    const { entries, evidence, pointStates, isDossierOpen, toggleDossier } = useDossierStore();
     const { voiceLevels } = useInventoryStore();
-    const [activeTab, setActiveTab] = useState<'facts' | 'evidence' | 'map' | 'voices'>('facts');
+    const [activeTab, setActiveTab] = useState<'facts' | 'evidence' | 'map' | 'voices' | 'board'>('facts');
+
+    if (!isDossierOpen) return null;
 
     return (
-        <div className="fixed top-20 right-4 w-80 h-[600px] bg-[#fdfbf7] shadow-2xl rounded-sm border border-[#d4c5a3] flex flex-col font-serif overflow-hidden z-20 rotate-1 transform hover:rotate-0 transition-transform duration-300">
+        <div className="fixed top-20 right-4 w-80 h-[600px] bg-[#fdfbf7] shadow-2xl rounded-sm border border-[#d4c5a3] flex flex-col font-serif overflow-hidden z-[150] rotate-1 transform hover:rotate-0 transition-transform duration-300">
+            {/* Close Button UI override */}
+            <button
+                onClick={() => toggleDossier(false)}
+                className="absolute top-1 right-2 z-[160] text-[#d4c5a3] hover:text-white transition-colors p-1"
+                title="Close Case File"
+            >
+                &times;
+            </button>
             {/* Header / Binding */}
             <div className="h-12 bg-[#2c1810] flex items-center justify-center relative shadow-md">
                 <h2 className="text-[#d4c5a3] font-bold text-lg tracking-widest uppercase">Case File #1</h2>
@@ -19,7 +30,7 @@ export const Dossier = () => {
 
             {/* Tabs */}
             <div className="flex border-b border-[#d4c5a3] bg-[#f4ebd0] overflow-x-auto shrink-0 no-scrollbar">
-                {(['facts', 'evidence', 'map', 'voices'] as const).map(tab => (
+                {(['facts', 'evidence', 'board', 'map', 'voices'] as const).map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -115,6 +126,12 @@ export const Dossier = () => {
                                 </div>
                             );
                         })}
+                    </div>
+                )}
+
+                {activeTab === 'board' && (
+                    <div className="absolute inset-0 z-10 top-12 bottom-8"> {/* Full cover over paper texture */}
+                        <DeductionBoard />
                     </div>
                 )}
             </div>

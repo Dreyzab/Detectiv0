@@ -12,6 +12,11 @@ const INITIAL_VOICE_LEVELS: Record<VoiceId, number> = VOICE_ORDER.reduce((acc: R
 interface InventoryState {
     gameMode: GameMode;
     playerName: string | null;
+    detectiveName: string | null;
+    isOpen: boolean;
+    flags: Record<string, boolean>;
+    voiceStats: Record<VoiceId, number>;
+    checkStates: Record<string, string>; // or more specific type if known
     voicesVersion: number;
     voiceLevels: Record<VoiceId, number>;
     setGameMode: (mode: GameMode) => void;
@@ -25,12 +30,27 @@ interface InventoryState {
 
     // Placeholder for detective inventory (if needed separate items)
     detectiveInventory: Record<string, number>;
+    resetAll: () => void;
 }
 
 export const useInventoryStore = create<InventoryState>()(
     persist(
         (set, get) => ({
             gameMode: 'detective', // Default mode
+            flags: {},
+            detectiveName: null,
+            isOpen: false,
+
+            // Default Stats (All 8 for prototype, can be randomized later)
+            voiceStats: {
+                logic: 8, perception: 8, encyclopedia: 8,
+                intuition: 8, empathy: 8, imagination: 8,
+                authority: 8, charisma: 8, composure: 8,
+                endurance: 8, agility: 8, forensics: 8,
+                stealth: 8, deception: 8, intrusion: 8,
+                occultism: 8, tradition: 8, poetics: 8,
+            },
+            checkStates: {},
             playerName: null,
             voicesVersion: 1,
             voiceLevels: INITIAL_VOICE_LEVELS,
@@ -55,6 +75,26 @@ export const useInventoryStore = create<InventoryState>()(
             }),
 
             resetVoices: () => set({ voiceLevels: INITIAL_VOICE_LEVELS }),
+
+            resetAll: () => set({
+                gameMode: 'detective',
+                flags: {},
+                detectiveName: null,
+                isOpen: false,
+                voiceStats: {
+                    logic: 8, perception: 8, encyclopedia: 8,
+                    intuition: 8, empathy: 8, imagination: 8,
+                    authority: 8, charisma: 8, composure: 8,
+                    endurance: 8, agility: 8, forensics: 8,
+                    stealth: 8, deception: 8, intrusion: 8,
+                    occultism: 8, tradition: 8, poetics: 8,
+                },
+                checkStates: {},
+                playerName: null,
+                voicesVersion: 1,
+                voiceLevels: INITIAL_VOICE_LEVELS,
+                detectiveInventory: {},
+            }),
         }),
         {
             name: 'gw4-inventory-storage',

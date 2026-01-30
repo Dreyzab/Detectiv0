@@ -2,7 +2,6 @@
 import type { MapAction } from '@repo/shared';
 import { useDossierStore } from '../dossier/store';
 import { useVNStore } from '@/entities/visual-novel/model/store';
-import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { EVIDENCE_REGISTRY } from '../registries';
 // import { useNavigate } from 'react-router-dom';
 
@@ -16,12 +15,8 @@ export const useMapActionHandler = () => {
 
         switch (action.type) {
             case 'start_vn': {
-                const scenario = getScenarioById(action.scenarioId);
-                if (scenario) {
-                    startScenario(scenario);
-                } else {
-                    console.warn(`Scenario ${action.scenarioId} not found`);
-                }
+                // Pass scenario ID to the store, not the scenario object
+                startScenario(action.scenarioId);
                 break;
             }
             case 'unlock_point': {
@@ -43,13 +38,8 @@ export const useMapActionHandler = () => {
                 setFlag(action.flagId, action.value);
                 break;
             }
-            case 'add_fact': {
-                // TODO: Implement add_fact in Dossier store
-                console.log('Adding fact:', action.factId);
-                break;
-            }
             case 'start_battle': {
-                console.log('Battle start not implemented yet', action.scenarioId);
+                console.log('Battle start not implemented yet', action.battleId);
                 break;
             }
             case 'open_trade': {

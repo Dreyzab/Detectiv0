@@ -1,10 +1,30 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme {
-  --color-primary: #3b82f6;
-  --color-secondary: #64748b;
-  --color-background: #0f172a;
-  --color-surface: #1e293b;
+  --color-primary: #d4c5a3;
+  /* Old Paper / Gold */
+  --color-secondary: #78716c;
+  /* Stone Gray */
+  --color-accent: #b45309;
+  /* Amber */
+  --color-background: #0c0a09;
+  /* Warm Black */
+  --color-surface: #1c1917;
+  /* Dark Wood/Leather */
+
+  --font-serif: "Playfair Display", serif;
+  --font-mono: "Courier Prime", monospace;
+}
+
+:root {
+  --z-map-base: 0;
+  --z-map-texture: 50;
+  --z-map-pin-backdrop: -1;
+  --z-map-pin-ring: 15;
+  --z-map-pin-marker: 10;
+  --z-map-pin-pointer: 20;
+  --z-map-pin-stamp: 25;
+  --z-map-pin-tooltip: 30;
 }
 
 html,
@@ -13,4 +33,36 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+@layer utilities {
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+  }
+
+  @keyframes bounce-slight {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-15%);
+    }
+  }
+
+  .animate-bounce-slight {
+    animation: bounce-slight 2s ease-in-out infinite;
+  }
 }

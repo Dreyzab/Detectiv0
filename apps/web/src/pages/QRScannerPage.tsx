@@ -24,13 +24,10 @@ export const QRScannerPage = () => {
         actions.forEach(action => {
             switch (action.type) {
                 case 'start_vn': {
+                    // Pass scenario ID, not scenario object
+                    useVNStore.getState().startScenario(action.scenarioId);
                     const scenario = getScenarioById(action.scenarioId);
-                    if (scenario) {
-                        useVNStore.getState().startScenario(scenario);
-                        summary += `Starting Scenario: ${scenario.title}\n`;
-                    } else {
-                        summary += `⚠️ Scenario not found: ${action.scenarioId}\n`;
-                    }
+                    summary += scenario ? `Starting Scenario: ${scenario.title}\n` : `Starting Scenario: ${action.scenarioId}\n`;
                     break;
                 }
                 case 'grant_evidence':

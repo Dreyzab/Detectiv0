@@ -1,0 +1,1 @@
+export { VisualNovelPage } from './VisualNovelPage';

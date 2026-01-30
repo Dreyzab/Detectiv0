@@ -13,7 +13,7 @@ The project is structured according to **Feature-Sliced Design (FSD)** principle
 ### `apps/web` (Frontend: React + Vite)
 Follows FSD (Feature-Sliced Design):
 - **app/**: Global setup (providers, styles, entry point).
-- **pages/**: Application screens (HomePage, MapPage, QRScanner).
+- **pages/**: Application screens (HomePage, MapPage, QRScanner, CharacterPage).
 - **widgets/**: Composition layer (MapView, Dossier, CombatHUD).
 - **features/**: User-facing capabilities (Detective Mode, Layer Toggles, Movement).
 - **entities/**: Business logic and stores (User, Inventory, VisualNovel, Quest).
@@ -43,6 +43,18 @@ Currently the project focuses on **Detective Mode** (Freiburg 1905).
    Uses Zustand `persist` middleware with localStorage for offline-first investigation progress (Dossier Store).
 3. **Visual Effects**: 
    Dynamic CSS filters (`sepia`, `contrast`) paired with high-resolution grain/paper textures to create historical immersion.
+
+### Data Architecture (v2)
+
+| Domain | Source | Status |
+|--------|--------|--------|
+| **Map Points** | SQLite (`map_points`) | ✅ Migrated |
+| **User Progress** | SQLite (`user_map_point_states`) | ✅ Migrated |
+| **Hardlinks (QR)** | `hardlinks.ts` | ⏳ Phase 2 → DB |
+| **Cases/Chapters** | `cases.ts` | ⏳ Phase 2 → DB |
+| **Deductions** | `deductions.ts` | ⏳ Phase 2 → DB |
+
+> **Note**: `hardlinks.ts`, `cases.ts`, `deductions.ts` remain as static files. They will migrate to DB when a content editor is implemented.
 
 ---
 

@@ -1,0 +1,1 @@
+export { DetectiveMapPage } from './DetectiveMapPage';

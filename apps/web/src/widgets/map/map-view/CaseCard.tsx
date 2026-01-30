@@ -1,12 +1,12 @@
 
-import type { DetectivePoint } from '@/features/detective/points';
+import type { MapPoint } from '@repo/shared';
 import { cn } from '@/shared/lib/utils';
-import { type AvailableInteraction, type MapPointBinding } from '@repo/shared';
+import { type ResolverOption, type MapPointBinding } from '@repo/shared';
 import { VOICES, VOICE_GROUPS, type VoiceId } from '../../../features/detective/lib/parliament';
 
 interface CaseCardProps {
-    point: DetectivePoint;
-    actions: AvailableInteraction[];
+    point: MapPoint;
+    actions: ResolverOption[];
     onExecute: (binding: MapPointBinding) => void;
     onClose: () => void;
 }
@@ -15,11 +15,13 @@ export const CaseCard = ({ point, actions, onExecute, onClose }: CaseCardProps) 
     // Determine main action (e.g. Enter) logic
     const enterAction = actions.find(a => {
         const binding = a as unknown as MapPointBinding;
-        return binding.actions?.some(act => act.type === 'start_vn' || act.type === 'start_battle');
+        // Allow ANY action to trigger the button. 
+        // If it's a VN/Battle, we act normally. If it's just 'grant_evidence', we 'Investigate'.
+        return binding.actions && binding.actions.length > 0;
     });
 
     // Parliament of Voices rendering
-    const pointVoices = point.voices || {};
+    const pointVoices = (point.data?.voices as Partial<Record<VoiceId, string>>) || {};
     const activeVoiceIds = Object.keys(pointVoices) as VoiceId[];
 
     return (
@@ -88,7 +90,7 @@ export const CaseCard = ({ point, actions, onExecute, onClose }: CaseCardProps) 
                                 className="w-full py-3 bg-[#4a1a1a] text-[#f3e9d2] font-serif font-bold text-lg uppercase tracking-wider hover:bg-[#6b2a2a] transition-colors relative overflow-hidden group shadow-md"
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-2">
-                                    <span>♠</span> {(enterAction as unknown as MapPointBinding).label || "Betreten"} <span>♠</span>
+                                    <span>♠</span> {(enterAction as unknown as MapPointBinding).label || "Investigate"} <span>♠</span>
                                 </span>
                             </button>
                         ) : (

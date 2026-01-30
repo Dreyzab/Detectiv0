@@ -1,9 +1,11 @@
 import { DetectiveMarker } from './DetectiveMarker';
+import { NotebookWidget } from '@/features/detective/notebook/NotebookWidget';
 
 export const DetectiveModeLayer = () => {
     return (
         <>
             <DetectiveMarker />
+            <NotebookWidget />
 
             {/* 
         Vintage Overlay Filter
