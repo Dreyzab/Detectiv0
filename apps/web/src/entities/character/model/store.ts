@@ -2,10 +2,12 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CharacterId } from '@repo/shared/data/characters';
 
+export type CharacterStatus = 'unknown' | 'met' | 'ally' | 'enemy' | 'deceased';
+
 export interface CharacterState {
     id: CharacterId;
     relationship: number; // -100 to 100
-    status: 'unknown' | 'met' | 'ally' | 'enemy' | 'deceased';
+    status: CharacterStatus;
     flags: Record<string, boolean>;
 }
 

@@ -46,3 +46,5 @@ export const encounterTouristEn: VNContentPack = {
         }
     }
 };
+
+export default encounterTouristEn;

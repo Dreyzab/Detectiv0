@@ -74,29 +74,29 @@ export const VOICE_GROUPS: Record<VoiceGroup, VoiceGroupMetadata> = {
 
 export const VOICES: Record<VoiceId, VoiceMetadata> = {
     // Intellect
-    logic: { id: 'logic', name: 'Логика', group: 'intellect', description: 'Выстраивание цепочек выводов.' },
-    perception: { id: 'perception', name: 'Внимательность', group: 'intellect', description: 'Поиск мелких деталей.' },
-    encyclopedia: { id: 'encyclopedia', name: 'Энциклопедия', group: 'intellect', description: 'Знание истории и фактов.' },
+    logic: { id: 'logic', name: 'Logic (Логика)', group: 'intellect', description: 'Выстраивание фактов.' },
+    perception: { id: 'perception', name: 'Perception (Внимание)', group: 'intellect', description: 'Поиск улик.' },
+    encyclopedia: { id: 'encyclopedia', name: 'Encyclopedia (Знание)', group: 'intellect', description: 'История и лор.' },
     // Psyche
-    intuition: { id: 'intuition', name: 'Интуиция', group: 'psyche', description: 'Шестое чувство.' },
-    empathy: { id: 'empathy', name: 'Эмпатия', group: 'psyche', description: 'Понимание эмоций других.' },
-    imagination: { id: 'imagination', name: 'Воображение', group: 'psyche', description: 'Синтез целого из частей.' },
+    intuition: { id: 'intuition', name: 'Intuition (Чутье)', group: 'psyche', description: 'Шестое чувство.' },
+    empathy: { id: 'empathy', name: 'Empathy (Эмпатия)', group: 'psyche', description: 'Чтение эмоций.' },
+    imagination: { id: 'imagination', name: 'Imagination (Образ)', group: 'psyche', description: 'Реконструкция.' },
     // Social
-    authority: { id: 'authority', name: 'Авторитет', group: 'social', description: 'Умение настоять на своем.' },
-    charisma: { id: 'charisma', name: 'Обаяние', group: 'social', description: 'Шарм и дипломатия.' },
-    composure: { id: 'composure', name: 'Хладнокровие', group: 'social', description: 'Выдержка в стрессе.' },
+    authority: { id: 'authority', name: 'Authority (Власть)', group: 'social', description: 'Доминирование.' },
+    charisma: { id: 'charisma', name: 'Charisma (Шарм)', group: 'social', description: 'Обаяние и лесть.' },
+    composure: { id: 'composure', name: 'Composure (Выдержка)', group: 'social', description: 'Хладнокровие.' },
     // Physical
-    endurance: { id: 'endurance', name: 'Выносливость', group: 'physical', description: 'Физическая крепость.' },
-    agility: { id: 'agility', name: 'Ловкость', group: 'physical', description: 'Быстрота реакции.' },
-    forensics: { id: 'forensics', name: 'Криминалистика', group: 'physical', description: 'Работа с уликами и инструментами.' },
+    endurance: { id: 'endurance', name: 'Endurance (Стойкость)', group: 'physical', description: 'Боль и усталость.' },
+    agility: { id: 'agility', name: 'Agility (Ловкость)', group: 'physical', description: 'Реакция.' },
+    forensics: { id: 'forensics', name: 'Forensics (Криминалистика)', group: 'physical', description: 'Работа с телами.' },
     // Shadow
-    stealth: { id: 'stealth', name: 'Скрытность', group: 'shadow', description: 'Действие без лишнего шума.' },
-    deception: { id: 'deception', name: 'Обман', group: 'shadow', description: 'Искусство лжи и актерства.' },
-    intrusion: { id: 'intrusion', name: 'Проникновение', group: 'shadow', description: 'Взлом и преодоление преград.' },
+    stealth: { id: 'stealth', name: 'Stealth (Скрытность)', group: 'shadow', description: 'Незаметность.' },
+    deception: { id: 'deception', name: 'Deception (Обман)', group: 'shadow', description: 'Актерство.' },
+    intrusion: { id: 'intrusion', name: 'Intrusion (Взлом)', group: 'shadow', description: 'Замки и двери.' },
     // Spirit
-    occultism: { id: 'occultism', name: 'Оккультизм', group: 'spirit', description: 'Знание мистики и секретов.' },
-    tradition: { id: 'tradition', name: 'Традиция', group: 'spirit', description: 'Связь с корнями и порядком.' },
-    poetics: { id: 'poetics', name: 'Поэтика', group: 'spirit', description: 'Чувство прекрасного и высокого.' }
+    occultism: { id: 'occultism', name: 'Occultism (Мистика)', group: 'spirit', description: 'Тайные знания.' },
+    tradition: { id: 'tradition', name: 'Tradition (Традиция)', group: 'spirit', description: 'Устои общества.' },
+    poetics: { id: 'poetics', name: 'Poetics (Поэтика)', group: 'spirit', description: 'Чувство высокого.' }
 };
 
 export const VOICE_ORDER: VoiceId[] = (Object.keys(VOICES) as VoiceId[]);

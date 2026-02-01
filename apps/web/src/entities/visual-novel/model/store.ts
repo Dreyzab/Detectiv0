@@ -22,7 +22,11 @@ interface VNState {
 
     // Dialogue History
     addDialogueEntry: (entry: Omit<DialogueEntry, 'id' | 'timestamp'>) => void;
-    clearDialogueHistory: () => void;
+    // Persistence
+    exportSave: () => string;
+    importSave: (data: string) => void;
+    syncToServer: (slotId: number) => Promise<boolean>;
+    loadFromServer: (slotId: number) => Promise<boolean>;
 }
 
 type VNPersistedState = Pick<VNState, 'locale' | 'activeScenarioId' | 'currentSceneId' | 'history'>;
@@ -44,7 +48,11 @@ const persistConfig: PersistOptions<VNState, VNPersistedState> = {
                 endScenario: () => { },
                 resetStore: () => { },
                 addDialogueEntry: () => { },
-                clearDialogueHistory: () => { }
+                clearDialogueHistory: () => { },
+                exportSave: () => "",
+                importSave: () => { },
+                syncToServer: async () => false,
+                loadFromServer: async () => false
             } as VNState;
         }
         return persistedState as VNState;
@@ -68,7 +76,7 @@ const initialState = {
 
 export const useVNStore = create<VNState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             ...initialState,
 
             setLocale: (locale) => {
@@ -117,7 +125,71 @@ export const useVNStore = create<VNState>()(
                 ].slice(-MAX_DIALOGUE_HISTORY)
             })),
 
-            clearDialogueHistory: () => set({ dialogueHistory: [] })
+            clearDialogueHistory: () => set({ dialogueHistory: [] }),
+
+            // --- Persistence Implementation ---
+
+            exportSave: () => {
+                const state = get();
+                const data: VNPersistedState = {
+                    locale: state.locale,
+                    activeScenarioId: state.activeScenarioId,
+                    currentSceneId: state.currentSceneId,
+                    history: state.history
+                };
+                return JSON.stringify(data);
+            },
+
+            importSave: (jsonStr: string) => {
+                try {
+                    const data = JSON.parse(jsonStr) as VNPersistedState;
+                    // Validate minimal structure
+                    if (typeof data.locale !== 'string') throw new Error("Invalid save data");
+
+                    set({
+                        ...initialState,
+                        locale: data.locale,
+                        activeScenarioId: data.activeScenarioId,
+                        currentSceneId: data.currentSceneId,
+                        history: data.history || []
+                    });
+                    logger.vn("Save data imported successfully");
+                } catch (e) {
+                    logger.error("Failed to import save", { error: e });
+                }
+            },
+
+            syncToServer: async (slotId: number) => {
+                const json = get().exportSave();
+                try {
+                    // TODO: Replace localhost with env variable
+                    const res = await fetch(`http://localhost:3000/detective/saves/${slotId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ data: JSON.parse(json) }) // Double wrap/unwrap to ensure it's sent as object, not string-in-string
+                    });
+                    return res.ok;
+                } catch (e) {
+                    logger.error("Sync failed", { error: e });
+                    return false;
+                }
+            },
+
+            loadFromServer: async (slotId: number) => {
+                try {
+                    const res = await fetch(`http://localhost:3000/detective/saves/${slotId}`);
+                    if (!res.ok) return false;
+                    const json = await res.json();
+                    if (json.success && json.data) {
+                        get().importSave(JSON.stringify(json.data));
+                        return true;
+                    }
+                    return false;
+                } catch (e) {
+                    logger.error("Load failed", { error: e });
+                    return false;
+                }
+            }
         }),
         persistConfig
     )

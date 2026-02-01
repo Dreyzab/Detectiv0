@@ -46,3 +46,5 @@ export const encounterCleanerEn: VNContentPack = {
         }
     }
 };
+
+export default encounterCleanerEn;

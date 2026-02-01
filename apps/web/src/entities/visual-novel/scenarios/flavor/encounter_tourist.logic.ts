@@ -76,3 +76,5 @@ export const encounterTouristLogic: VNScenarioLogic = {
         }
     }
 };
+
+export default encounterTouristLogic;

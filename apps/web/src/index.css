@@ -1,19 +1,38 @@
-﻿@import "tailwindcss";
+﻿@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Merriweather:wght@300;400;700&display=swap');
+@import "tailwindcss";
 
 @theme {
-  --color-primary: #d4c5a3;
-  /* Old Paper / Gold */
+  /* Noir / Golden Age Palette */
+  --color-primary: #d97706;
+  /* Amber-600 */
   --color-secondary: #78716c;
-  /* Stone Gray */
-  --color-accent: #b45309;
-  /* Amber */
+  /* Stone-500 */
+  --color-accent: #f97316;
+  /* Orange-500 (CTA) */
   --color-background: #0c0a09;
-  /* Warm Black */
+  /* Stone-950 */
   --color-surface: #1c1917;
-  /* Dark Wood/Leather */
+  /* Stone-900 */
+  --color-paper: #f5f5f4;
+  /* Stone-100 */
 
-  --font-serif: "Playfair Display", serif;
+  /* Typography */
+  --font-heading: "Abril Fatface", cursive;
+  --font-body: "Merriweather", serif;
   --font-mono: "Courier Prime", monospace;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
 }
 
 :root {

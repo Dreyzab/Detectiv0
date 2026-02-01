@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { performSkillCheck } from '@repo/shared/lib/dice';
 import { TypedText, type TextToken } from './TypedText';
 import { EVIDENCE_REGISTRY } from '@/features/detective/registries';
+import { ParliamentKeywordCard } from '@/features/detective/ui/ParliamentKeywordCard';
+import { getTooltipContent } from '@/features/detective/lib/tooltipRegistry';
 import { getScenarioById } from '../scenarios/registry';
 import { CHARACTERS } from '@repo/shared/data/characters';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -21,6 +23,7 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
     // Toast State
     const [toast, setToast] = useState<{ message: string; type: 'evidence' | 'note' } | null>(null);
     const toastTimeoutRef = useRef<number | null>(null);
+    const [activeTooltip, setActiveTooltip] = useState<{ keyword: string; rect: DOMRect } | null>(null);
 
     const showToast = useCallback((message: string, type: 'evidence' | 'note') => {
         setToast({ message, type });
@@ -74,7 +77,7 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
     }
 
     // --- Actions ---
-    const handleInteract = (token: TextToken) => {
+    const handleInteract = (token: TextToken, element?: HTMLElement) => {
         if (token.type === 'clue' && token.payload) {
             // It's a Clue -> Add to Evidence Inventory
             const evidenceItem = EVIDENCE_REGISTRY[token.payload];
@@ -87,6 +90,14 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
                 console.warn(`Evidence ID ${token.payload} not found in registry`);
             }
         } else {
+            // Check if it's a Parliament Tooltip keyword
+            const tooltipContent = getTooltipContent(token.text);
+            if (tooltipContent) {
+                const rect = element ? element.getBoundingClientRect() : new DOMRect(0, 0, 0, 0);
+                setActiveTooltip({ keyword: token.text, rect });
+                return;
+            }
+
             // It's a Note -> Add to Notebook Entries
             const id = `${activeScenario.id}_${effectiveSceneId}_${token.text.replace(/\s+/g, '_').toLowerCase()}`;
 
@@ -133,8 +144,8 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
                     // Cast generic string status to the specific union type if known, or just pass it
                     // The store expects 'unknown' | 'met' | 'ally' | 'enemy' | 'deceased'
                     // For now we assume the payload is correct.
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    setCharacterStatus(action.payload.characterId, action.payload.status as any);
+                     
+                    setCharacterStatus(action.payload.characterId, action.payload.status as import('@/entities/character/model/store').CharacterStatus);
                     break;
             }
         });
@@ -176,43 +187,80 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
 
     const OverlayLayout = () => (
         <div
-            className="fixed inset-0 z-[200] bg-black/80 flex flex-col pointer-events-none"
+            className="fixed inset-0 z-[200] bg-black/40 flex flex-col pointer-events-none"
             onClick={() => soundManager.ensureAudioContext()}
         >
             <div className="flex-1" />
-            <div className="pointer-events-auto p-4 md:p-12 pb-12 max-w-5xl mx-auto w-full z-10">
-                <div className="bg-surface/95 border border-primary/30 p-6 md:p-8 rounded-sm shadow-2xl backdrop-blur-sm min-h-[200px] flex flex-col gap-4">
+            <div className="pointer-events-auto p-0 max-w-4xl mx-auto w-full z-10 mb-8 px-4">
+                <div className="relative bg-gradient-to-b from-stone-950/30 to-black/60 border-l-[1px] border-l-white/10 rounded-tr-[3rem] p-8 shadow-2xl backdrop-blur-xl min-h-[200px] flex flex-col gap-4">
+
+                    {/* Decorative Backgrounds */}
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none rounded-tr-[3rem]" />
+                    <div className="absolute inset-0 bg-[url('/paper-texture.png')] opacity-[0.05] mix-blend-overlay pointer-events-none rounded-tr-[3rem]" />
+
+                    {/* Speaker Badge - Connected Floating Label */}
                     {character && (
-                        <div className="self-start px-4 py-1 bg-surface border border-primary/50 transform -translate-y-10 shadow-lg">
-                            <span className="font-serif font-bold text-lg uppercase tracking-widest" style={{ color: character.color }}>
-                                {character.name}
-                            </span>
+                        <div className="absolute left-0 -top-5 z-20 flex items-end group">
+                            {/* Decorative Connection Line */}
+                            <div className="absolute left-8 top-full h-4 w-[2px] bg-amber-500/40" />
+
+                            <div className="relative px-6 py-2 bg-stone-950 border-l-[3px] border-amber-500 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform -skew-x-12 origin-bottom-left transition-transform duration-300 group-hover:-skew-x-6">
+                                <div className="transform skew-x-12">
+                                    <span className="font-heading font-bold text-lg uppercase tracking-[0.1em] text-[#d4c5a3]">
+                                        {character.name}
+                                    </span>
+                                </div>
+                                {/* Corner Accent */}
+                                <div className="absolute -top-[1px] -right-[1px] w-2 h-2 border-t border-r border-amber-500/60" />
+                            </div>
                         </div>
                     )}
-                    <div className="font-serif text-lg md:text-xl leading-relaxed text-gray-100">
+
+                    {/* Scene Context Header */}
+                    <div className="absolute top-4 right-8 flex items-center gap-3 text-[10px] font-mono tracking-widest text-stone-500 opacity-60">
+                        {activeScenario && (
+                            <>
+                                <span className="uppercase">{activeScenario.title}</span>
+                                <span>//</span>
+                            </>
+                        )}
+                        <span>14:00</span>
+                    </div>
+
+                    <div className="font-serif text-lg md:text-xl leading-relaxed text-gray-100 relative z-10 pt-4">
                         <TypedText text={scene.text} onInteract={handleInteract} />
                     </div>
+
                     <Choices choiceList={scene.choices} />
                 </div>
             </div>
         </div>
     );
 
-    const Choices = ({ choiceList, center }: { choiceList?: import('../model/types').VNChoice[], center?: boolean }) => (
-        <div className={`flex flex-wrap gap-3 mt-4 ${center ? 'justify-center' : 'justify-end'}`}>
+    const Choices = ({ choiceList }: { choiceList?: import('../model/types').VNChoice[] }) => (
+        <div className="flex flex-col gap-2 mt-4 relative z-10">
             {choiceList ? (
-                choiceList.map((choice) => (
+                choiceList.map((choice, index) => (
                     <button
                         key={choice.id}
                         onClick={() => handleChoice(choice)}
-                        className="px-6 py-3 bg-surface border border-primary/30 hover:bg-primary hover:text-surface transition-colors font-serif text-sm uppercase tracking-widest text-primary"
+                        className="w-full px-4 py-3 bg-white/5 hover:bg-white/10 active:scale-[0.99] border-l-2 border-transparent hover:border-amber-500/50 transition-all duration-200 text-left flex items-start gap-4 group cursor-pointer"
                     >
-                        {choice.skillCheck && (
-                            <span className="mr-2 font-bold text-red-400">
-                                [{choice.skillCheck.voiceId.toUpperCase()} {choice.skillCheck.difficulty}]
+                        <span className="font-mono text-stone-500 text-sm mt-1 group-hover:text-amber-500 transition-colors">
+                            {index + 1}.
+                        </span>
+
+                        <div className="flex-1 flex flex-col gap-1">
+                            {choice.skillCheck && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-2 self-start px-1.5 py-0.5 rounded-sm bg-red-900/30 text-red-400 border border-red-900/50">
+                                    [{choice.skillCheck.voiceId.toUpperCase()} {choice.skillCheck.difficulty}]
+                                </span>
+                            )}
+                            <span className="font-serif text-base uppercase tracking-widest text-primary group-hover:text-amber-100 transition-colors">
+                                <span className="text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity mr-2">—</span>
+                                {choice.text}
                             </span>
-                        )}
-                        {choice.text}
+                        </div>
                     </button>
                 ))
             ) : (
@@ -225,7 +273,7 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
                         };
                         handleChoice(continueChoice);
                     }}
-                    className="px-8 py-3 bg-primary text-surface font-bold font-serif uppercase tracking-widest hover:bg-white transition-colors animate-pulse"
+                    className="self-center px-12 py-3 bg-primary text-surface font-bold font-serif uppercase tracking-widest hover:bg-white transition-colors animate-pulse mt-2"
                 >
                     Continue ►
                 </button>
@@ -253,6 +301,13 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
                         </div>
                     </div>
                 </div>
+            )}
+            {activeTooltip && (
+                <ParliamentKeywordCard
+                    keyword={activeTooltip.keyword}
+                    anchorRect={activeTooltip.rect}
+                    onClose={() => setActiveTooltip(null)}
+                />
             )}
         </>
     );

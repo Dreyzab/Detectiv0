@@ -52,7 +52,7 @@ export function SpeakerBadge({ character, className = '' }: SpeakerBadgeProps) {
 
             {/* Name */}
             <span
-                className="font-serif font-bold text-sm uppercase tracking-[0.15em]"
+                className="font-heading font-bold text-lg uppercase tracking-[0.1em]"
                 style={{ color: character.color || '#d4c5a3' }}
             >
                 {character.name}

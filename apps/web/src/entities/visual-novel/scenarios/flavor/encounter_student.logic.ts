@@ -103,3 +103,5 @@ export const encounterStudentLogic: VNScenarioLogic = {
         }
     }
 };
+
+export default encounterStudentLogic;

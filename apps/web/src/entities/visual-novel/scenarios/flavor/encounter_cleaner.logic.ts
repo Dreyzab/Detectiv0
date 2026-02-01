@@ -78,3 +78,5 @@ export const encounterCleanerLogic: VNScenarioLogic = {
         }
     }
 };
+
+export default encounterCleanerLogic;

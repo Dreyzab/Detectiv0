@@ -68,3 +68,5 @@ export const encounterStudentEn: VNContentPack = {
         }
     }
 };
+
+export default encounterStudentEn;

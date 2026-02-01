@@ -4,6 +4,47 @@
 
 ---
 
+## [01.02.2026] — UI Pro Max: Glassmorphism & Parallax
+
+### Добавлено
+- **Virtual Window (Gyroscope)**: Реализован эффект "виртуального окна" для мобильных устройств.
+    - Фон (Background) панорамируется при наклоне устройства (DeviceOrientation API).
+    - Калибровка плавности через Lerp (Linear Interpolation).
+    - Интеграция с iOS Permissions API (запрос доступа к датчикам).
+- **Cinematic Reveal**: Система автоматического скрытия интерфейса (HUD) при смене сцены.
+    - Текстовое окно плавно уезжает вниз, открывая полный арт локации.
+    - Возврат интерфейса по клику в любую часть экрана.
+- **Glassmorphism UI (Mobile)**: Полный визуальный редизайн мобильного интерфейса новеллы (`MobileVNLayout`).
+    - **Asymmetrical Layout**: Асимметричные стеклянные панели с размытием (Backdrop Blur).
+    - **Connected Speaker Badge**: Плавающий бейдж говорящего, "привязанный" к текстовому блоку декоративной линией.
+    - **Inline Choices**: Варианты ответов интегрированы прямо в поток диалога (как список), а не отдельными кнопками.
+- **Micro-Animations**:
+    - **Typing Indicator**: Анимированный курсор "Continue" при завершении печати.
+    - **Choice Reveal**: Каскадное появление вариантов ответа (`staggerChildren`).
+
+### Технические детали
+- **Refactoring**: Очистка дублирующего кода в `MobileVNLayout.tsx` и `useGyroParallax.ts`.
+- **Performance**: Использование `will-change-transform` для фона и `requestAnimationFrame` для гироскопа.
+
+### Изменено
+- **Scenario Architecture (Case Bundles)**: Полная реструктуризация папки сценариев (`scenarios/detective`).
+    - **Case 01 Bundle**: Все файлы Дела №1 сгруппированы в `case_01_bank` с подпапками `main/` (сюжет) и `leads/` (ветки расследования).
+    - **Side Quests**: Побочные квесты вынесены в `side_quests/` (Lotte, Victoria, Inspector).
+    - **Clean Exports**: Внедрены `index.ts` файлы для модульного экспорта сценариев.
+
+---
+
+## [31.01.2026] — Parliament Keyword System Fix & Expansion
+
+### Исправлено
+- **Keyword Visibility**: Исправлен Z-Index конфликт (`ParliamentKeywordCard`), из-за которого карточки с описанием скрывались под основным интерфейсом новеллы. Теперь они корректно отображаются поверх (`z-[300]`).
+- **Overlay Integration**: В `VisualNovelOverlay` добавлена поддержка интерактивных ключевых слов. Теперь клик по `[[keyword]]` в режиме карты открывает ту же карточку парламента, что и в полноэкранном режиме.
+
+### Добавлено
+- **Action System Plan**: Разработан концепт (`PLAN-mechanics.md`) для будущей системы "Action Keywords", где клик по тексту сможет триггерить игровые события (телепортация, получение предметов), а не только показывать лор.
+
+---
+
 ## [29.01.2026] — "The Open City" & Narrative Polish
 
 ### Добавлено

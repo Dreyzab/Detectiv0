@@ -16,16 +16,17 @@ export interface TextToken {
 interface TypedTextProps {
     text: string;
     speed?: number; // ms per char (default: 10, was 30)
-    onInteract?: (token: TextToken) => void;
+    onInteract?: (token: TextToken, element?: HTMLElement) => void;
     onComplete?: () => void;
     /** Called when typing state changes */
     onTypingChange?: (isTyping: boolean) => void;
+    highlightedTerms?: string[];
 }
 
 // Default speed: 10ms (3x faster than original 30ms)
 const DEFAULT_SPEED = 10;
 
-export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete, onTypingChange }: TypedTextProps) => {
+export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete, onTypingChange, highlightedTerms = [] }: TypedTextProps) => {
     const [visibleChars, setVisibleChars] = useState(0);
     const requestRef = useRef<number>(null);
     const lastTimeRef = useRef<number>(0);
@@ -204,6 +205,7 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
         }
 
         const isClue = token.type === 'clue';
+        const isHighlighted = highlightedTerms.some(term => term.toLowerCase() === token.text.toLowerCase());
 
         return (
             <motion.span
@@ -216,7 +218,7 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
                     e.stopPropagation();
                     if (isFullyVisible && onInteract) {
                         soundManager.playClueFound();
-                        onInteract(token);
+                        onInteract(token, e.currentTarget);
                     }
                 }}
                 className={`
@@ -224,9 +226,11 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
                             ${isFullyVisible ? 'cursor-pointer' : ''}
                             ${isClue
                         ? 'text-accent hover:bg-accent/10 border-b border-accent/30 hover:border-accent'
-                        : 'text-primary font-bold hover:bg-primary/10 border-b border-primary/30 hover:border-primary'}
+                        : isHighlighted
+                            ? 'text-amber-400 font-bold hover:bg-amber-400/10 border-b border-amber-400/30 hover:border-amber-400'
+                            : 'text-primary font-bold hover:bg-primary/10 border-b border-primary/30 hover:border-primary'}
                         `}
-                title={isClue ? "Evidence" : "Note"}
+                title={isClue ? "Evidence" : isHighlighted ? "Interactive Info" : "Note"}
             >
                 {slice}
             </motion.span>

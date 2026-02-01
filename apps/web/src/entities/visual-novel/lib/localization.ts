@@ -62,12 +62,10 @@ export const mergeScenario = (
         // Assemble Final Scene
         mergedScenes[sceneLogic.id] = {
             id: sceneLogic.id,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            characterId: sceneLogic.characterId as any, // Cast to match generic type
+            characterId: sceneLogic.characterId,
             backgroundUrl: sceneLogic.backgroundUrl,
             nextSceneId: sceneLogic.nextSceneId,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onEnter: sceneLogic.onEnter as any,
+            onEnter: sceneLogic.onEnter,
             text: bodyText,
             choices: mergedChoices.length > 0 ? mergedChoices : undefined
         };

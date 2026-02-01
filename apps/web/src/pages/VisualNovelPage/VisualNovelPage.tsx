@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useVNStore } from '@/entities/visual-novel/model/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
@@ -9,6 +9,8 @@ import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { CHARACTERS } from '@repo/shared/data/characters';
 import type { VNChoice, VNAction } from '@/entities/visual-novel/model/types';
 import type { TextToken } from '@/entities/visual-novel/ui/TypedText';
+import { ParliamentKeywordCard } from '@/features/detective/ui/ParliamentKeywordCard';
+import { PARLIAMENT_TOOLTIP_REGISTRY, getTooltipContent } from '@/features/detective/lib/tooltipRegistry';
 
 /**
  * Fullscreen Visual Novel Page
@@ -17,6 +19,7 @@ import type { TextToken } from '@/entities/visual-novel/ui/TypedText';
 export const VisualNovelPage = () => {
     const { scenarioId } = useParams<{ scenarioId: string }>();
     const navigate = useNavigate();
+    const [activeTooltip, setActiveTooltip] = useState<{ keyword: string; rect: DOMRect } | null>(null);
 
     const {
         activeScenarioId,
@@ -69,7 +72,7 @@ export const VisualNovelPage = () => {
     };
 
     // Token interaction (clues, notes)
-    const handleInteract = (token: TextToken) => {
+    const handleInteract = (token: TextToken, element?: HTMLElement) => {
         if (token.type === 'clue' && token.payload) {
             const evidenceItem = EVIDENCE_REGISTRY[token.payload];
             if (evidenceItem) {
@@ -79,6 +82,16 @@ export const VisualNovelPage = () => {
                 console.warn(`Evidence ID ${token.payload} not found in registry`);
             }
         } else {
+            // Check if it's a Parliament Tooltip keyword
+            const tooltipContent = getTooltipContent(token.text);
+            if (tooltipContent) {
+                // Determine rect
+                const rect = element ? element.getBoundingClientRect() : new DOMRect(0, 0, 0, 0); // Fallback
+                setActiveTooltip({ keyword: token.text, rect });
+                return;
+            }
+
+            // Fallback: Add Note
             const id = `${activeScenarioId}_${effectiveSceneId}_${token.text.replace(/\s+/g, '_').toLowerCase()}`;
             const result = addEntry({
                 id,
@@ -183,15 +196,28 @@ export const VisualNovelPage = () => {
         );
     }
 
+    const parliamentKeys = Object.keys(PARLIAMENT_TOOLTIP_REGISTRY);
+
     return (
-        <MobileVNLayout
-            scene={scene}
-            character={character}
-            background={background}
-            dialogueHistory={dialogueHistory}
-            onInteract={handleInteract}
-            onChoice={handleChoice}
-            onTapAdvance={handleTapAdvance}
-        />
+        <>
+            <MobileVNLayout
+                scene={scene}
+                character={character}
+                background={background}
+                dialogueHistory={dialogueHistory}
+                onInteract={handleInteract}
+                onChoice={handleChoice}
+                onTapAdvance={handleTapAdvance}
+                highlightedTerms={parliamentKeys}
+            />
+
+            {activeTooltip && (
+                <ParliamentKeywordCard
+                    keyword={activeTooltip.keyword}
+                    anchorRect={activeTooltip.rect}
+                    onClose={() => setActiveTooltip(null)}
+                />
+            )}
+        </>
     );
 };

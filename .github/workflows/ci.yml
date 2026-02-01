@@ -22,12 +22,15 @@ jobs:
       run: bun install
       
     - name: Lint
-      # run: bun run lint # Uncomment when lint script is available
-      run: echo "Linting skipped for now"
-      
+      run: bun run --filter web lint
+      continue-on-error: true # Warning only for now, as agreed
+
     - name: Type Check
-      # run: bun run typecheck # Uncomment when typecheck script is available
-      run: echo "Typecheck skipped for now"
-      
+      run: bun run --filter web build # Typecheck via build
+
+    - name: Security Audit
+      run: bun pm trust --all || echo "Bun audit not available, skipping" # Placeholder until audit tool decided
+      continue-on-error: true
+
     - name: Test
       run: bun test

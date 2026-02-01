@@ -614,3 +614,34 @@ Karlsruhe уже есть как RegionConfig (с центром и особен
     1.  Конфиг `KARLSRUHE_1900`.
     2.  Свитчер паков в `Dossier` (выбор дела).
     3.  Отдельный набор Hardlinks.
+
+
+## 13) Architecture v2 (Implemented Updates 2026-01-30)
+
+### 13.1 Server Persistence
+Added `detective_saves` table for reliable cross-device progression.
+- **Table**: `detective_saves`
+  - `id`: UUID (v4)
+  - `user_id`: Reference to Users
+  - `slot_id`: Integer key (0=Auto, 1-9=Manual)
+  - `data`: JSON blob (snapshots `VNStore` state: history, locale, activeScenario)
+  - `timestamp`: Epoch ms
+
+**API Endpoints**:
+- `GET /detective/saves` - List all saves
+- `GET /detective/saves/:slot` - Get specific save data
+- `POST /detective/saves/:slot` - Upsert save data
+
+### 13.2 Dynamic Scenario Loading
+Refactored `registry.ts` to use `import.meta.glob`.
+- **Logic**: Automatically scans `entities/visual-novel/scenarios/**/*.logic.ts`
+- **Content**: Automatically scans `entities/visual-novel/scenarios/**/*.en.ts` (and de/ru)
+- **Assembly**: 
+  - Matches Logic file ID to Content Bundle.
+  - No manual registration required for new cases.
+  - Just add files -> run app.
+
+### 13.3 Testing Strategy
+- **Unit**: `engine.test.ts` covers merging and fallback logic.
+- **E2E**: `e2e/vn-flow.test.ts` (Playwright) template created for critical path verification.
+

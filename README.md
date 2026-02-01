@@ -33,7 +33,10 @@
 - **Forensics Mini-games**: Криминалистические мини-игры (химический анализ, взлом), базирующиеся на реальных научных методах той эпохи.
 - **Audio & SFX Engine**: Процедурная генерация звука (Web Audio API) для эффектов пишущей машинки и интерактивных улик. Поддержка эмбиент-музыки.
 - **Visual Novel Engine**: Диалоговая система с поддержкой **Dual Mode** (Overlay/Fullscreen), проверками навыков (18 голосов) и ветвлением сюжета (Interludes, Multi-ending Finale).
-- **Interactive Text & Localization**: Мультиязычная система (EN, DE, RU). Игрок может кликать на `[[улики]]` (анимированные Framer Motion) для занесения в досье.
+    - **Virtual Window**: Гироскопический параллакс на мобильных устройствах.
+    - **Cinematic Reveal**: "Умное" скрытие интерфейса для акцента на арт.
+    - **UI Pro Max**: Асимметричный глассморфизм и микро-анимации.
+- **Interactive Text & Localization**: Мультиязычная система (EN, DE, RU). Игрок может кликать на `[[улики]]` (анимированные Framer Motion) для занесения в досье и на `[[ключевые слова]]` для получения контекста от Парламента (работает в Overlay и Fullscreen).
 - **Premium Navbar (The Detective's Desk)**: Унифицированный интерфейс управления в стиле Art Deco (Warm Black/Gold) с использованием шрифтов Playfair Display и Courier Prime.
 - **Character Page**: Профиль персонажа с визуализацией навыков (Parliament of Voices) и биографией.
 - **Progress Tracking**: Разблокировка новых точек интереса по мере продвижения в расследовании.
@@ -76,6 +79,7 @@
 │   │   │   ├── entities/           # Бизнес-сущности (State & Model)
 │   │   │   │   ├── inventory/      # Инвентарь игрока (Zustand)
 │   │   │   │   └── visual-novel/   # Движок сценариев (Model, Scenarios, UI)
+│   │   │   │       └── scenarios/  # Case Bundles (detective/case_01, side_quests)
 │   │   │   ├── features/           # Функциональные модули
 │   │   │   │   └── detective/      # Режим детектива
 │   │   │   │       ├── dossier/    # Логика Досье и Улик (Zustand)
