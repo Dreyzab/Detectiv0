@@ -10,4 +10,6 @@ export * from "./lib/feature-flags";
 export * from "./lib/detective_map_types";
 export * from "./lib/map-validators";
 export * from "./data/parliament";
+export * from "./data/battle";
 // export * from "./data/points"; // DELETED: Migrated to DB
+

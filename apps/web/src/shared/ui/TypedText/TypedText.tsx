@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { soundManager } from '@/shared/lib/audio/SoundManager';
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 
 export type TokenType = 'text' | 'note' | 'clue';
 
@@ -11,6 +11,12 @@ export interface TextToken {
     original: string; // The original substring (e.g. [[Note]])
     start: number;
     end: number;
+}
+
+export interface TypedTextHandle {
+    finish: () => void;
+    isTyping: boolean;
+    setSpeedOverride: (speedOverride: number | null) => void;
 }
 
 interface TypedTextProps {
@@ -26,11 +32,13 @@ interface TypedTextProps {
 // Default speed: 10ms (3x faster than original 30ms)
 const DEFAULT_SPEED = 10;
 
-export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete, onTypingChange, highlightedTerms = [] }: TypedTextProps) => {
+export const TypedText = forwardRef<TypedTextHandle, TypedTextProps>(({ text, speed = DEFAULT_SPEED, onInteract, onComplete, onTypingChange, highlightedTerms = [] }, ref) => {
     const [visibleChars, setVisibleChars] = useState(0);
-    const requestRef = useRef<number>(null);
+    const requestRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number>(0);
     const isTypingRef = useRef(true);
+    const speedRef = useRef(speed);
+    const speedOverrideRef = useRef<number | null>(null);
     const onTypingChangeRef = useRef<TypedTextProps['onTypingChange']>(undefined);
     const onCompleteRef = useRef<TypedTextProps['onComplete']>(undefined);
     const prevIsTypingRef = useRef<boolean | null>(null);
@@ -73,7 +81,6 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
                             type: 'note',
                             text: visibleText,
                             payload: visibleText,
-
                             original,
                             start: totalLength,
                             end: totalLength + visibleText.length
@@ -113,15 +120,16 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
     }, [onTypingChange, onComplete]);
 
     useEffect(() => {
+        speedRef.current = speed;
+    }, [speed]);
+
+    useEffect(() => {
         const isTyping = visibleChars < fullTextLength;
         if (prevIsTypingRef.current === null || prevIsTypingRef.current !== isTyping) {
             prevIsTypingRef.current = isTyping;
             onTypingChangeRef.current?.(isTyping);
             if (!isTyping) {
                 onCompleteRef.current?.();
-                if (shouldLog) {
-                    // Debug logging removed
-                }
             }
         }
     }, [visibleChars, fullTextLength, shouldLog]);
@@ -132,44 +140,64 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
             cancelAnimationFrame(requestRef.current);
             requestRef.current = null;
         }
+        speedOverrideRef.current = null;
         setVisibleChars(fullTextLength);
         if (isTypingRef.current) {
             isTypingRef.current = false;
-            if (shouldLog) {
-                // Debug logging removed
-            }
         }
-    }, [fullTextLength, shouldLog]);
+    }, [fullTextLength]);
+
+    const setSpeedOverride = useCallback((speedOverride: number | null) => {
+        speedOverrideRef.current = speedOverride;
+    }, []);
+
+    // Expose methods to parent
+    useImperativeHandle(ref, () => ({
+        finish: skipTyping,
+        isTyping: isTypingRef.current,
+        setSpeedOverride
+    }));
 
     // 2. Typewriter Loop
     useEffect(() => {
-        if (shouldLog) {
-            // Debug logging removed
-        }
         // eslint-disable-next-line
         setVisibleChars(0);
         lastTimeRef.current = performance.now();
         isTypingRef.current = true;
 
+        const initialSpeed = speedOverrideRef.current ?? speedRef.current;
+        if (initialSpeed <= 0) {
+            setVisibleChars(fullTextLength);
+            isTypingRef.current = false;
+            return;
+        }
+
         const animate = (time: number) => {
+            const effectiveSpeed = speedOverrideRef.current ?? speedRef.current;
+            if (effectiveSpeed <= 0) {
+                setVisibleChars(fullTextLength);
+                if (isTypingRef.current) {
+                    soundManager.playTypewriterClick();
+                    isTypingRef.current = false;
+                }
+                return;
+            }
+
             const delta = time - lastTimeRef.current;
-            if (delta >= speed) {
+            if (delta >= effectiveSpeed) {
+                const steps = Math.floor(delta / effectiveSpeed);
                 setVisibleChars((prev) => {
-                    const next = prev + 1;
-                    soundManager.playTypewriterClick(); // Play click on every char
+                    const next = Math.min(prev + steps, fullTextLength);
+                    soundManager.playTypewriterClick(); // Play click on each frame
                     if (next >= fullTextLength) {
                         if (isTypingRef.current) {
                             soundManager.playTypewriterClick(); // Final click
                             isTypingRef.current = false;
-                            if (shouldLog) {
-                                // Debug logging removed
-                            }
                         }
-                        return fullTextLength; // Stop
                     }
-                    lastTimeRef.current = time;
                     return next;
                 });
+                lastTimeRef.current = time - (delta % effectiveSpeed);
             }
             if (isTypingRef.current) {
                 requestRef.current = requestAnimationFrame(animate);
@@ -180,17 +208,10 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
 
         return () => {
             if (requestRef.current) cancelAnimationFrame(requestRef.current);
-            if (shouldLog) {
-                // Debug logging removed
-            }
         };
-    }, [tokens, fullTextLength, speed, shouldLog]);
+    }, [tokens, fullTextLength]); // Removed speed changes to avoid restarting typing mid-line
 
     // 3. Rendering Logic
-    // We need to render tokens up to `visibleChars` count.
-    // If a token is partially visible, we slice its text.
-
-
     const renderedTokens = tokens.map((token, index) => {
         // Logic based on pre-calculated start/end
         if (visibleChars <= token.start) return null; // Fully hidden
@@ -205,7 +226,7 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
         }
 
         const isClue = token.type === 'clue';
-        const isHighlighted = highlightedTerms.some(term => term.toLowerCase() === token.text.toLowerCase());
+        const isHighlightedHighlighted = highlightedTerms.some(term => term.toLowerCase() === token.text.toLowerCase());
 
         return (
             <motion.span
@@ -214,9 +235,22 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                role={isFullyVisible ? 'button' : undefined}
+                tabIndex={isFullyVisible ? 0 : undefined}
+                data-vn-interactive={isFullyVisible ? 'true' : undefined}
                 onClick={(e) => {
                     e.stopPropagation();
                     if (isFullyVisible && onInteract) {
+                        soundManager.playClueFound();
+                        onInteract(token, e.currentTarget);
+                    }
+                }}
+                onKeyDown={(e) => {
+                    if (!isFullyVisible) return;
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (onInteract) {
                         soundManager.playClueFound();
                         onInteract(token, e.currentTarget);
                     }
@@ -226,11 +260,11 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
                             ${isFullyVisible ? 'cursor-pointer' : ''}
                             ${isClue
                         ? 'text-accent hover:bg-accent/10 border-b border-accent/30 hover:border-accent'
-                        : isHighlighted
+                        : isHighlightedHighlighted
                             ? 'text-amber-400 font-bold hover:bg-amber-400/10 border-b border-amber-400/30 hover:border-amber-400'
                             : 'text-primary font-bold hover:bg-primary/10 border-b border-primary/30 hover:border-primary'}
                         `}
-                title={isClue ? "Evidence" : isHighlighted ? "Interactive Info" : "Note"}
+                title={isClue ? "Evidence" : isHighlightedHighlighted ? "Interactive Info" : "Note"}
             >
                 {slice}
             </motion.span>
@@ -241,14 +275,7 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
 
     return (
         <span
-            className="typed-text-container leading-relaxed"
-            onClick={(e) => {
-                // Tap to skip: if still typing, complete instantly
-                if (isTyping) {
-                    e.stopPropagation();
-                    skipTyping();
-                }
-            }}
+            className="typed-text-container leading-relaxed pointer-events-auto"
         >
             {renderedTokens}
             {isTyping && (
@@ -256,4 +283,6 @@ export const TypedText = ({ text, speed = DEFAULT_SPEED, onInteract, onComplete,
             )}
         </span>
     );
-};
+});
+
+TypedText.displayName = 'TypedText';

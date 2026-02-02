@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useInventoryStore } from '../entities/inventory/model/store';
 import { useDossierStore } from '../features/detective/dossier/store';
 import { useQuestStore } from '../features/quests/store';
@@ -6,6 +7,9 @@ import { useVNStore } from '../entities/visual-novel/model/store';
 import { Button } from '../shared/ui/Button';
 import { OnboardingModal } from '../features/detective/onboarding/OnboardingModal';
 import { useState } from 'react';
+import { getScenarioById } from '../entities/visual-novel/scenarios/registry';
+import { preloadManager, extractScenarioAssets, toPreloadQueue } from '../shared/lib/preload';
+
 
 export const HomePage = () => {
     const navigate = useNavigate();
@@ -15,7 +19,19 @@ export const HomePage = () => {
 
     // Check for active session
     const activeScenarioId = useVNStore(state => state.activeScenarioId);
-    // const locale = useVNStore(state => state.locale); // Assuming locale is needed or we just check ID
+    const locale = useVNStore(state => state.locale);
+
+    // Preload VN assets in background
+    useEffect(() => {
+        const targetId = activeScenarioId || 'detective_case1_briefing';
+        const scenario = getScenarioById(targetId, locale);
+        if (scenario) {
+            const assets = extractScenarioAssets(scenario);
+            const queue = toPreloadQueue(assets);
+            preloadManager.preloadScenario(targetId, queue, { priority: 1 });
+        }
+    }, [activeScenarioId, locale]);
+
     // We need to know if it is fullscreen. But `getScenarioById` might be expensive or circular?
     // We can rely on the fact that `detective_case1_briefing` is known fullscreen. 
     // Ideally useVNStore would expose 'isFullScreen'. 

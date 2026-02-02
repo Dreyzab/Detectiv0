@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import type { VNCharacter } from '../model/types';
+import type { VNCharacter } from '@repo/shared/data/characters';
 
 interface SpeakerBadgeProps {
     character: VNCharacter;

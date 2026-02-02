@@ -13,12 +13,14 @@ interface CaseCardProps {
 
 export const CaseCard = ({ point, actions, onExecute, onClose }: CaseCardProps) => {
     // Determine main action (e.g. Enter) logic
-    const enterAction = actions.find(a => {
-        const binding = a as unknown as MapPointBinding;
-        // Allow ANY action to trigger the button. 
-        // If it's a VN/Battle, we act normally. If it's just 'grant_evidence', we 'Investigate'.
+    const mainOption = actions.find(opt => {
+        // We receive ResolverOption { binding, enabled }
+        // We want an option that has actions
+        const binding = opt.binding;
         return binding.actions && binding.actions.length > 0;
     });
+
+    const enterAction = mainOption ? mainOption.binding : null;
 
     // Parliament of Voices rendering
     const pointVoices = (point.data?.voices as Partial<Record<VoiceId, string>>) || {};
@@ -86,11 +88,11 @@ export const CaseCard = ({ point, actions, onExecute, onClose }: CaseCardProps) 
                     <div className="mt-auto grid grid-cols-1 gap-2 pt-4 border-t border-[#4a3b2a]/30">
                         {enterAction ? (
                             <button
-                                onClick={() => onExecute(enterAction as unknown as MapPointBinding)}
+                                onClick={() => onExecute(enterAction)}
                                 className="w-full py-3 bg-[#4a1a1a] text-[#f3e9d2] font-serif font-bold text-lg uppercase tracking-wider hover:bg-[#6b2a2a] transition-colors relative overflow-hidden group shadow-md"
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-2">
-                                    <span>♠</span> {(enterAction as unknown as MapPointBinding).label || "Investigate"} <span>♠</span>
+                                    <span>♠</span> {enterAction.label || "Investigate"} <span>♠</span>
                                 </span>
                             </button>
                         ) : (

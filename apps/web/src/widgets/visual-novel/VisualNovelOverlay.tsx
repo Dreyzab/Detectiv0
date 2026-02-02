@@ -1,24 +1,40 @@
-import { useVNStore } from '../model/store';
+import { useVNStore } from '@/entities/visual-novel/model/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
 import { useCharacterStore } from '@/entities/character/model/store';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { performSkillCheck } from '@repo/shared/lib/dice';
-import { TypedText, type TextToken } from './TypedText';
+import { TypedText, type TextToken, type TypedTextHandle } from '@/shared/ui/TypedText/TypedText';
 import { EVIDENCE_REGISTRY } from '@/features/detective/registries';
 import { ParliamentKeywordCard } from '@/features/detective/ui/ParliamentKeywordCard';
 import { getTooltipContent } from '@/features/detective/lib/tooltipRegistry';
-import { getScenarioById } from '../scenarios/registry';
+import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { CHARACTERS } from '@repo/shared/data/characters';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { soundManager } from '@/shared/lib/audio/SoundManager';
-import type { VNChoice } from '../model/types';
+import type { VNChoice } from '@/entities/visual-novel/model/types';
 
 export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'fullscreen' }) => {
+    const location = useLocation();
+
+    if (location.pathname === '/' || location.pathname.startsWith('/vn')) {
+        return null;
+    }
+
+    return <VisualNovelOverlayInner mode={propMode} />;
+};
+
+const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fullscreen' }) => {
     const { activeScenarioId, currentSceneId, advanceScene, endScenario, locale } = useVNStore();
     const { setPointState, addEvidence, setFlag, addEntry, recordCheckResult, voiceStats, gainVoiceXp } = useDossierStore();
     const { modifyRelationship, setCharacterStatus } = useCharacterStore();
     const navigate = useNavigate();
 
+    // Refs
+    const typedTextRef = useRef<TypedTextHandle>(null);
+    const pointerDownAtRef = useRef<number | null>(null);
+
+    const FAST_FORWARD_SPEED = 5;
+    const HOLD_TO_SKIP_THRESHOLD_MS = 180;
 
     // Toast State
     const [toast, setToast] = useState<{ message: string; type: 'evidence' | 'note' } | null>(null);
@@ -46,6 +62,8 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
     }
 
     const scene = activeScenario?.scenes[effectiveSceneId || ''];
+    const sceneChoices = scene?.choices;
+    const sceneNextSceneId = scene?.nextSceneId;
 
     const character = scene?.characterId ? CHARACTERS[scene.characterId] : null;
     const mode = activeScenario?.mode || propMode || 'overlay';
@@ -59,10 +77,6 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeScenario?.id, activeScenario?.musicUrl]);
 
-
-
-
-
     useEffect(() => {
         return () => {
             if (toastTimeoutRef.current) {
@@ -71,13 +85,13 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
         };
     }, []);
 
-    if (!activeScenario || !effectiveSceneId || !scene) {
-        if (activeScenarioId) console.warn('[VN Error] Failed to load scenario or scene', { activeScenario, effectiveSceneId });
-        return null;
-    }
-
     // --- Actions ---
     const handleInteract = (token: TextToken, element?: HTMLElement) => {
+        const scenario = activeScenario;
+        if (!scenario || !effectiveSceneId) {
+            return;
+        }
+
         if (token.type === 'clue' && token.payload) {
             // It's a Clue -> Add to Evidence Inventory
             const evidenceItem = EVIDENCE_REGISTRY[token.payload];
@@ -99,13 +113,13 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
             }
 
             // It's a Note -> Add to Notebook Entries
-            const id = `${activeScenario.id}_${effectiveSceneId}_${token.text.replace(/\s+/g, '_').toLowerCase()}`;
+            const id = `${scenario.id}_${effectiveSceneId}_${token.text.replace(/\s+/g, '_').toLowerCase()}`;
 
             const result = addEntry({
                 id,
                 type: 'note',
                 title: token.text,
-                content: `Observed in ${activeScenario.title}`,
+                content: `Observed in ${scenario.title}`,
                 isLocked: false,
                 packId: 'case_01'
             });
@@ -134,24 +148,20 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
                     break;
                 case 'start_battle': {
                     endScenario();
-                    navigate(`/tutorial-battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
+                    navigate(`/battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
                     break;
                 }
                 case 'modify_relationship':
                     modifyRelationship(action.payload.characterId, action.payload.amount);
                     break;
                 case 'set_character_status':
-                    // Cast generic string status to the specific union type if known, or just pass it
-                    // The store expects 'unknown' | 'met' | 'ally' | 'enemy' | 'deceased'
-                    // For now we assume the payload is correct.
-                     
                     setCharacterStatus(action.payload.characterId, action.payload.status as import('@/entities/character/model/store').CharacterStatus);
                     break;
             }
         });
     };
 
-    const handleChoice = (choice: import('../model/types').VNChoice) => {
+    const handleChoice = (choice: VNChoice) => {
         // Skill Check Logic
         if (choice.skillCheck) {
             const { id, voiceId, difficulty, onSuccess, onFail } = choice.skillCheck;
@@ -162,12 +172,12 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
             // Hybrid Progression: Gain Voice XP
             if (res.success) {
                 // Success: High XP
-                gainVoiceXp(voiceId, 20); // TODO: use RPG_CONFIG.XP_GAIN_ON_CHECK_SUCCESS
+                gainVoiceXp(voiceId, 20);
                 executeActions(onSuccess?.actions);
                 advanceScene(onSuccess?.nextSceneId || choice.nextSceneId);
             } else {
                 // Failure: Low XP (Learning from failure)
-                gainVoiceXp(voiceId, 10); // TODO: use RPG_CONFIG.XP_GAIN_ON_CHECK_FAIL
+                gainVoiceXp(voiceId, 10);
                 executeActions(onFail?.actions);
                 if (onFail?.nextSceneId) advanceScene(onFail.nextSceneId);
             }
@@ -183,15 +193,99 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
         }
     };
 
+    const shouldIgnoreGlobalPointer = useCallback((target: EventTarget | null) => {
+        if (!target) return false;
+        const element = target as HTMLElement;
+        return Boolean(
+            element.closest('button, a, input, textarea, select, [role="button"], [role="link"]') ||
+            element.closest('.typed-text-container span[title]')
+        );
+    }, []);
+
+    const handleGlobalAdvance = useCallback((target: EventTarget | null) => {
+        // Ignore clicks on buttons/interactive elements to avoid double-firing or conflicts
+        if (shouldIgnoreGlobalPointer(target)) {
+            return;
+        }
+
+        // 1. If typing, finish effectively immediately
+        if (typedTextRef.current?.isTyping) {
+            typedTextRef.current.finish();
+            return;
+        }
+
+        // 2. If finished typing and NO CHOICES (or only 'continue' implicit choice), advance
+        // We check if the scene has explicit choices.
+        if (!scene) return;
+
+        const hasExplicitChoices = sceneChoices && sceneChoices.length > 0;
+
+        if (!hasExplicitChoices) {
+            const continueChoice: VNChoice = {
+                id: 'continue',
+                text: 'Continue',
+                nextSceneId: sceneNextSceneId || 'END'
+            };
+            handleChoice(continueChoice);
+        }
+    }, [handleChoice, scene, sceneChoices, sceneNextSceneId, shouldIgnoreGlobalPointer]);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) {
+            return;
+        }
+        if (shouldIgnoreGlobalPointer(e.target)) {
+            return;
+        }
+
+        pointerDownAtRef.current = performance.now();
+        soundManager.ensureAudioContext();
+
+        if (typedTextRef.current?.isTyping) {
+            typedTextRef.current.setSpeedOverride(FAST_FORWARD_SPEED);
+        }
+    };
+
+    const handlePointerUp = (e: React.PointerEvent) => {
+        if (pointerDownAtRef.current === null) {
+            return;
+        }
+
+        const heldMs = performance.now() - pointerDownAtRef.current;
+        pointerDownAtRef.current = null;
+        typedTextRef.current?.setSpeedOverride(null);
+
+        if (shouldIgnoreGlobalPointer(e.target)) {
+            return;
+        }
+
+        if (heldMs < HOLD_TO_SKIP_THRESHOLD_MS) {
+            handleGlobalAdvance(e.target);
+        }
+    };
+
+    const handlePointerCancel = () => {
+        pointerDownAtRef.current = null;
+        typedTextRef.current?.setSpeedOverride(null);
+    };
+
+    if (!activeScenario || !effectiveSceneId || !scene) {
+        if (activeScenarioId) console.warn('[VN Error] Failed to load scenario or scene', { activeScenario, effectiveSceneId });
+        return null;
+    }
+
     // --- Renderers ---
 
     const OverlayLayout = () => (
         <div
-            className="fixed inset-0 z-[200] bg-black/40 flex flex-col pointer-events-none"
-            onClick={() => soundManager.ensureAudioContext()}
+            className="fixed inset-0 z-[200] flex flex-col cursor-pointer" // Add cursor-pointer to indicate interactivity
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
+            onPointerLeave={handlePointerCancel}
         >
             <div className="flex-1" />
-            <div className="pointer-events-auto p-0 max-w-4xl mx-auto w-full z-10 mb-8 px-4">
+            <div className="pointer-events-auto p-0 max-w-4xl mx-auto w-full z-10 mb-8 px-4 cursor-default">
                 <div className="relative bg-gradient-to-b from-stone-950/30 to-black/60 border-l-[1px] border-l-white/10 rounded-tr-[3rem] p-8 shadow-2xl backdrop-blur-xl min-h-[200px] flex flex-col gap-4">
 
                     {/* Decorative Backgrounds */}
@@ -227,8 +321,12 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
                         <span>14:00</span>
                     </div>
 
-                    <div className="font-serif text-lg md:text-xl leading-relaxed text-gray-100 relative z-10 pt-4">
-                        <TypedText text={scene.text} onInteract={handleInteract} />
+                    <div className="font-serif text-lg md:text-xl leading-relaxed text-gray-100 relative z-10 pt-4 cursor-text">
+                        <TypedText
+                            ref={typedTextRef}
+                            text={scene.text}
+                            onInteract={handleInteract}
+                        />
                     </div>
 
                     <Choices choiceList={scene.choices} />
@@ -237,9 +335,9 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
         </div>
     );
 
-    const Choices = ({ choiceList }: { choiceList?: import('../model/types').VNChoice[] }) => (
+    const Choices = ({ choiceList }: { choiceList?: VNChoice[] }) => (
         <div className="flex flex-col gap-2 mt-4 relative z-10">
-            {choiceList ? (
+            {choiceList && choiceList.length > 0 && (
                 choiceList.map((choice, index) => (
                     <button
                         key={choice.id}
@@ -263,20 +361,12 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
                         </div>
                     </button>
                 ))
-            ) : (
-                <button
-                    onClick={() => {
-                        const continueChoice: VNChoice = {
-                            id: 'continue',
-                            text: 'Continue',
-                            nextSceneId: scene.nextSceneId || 'END'
-                        };
-                        handleChoice(continueChoice);
-                    }}
-                    className="self-center px-12 py-3 bg-primary text-surface font-bold font-serif uppercase tracking-widest hover:bg-white transition-colors animate-pulse mt-2"
-                >
-                    Continue ►
-                </button>
+            )}
+            {/* Standard "Continue" button is hidden in favor of click-anywhere, but prompt can be shown if needed */}
+            {(!choiceList || choiceList.length === 0) && (
+                <div className="h-6 animate-pulse mt-2 flex justify-center opacity-50">
+                    <span className="text-[10px] font-mono tracking-widest text-stone-500">CLICK TO CONTINUE ▼</span>
+                </div>
             )}
         </div>
     );

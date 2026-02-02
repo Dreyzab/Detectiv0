@@ -2,7 +2,7 @@
 
 **Grezwanderer 4** — это современная игровая платформа, сфокусированная на **Detective Mode**. Проект объединяет в себе Visual Novel и картографическое исследование в уникальном историческом сеттинге.
 
-[📜 Журнал обновлений (Changelog)](./update.md) | [🕵️ Сюжет и Лор](./Сюжет.md) | [🏗 Архитектура](./ARCHITECTURE.md) | [🗺️ Map Engine Specs](./docs/PLAN-map-point-types.md) | [⚖️ Регламент документации](./DOCS_POLICY.md)
+[📜 Журнал обновлений (Changelog)](./update.md) | [Player Journey](./Playerview.md) | [🕵️ Сюжет и Лор](./Сюжет.md) | [🏗 Архитектура](./ARCHITECTURE.md) | [🗺️ Map Engine Specs](./docs/PLAN-map-point-types.md) | [⚖️ Регламент документации](./DOCS_POLICY.md)
 
 ## 🚀 Основные возможности (Features)
 
@@ -33,9 +33,16 @@
 - **Forensics Mini-games**: Криминалистические мини-игры (химический анализ, взлом), базирующиеся на реальных научных методах той эпохи.
 - **Audio & SFX Engine**: Процедурная генерация звука (Web Audio API) для эффектов пишущей машинки и интерактивных улик. Поддержка эмбиент-музыки.
 - **Visual Novel Engine**: Диалоговая система с поддержкой **Dual Mode** (Overlay/Fullscreen), проверками навыков (18 голосов) и ветвлением сюжета (Interludes, Multi-ending Finale).
+    - **Map-Driven Flow**: Fullscreen VN runs from MapPoint interactions (Investigate -> start_vn) and returns to /map on end.
     - **Virtual Window**: Гироскопический параллакс на мобильных устройствах.
     - **Cinematic Reveal**: "Умное" скрытие интерфейса для акцента на арт.
     - **UI Pro Max**: Асимметричный глассморфизм и микро-анимации.
+- **Dialogue Battle System** ⚔️: Карточная боевая система вербальных дуэлей (в стиле Griftlands).
+    - **15 стартовых карт** по 6 атрибутным группам (Intellect, Psyche, Social, Physical, Shadow, Spirit).
+    - **Механика Resolve**: "HP" аргументов — снижайте решимость оппонента картами.
+    - **Эффекты карт**: Урон, Блок, Лечение, Draw, Gain AP.
+    - **Простой AI**: Оппонент разыгрывает карты автоматически.
+    - **Интеграция с VN**: Переход VN → Battle → VN с сохранением контекста.
 - **Interactive Text & Localization**: Мультиязычная система (EN, DE, RU). Игрок может кликать на `[[улики]]` (анимированные Framer Motion) для занесения в досье и на `[[ключевые слова]]` для получения контекста от Парламента (работает в Overlay и Fullscreen).
 - **Premium Navbar (The Detective's Desk)**: Унифицированный интерфейс управления в стиле Art Deco (Warm Black/Gold) с использованием шрифтов Playfair Display и Courier Prime.
 - **Character Page**: Профиль персонажа с визуализацией навыков (Parliament of Voices) и биографией.
@@ -78,7 +85,8 @@
 │   │   ├── src/
 │   │   │   ├── entities/           # Бизнес-сущности (State & Model)
 │   │   │   │   ├── inventory/      # Инвентарь игрока (Zustand)
-│   │   │   │   └── visual-novel/   # Движок сценариев (Model, Scenarios, UI)
+│   │   │   │   ├── character/      # Characters (Model + UI)
+│   │   │   │   └── visual-novel/   # Движок сценариев (Model, Scenarios)
 │   │   │   │       └── scenarios/  # Case Bundles (detective/case_01, side_quests)
 │   │   │   ├── features/           # Функциональные модули
 │   │   │   │   └── detective/      # Режим детектива
@@ -87,9 +95,11 @@
 │   │   │   │       └── notebook/   # Виджет блокнота
 │   │   │   ├── pages/              # Страницы (HomePage, QRScannerPage)
 │   │   │   ├── shared/             # Переиспользуемый код (UI Kit, Libs)
+│   │   │   │   └── ui/             # Shared UI (TypedText, Buttons)
 │   │   │   ├── widgets/            # Крупные блоки интерфейса
 │   │   │   │   ├── map/            # Mapbox обертки (MapView, Layers)
-│   │   │   │   └── navbar/         # Навигационная панель (The Detective's Desk)
+│   │   │   │   ├── navbar/         # Navigation bar (The Detective's Desk)
+│   │   │   │   └── visual-novel/   # VN UI orchestration (Overlay, Mobile layout)
 │   │   │   ├── App.tsx             # Root Component
 │   │   │   └── main.tsx            # Entry Point
 │   │   ├── index.html

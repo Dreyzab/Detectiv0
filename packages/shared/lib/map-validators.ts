@@ -27,7 +27,7 @@ export const MapActionSchema = z.union([
     z.object({ type: z.literal('unlock_point'), pointId: z.string(), silent: z.boolean().optional() }),
     z.object({ type: z.literal('grant_evidence'), evidenceId: z.string() }),
     z.object({ type: z.literal('add_flags'), flags: z.array(z.string()) }),
-    z.object({ type: z.literal('start_battle'), battleId: z.string() }),
+    z.object({ type: z.literal('start_battle'), scenarioId: z.string(), deckType: z.string().optional() }),
     z.object({ type: z.literal('unlock_entry'), entryId: z.string() }),
     z.object({ type: z.literal('set_active_case'), caseId: z.string() }),
     z.object({ type: z.literal('show_toast'), message: z.string(), variant: z.enum(['info', 'success', 'warning']).optional() }),

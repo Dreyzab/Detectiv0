@@ -3,14 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useVNStore } from '@/entities/visual-novel/model/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
 import { performSkillCheck } from '@repo/shared/lib/dice';
-import { MobileVNLayout } from '@/entities/visual-novel/ui/MobileVNLayout';
+import { MobileVNLayout } from '@/widgets/visual-novel/MobileVNLayout';
 import { EVIDENCE_REGISTRY } from '@/features/detective/registries';
 import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { CHARACTERS } from '@repo/shared/data/characters';
 import type { VNChoice, VNAction } from '@/entities/visual-novel/model/types';
-import type { TextToken } from '@/entities/visual-novel/ui/TypedText';
+import type { TextToken } from '@/shared/ui/TypedText/TypedText';
 import { ParliamentKeywordCard } from '@/features/detective/ui/ParliamentKeywordCard';
 import { PARLIAMENT_TOOLTIP_REGISTRY, getTooltipContent } from '@/features/detective/lib/tooltipRegistry';
+import { preloadManager } from '@/shared/lib/preload';
 
 /**
  * Fullscreen Visual Novel Page
@@ -65,10 +66,58 @@ export const VisualNovelPage = () => {
     const character = scene?.characterId ? CHARACTERS[scene.characterId] : null;
     const background = scene?.backgroundUrl || activeScenario?.defaultBackgroundUrl;
 
+    // Preload next scene backgrounds
+    useEffect(() => {
+        if (!activeScenario || !scene || !activeScenarioId) return;
+
+        // Collect all possible next scene IDs
+        const nextSceneIds = new Set<string>();
+
+        // Auto-advance
+        if (scene.nextSceneId && scene.nextSceneId !== 'END') {
+            nextSceneIds.add(scene.nextSceneId);
+        }
+
+        // Choice destinations (including skill check outcomes)
+        scene.choices?.forEach(choice => {
+            if (choice.nextSceneId && choice.nextSceneId !== 'END') {
+                nextSceneIds.add(choice.nextSceneId);
+            }
+            if (choice.skillCheck) {
+                if (choice.skillCheck.onSuccess?.nextSceneId &&
+                    choice.skillCheck.onSuccess.nextSceneId !== 'END') {
+                    nextSceneIds.add(choice.skillCheck.onSuccess.nextSceneId);
+                }
+                if (choice.skillCheck.onFail?.nextSceneId &&
+                    choice.skillCheck.onFail.nextSceneId !== 'END') {
+                    nextSceneIds.add(choice.skillCheck.onFail.nextSceneId);
+                }
+            }
+        });
+
+        // Preload backgrounds of next scenes
+        const assetsToPreload: Array<{ url: string; type: 'image' }> = [];
+        nextSceneIds.forEach(nextId => {
+            const nextScene = activeScenario.scenes[nextId];
+            const bgUrl = nextScene?.backgroundUrl || activeScenario.defaultBackgroundUrl;
+            if (bgUrl) {
+                assetsToPreload.push({ url: bgUrl, type: 'image' });
+            }
+        });
+
+        if (assetsToPreload.length > 0) {
+            preloadManager.enqueue(
+                assetsToPreload,
+                `scene:${activeScenarioId}:${effectiveSceneId}`,
+                { priority: 0 } // Urgent for next scene
+            );
+        }
+    }, [activeScenario, scene, activeScenarioId, effectiveSceneId]);
+
     // Handle end scenario - navigate back
     const handleEndScenario = () => {
         endScenario();
-        navigate(-1); // Go back to previous page
+        navigate('/map'); // Return to map between scenarios
     };
 
     // Token interaction (clues, notes)
@@ -123,7 +172,7 @@ export const VisualNovelPage = () => {
                     break;
                 case 'start_battle':
                     handleEndScenario();
-                    navigate(`/tutorial-battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
+                    navigate(`/battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
                     break;
             }
         });

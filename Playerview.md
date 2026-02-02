@@ -84,3 +84,29 @@ Once the Bank Scene concludes:
 *   **Context:** Only visible in a special "Investigation Window" or "Case View" (not the main travel map).
 *   **Function:** Draws a red thread between points in the chronological order they were visited/investigated.
 *   **Purpose:** Helps players visualize their journey and the sequence of events in a complex investigation.
+
+## 9. Implementation Notes (Current Build)
+
+### 9.1 VN Modes and Transitions
+- Fullscreen VN starts only from MapPoint interactions (Investigate -> start_vn).
+- Fullscreen VN ends with a return to the map (/map) to keep a clean break.
+- Overlay VN (mode: overlay) renders on non-/vn routes and does not auto-navigate.
+
+### 9.2 MapPoint Interaction (Player Actions)
+- Click a map pin -> CaseCard -> Investigate executes the binding actions.
+- If the binding contains start_vn, the scenario becomes active; fullscreen scenarios push /vn/:id.
+- Map flags and evidence unlock new points and narrative threads over time.
+
+### 9.3 Interaction Details (What the player actually does)
+- Tap/click to finish the current line; if no choices, tap to advance.
+- Choices appear after typing completes; each choice can trigger skill checks and actions.
+- Interactive tokens:
+  - [[note]] creates a notebook entry.
+  - [[id|clue]] grants evidence and sets the matching flag.
+  - Keyword tokens can open the Parliament tooltip card.
+
+### 9.4 UX Expectations in the First Session
+- Quest Log stays top-right and updates objectives as flags change.
+- Active quest points on the map get a visual focus ring.
+- Mobile VN layout shows dialogue history at the bottom with the current line highlighted.
+

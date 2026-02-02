@@ -4,6 +4,79 @@
 
 ---
 
+## [01.02.2026] - Dialogue Duels Migration (FSD + Immer)
+
+### Added
+- **Immer Integration**: Store rewritten with `produce()` for immutable state updates.
+- **VisualEvent System**: Floating text animations for damage, heal, block, buff.
+- **Web Audio API Sounds**: Procedural synth sounds (no external audio files):
+    - **Damage**: Low-frequency thud
+    - **Block**: Mechanical click
+    - **Heal**: Warm D3 swell
+    - **Buff**: High shimmer slide
+- **Drag-to-Play**: Cards can be dragged to play zone (top 60% of screen).
+- **Enemy Intent**: Bubble showing opponent's next card and effect.
+- **FSD UI Components**:
+    - `entities/battle/ui/Card.tsx` — Card with group colors and effect icons
+    - `entities/battle/ui/UnitStatus.tsx` — Avatar, resolve bar, block badge
+    - `entities/battle/ui/FloatingText.tsx` — Animated numbers with sound
+
+### Changed
+- **BattleScenario**: Added `difficulty`, `opponentAvatar`, `playerStartingDeck` fields.
+- **Turn Flow**: `cardsPerTurn` reduced to 2 for better pacing.
+- **Store Types**: Added `TurnPhase`, `VisualEvent`, `PlayerEntity`, `OpponentEntity`.
+
+### Technical
+- **Dependencies**: Added `immer@11.1.3`
+- **Barrel Exports**: Updated `entities/battle/index.ts` with UI components
+
+---
+
+## [01.02.2026] - VN Flow & FSD UI Refactor
+
+### Added
+- FSD relocation of VN UI: `TypedText` -> `shared/ui`, `SpeakerBadge` -> `entities/character/ui`, `VisualNovelOverlay` + `MobileVNLayout` -> `widgets/visual-novel`.
+
+### Changed
+- Fullscreen VN starts only from MapPoint interactions (`start_vn` -> `/vn/:id`).
+- Fullscreen VN exits to `/map` to create a hard break between scenes.
+
+### Fixed
+- Removed overlay auto-navigation that caused scenario chaining.
+- Fixed a `MapView` zustand selector causing infinite update depth.
+
+## [01.02.2026] — Dialogue Battle System ⚔️
+
+### Добавлено
+- **Карточная боевая система**: Вербальные дуэли в стиле Griftlands для противостояния NPC.
+    - **15 стартовых карт** по 6 атрибутным группам:
+        - 🔵 Intellect: Logical Argument, Analyze Weakness, Brilliant Deduction
+        - 🟣 Psyche: Empathic Appeal, Gut Feeling, Read Intent
+        - 🔴 Social: Assertive Stance, Silver Tongue, Commanding Presence
+        - 🟢 Physical: Steady Nerves, Relentless
+        - ⚫ Shadow: Misdirection, Veiled Threat
+        - 🟠 Spirit: Appeal to Tradition, Poetic Strike
+    - **Resolve System**: Аналог HP — снижайте решимость оппонента аргументами.
+    - **Эффекты карт**: Damage, Block, Heal, Draw, Gain AP.
+    - **Action Points**: 3 AP за ход, карты стоят 1-3 AP.
+    - **Simple AI**: Оппонент автоматически разыгрывает карты каждый ход.
+- **Battle Store (Zustand)**: Полноценное управление состоянием боя (руки, колоды, сброс, ходы).
+- **Deck Utilities**: Утилиты shuffle, draw, discard для работы с колодами.
+- **Battle Page UI**: Темная тема с ResolveBar, CardHand (цвета по группам), AP pips, BattleLog.
+- **2 тестовых сценария**: `detective_skirmish` (Merchant) и `detective_boss_krebs` (Krebs).
+- **Routing**: Маршрут `/battle` с интеграцией в VN flow.
+
+### Изменено
+- **Type Fix**: Исправлено `battleId` → `scenarioId` в `map-validators.ts`.
+- **VN Navigation**: `VisualNovelOverlay` и `VisualNovelPage` теперь переходят на `/battle`.
+
+### Технические детали
+- **Schema**: `packages/shared/data/battle.ts` — CardDefinition, BattleScenario, эффекты.
+- **Store**: `apps/web/src/entities/battle/model/store.ts` — Zustand с логикой ходов и AI.
+- **UI**: `apps/web/src/pages/BattlePage/` — компонент и CSS.
+
+---
+
 ## [01.02.2026] — UI Pro Max: Glassmorphism & Parallax
 
 ### Добавлено

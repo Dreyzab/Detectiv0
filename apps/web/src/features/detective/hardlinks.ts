@@ -48,6 +48,11 @@ export const HARDLINKS: Record<string, HardlinkAction[]> = {
         { type: 'start_vn', scenarioId: 'detective_case1_warehouse_finale' }
     ],
 
+    // Map Point Bindings (Direct ID matches)
+    'p_bank': [
+        { type: 'start_vn', scenarioId: 'detective_case1_bank_scene' }
+    ],
+
     // Test/Debug
     'TEST_BATTLE_01': [
         { type: 'start_battle', scenarioId: 'detective_skirmish', deckType: 'detective' }

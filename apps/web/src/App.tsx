@@ -5,7 +5,8 @@ import { QRScannerPage } from '@/pages/QRScannerPage';
 import { CharacterPage } from '@/pages/CharacterPage/CharacterPage';
 import { DeveloperPage } from '@/pages/DeveloperPage';
 import { VisualNovelPage } from '@/pages/VisualNovelPage';
-import { VisualNovelOverlay } from '@/entities/visual-novel/ui/VisualNovelOverlay';
+import { BattlePage } from '@/pages/BattlePage';
+import { VisualNovelOverlay } from '@/widgets/visual-novel/VisualNovelOverlay';
 import { Navbar } from '@/widgets/navbar/Navbar';
 
 import { useQuestEngine } from "./features/quests/engine";
@@ -30,6 +31,7 @@ function App() {
         <Route path="/character" element={<CharacterPage />} />
         {devDashboardEnabled && <Route path="/developer" element={<DeveloperPage />} />}
         <Route path="/vn/:scenarioId" element={<VisualNovelPage />} />
+        <Route path="/battle" element={<BattlePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

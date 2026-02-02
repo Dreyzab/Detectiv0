@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Map, { NavigationControl, type MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { REGIONS } from '@/shared/hexmap/regions';
@@ -12,9 +12,11 @@ import { DetectiveMapPin } from './DetectiveMapPin';
 import { ThreadLayer } from './ThreadLayer';
 import { CaseCard } from './CaseCard';
 import { useVNStore } from '@/entities/visual-novel/model/store';
+import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { useMapPoints } from '@/features/detective/data/useMapPoints';
 import { useQuestStore } from '@/features/quests/store';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const INITIAL_REGION = REGIONS['FREIBURG_1905'];
@@ -23,6 +25,8 @@ export const MapView = () => {
     const mapRef = useRef<MapRef>(null);
     const flags = useDossierStore((state) => state.flags);
     const startScenario = useVNStore(state => state.startScenario);
+    const locale = useVNStore(state => state.locale);
+    const navigate = useNavigate();
 
     // Quest Logic
     const quests = useQuestStore(state => state.quests);
@@ -71,7 +75,7 @@ export const MapView = () => {
     // TODO: move inventory to a unified context
     const inventory = {};
 
-    const handlePointClick = (pointId: string) => {
+    const handlePointClick = useCallback((pointId: string) => {
         const point = points.find(p => p.id === pointId);
         if (!point) return;
 
@@ -83,9 +87,9 @@ export const MapView = () => {
 
         setSelectedPointId(pointId);
         setAvailableActions(options);
-    };
+    }, [points, flags, pointStates, inventory]);
 
-    const handleExecuteAction = (binding: MapPointBinding) => {
+    const handleExecuteAction = useCallback((binding: MapPointBinding) => {
         console.log('Execute Action:', binding);
 
         if (binding.actions) {
@@ -94,13 +98,17 @@ export const MapView = () => {
                     const legacyPayload = (action as { payload?: unknown }).payload;
                     const id = typeof legacyPayload === 'string' ? legacyPayload : action.scenarioId;
                     startScenario(id);
+                    const scenario = getScenarioById(id, locale);
+                    if (scenario?.mode === 'fullscreen') {
+                        navigate(`/vn/${scenario.id}`);
+                    }
                 }
             });
         }
 
         setAvailableActions([]);
         setSelectedPointId(null);
-    };
+    }, [startScenario, locale, navigate]);
 
     const mapContainerClasses = cn(
         "relative w-full h-full transition-all duration-700",

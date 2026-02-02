@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TypedText, type TextToken } from './TypedText';
-import { SpeakerBadge } from './SpeakerBadge';
-import type { VNScene, VNChoice, VNCharacter, DialogueEntry } from '../model/types';
+import { TypedText, type TextToken, type TypedTextHandle } from '@/shared/ui/TypedText/TypedText';
+import { SpeakerBadge } from '@/entities/character/ui/SpeakerBadge';
+import type { VNScene, VNChoice, VNCharacter, DialogueEntry } from '@/entities/visual-novel/model/types';
 import { getVoiceColor } from '@repo/shared/data/parliament';
 import { useGyroParallax } from '@/shared/lib/hooks/useGyroParallax';
 import { Smartphone, SmartphoneNfc } from 'lucide-react';
@@ -46,6 +46,7 @@ export function MobileVNLayout({
     highlightedTerms = []
 }: MobileVNLayoutProps) {
     const [isTyping, setIsTyping] = useState(true);
+    const typedTextRef = useRef<TypedTextHandle>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const hasChoices = scene.choices && scene.choices.length > 0;
     const renderCountRef = useRef(0);
@@ -111,15 +112,38 @@ export function MobileVNLayout({
             setIsRevealMode(false);
             return;
         }
-        if (!hasChoices && !isTyping) {
+
+        // 1. If typing -> Finish instantly
+        if (isTyping) {
+            typedTextRef.current?.finish();
+            return;
+        }
+
+        // 2. If finished & no choices -> Advance
+        if (!hasChoices) {
             onTapAdvance();
         }
+    };
+
+    const handleTapAnywhere = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target;
+        if (!(target instanceof HTMLElement)) {
+            handleTapZone();
+            return;
+        }
+
+        // Don't treat taps on interactive elements as "advance"
+        const interactive = target.closest('button, a, input, textarea, select, [role="button"], [data-vn-interactive="true"]');
+        if (interactive) return;
+
+        handleTapZone();
     };
 
     return (
         <div
             className="fixed inset-0 z-[200] overflow-hidden bg-black select-none"
             style={{ height: '100dvh' }}
+            onClick={handleTapAnywhere}
         >
             {/* === SCENE BACKGROUND (50%) === */}
             <AnimatePresence mode="wait">
@@ -156,14 +180,6 @@ export function MobileVNLayout({
             >
                 {isGyroEnabled ? <SmartphoneNfc size={20} /> : <Smartphone size={20} />}
             </button>
-
-            {/* === TAP ZONE (over background) === */}
-            <div
-                className="absolute inset-x-0 top-0 h-[62%] cursor-pointer"
-                onClick={handleTapZone}
-                role="button"
-                aria-label="Tap to continue"
-            />
 
             {/* === CINEMATIC REVEAL TRIGGER (Full Screen) === */}
             {isRevealMode && (
@@ -208,9 +224,9 @@ export function MobileVNLayout({
                 {/* Scrollable Dialogue Area */}
                 <div
                     ref={scrollRef}
-                    className="flex-1 bg-gradient-to-b from-stone-950/20 to-black/50 backdrop-blur-md overflow-y-auto px-6 py-6 relative
+                    className={`flex-1 bg-gradient-to-b from-stone-950/20 to-black/50 backdrop-blur-md overflow-y-auto px-6 ${character ? 'pt-12 pb-6' : 'py-6'} relative
                                border-t-0 border-r-0 border-b-0 border-l-[1px] border-l-white/5
-                               rounded-tr-[2rem]" // Asymmetrical corner
+                               rounded-tr-[2rem]`} // Asymmetrical corner
                 >
                     {/* Paper texture overlay with better blending */}
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none" />
@@ -247,6 +263,7 @@ export function MobileVNLayout({
                     {/* Current text (bright) */}
                     <div className="font-body text-lg leading-relaxed text-stone-200">
                         <TypedText
+                            ref={typedTextRef}
                             key={scene.id}
                             text={scene.text}
                             onInteract={onInteract}
@@ -278,26 +295,6 @@ export function MobileVNLayout({
                     )}
                 </AnimatePresence>
 
-                {/* Continue indicator (when no choices and done typing) */}
-                {!isTyping && !hasChoices && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex-shrink-0 bg-stone-900/95 border-t border-amber-500/30 px-4 py-3 flex justify-center"
-                        onClick={onTapAdvance}
-                    >
-                        <motion.div
-                            className="flex items-center gap-2 text-amber-500/80 cursor-pointer"
-                            animate={{ y: [0, 3, 0] }}
-                            transition={{ repeat: Infinity, duration: 1.2 }}
-                        >
-                            <span className="text-sm uppercase tracking-widest">Continue</span>
-                            <svg width="16" height="10" viewBox="0 0 20 12" fill="currentColor">
-                                <path d="M10 12L0 2L2 0L10 8L18 0L20 2L10 12Z" />
-                            </svg>
-                        </motion.div>
-                    </motion.div>
-                )}
             </div>
         </div>
     );
