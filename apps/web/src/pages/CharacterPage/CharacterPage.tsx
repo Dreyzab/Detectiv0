@@ -20,8 +20,17 @@ const GROUP_ICONS: Record<VoiceGroup, string> = {
     spirit: occultIcon       // Star
 };
 
+// Localization
+import { useVNStore } from '@/entities/visual-novel/model/store';
+import { DETECTIVE_UI } from '@/features/detective/locales';
+import { asLocale } from '@/features/quests/utils';
+
 export function CharacterPage() {
     const { voiceStats, voiceXp, devPoints, spendDevPoint, xp, level: charLevel } = useDossierStore();
+
+    // Localization
+    const { locale } = useVNStore();
+    const ui = DETECTIVE_UI[asLocale(locale)];
 
     // But actual Character Level is separate now (charLevel)
 
@@ -36,35 +45,35 @@ export function CharacterPage() {
 
                         <div className="aspect-[3/4] bg-stone-900 mb-6 border-2 border-stone-700 relative flex items-center justify-center">
                             {/* Placeholder for character portrait */}
-                            <span className="text-stone-600 italic">Portrait Unavailable</span>
+                            <span className="text-stone-600 italic">{ui.char_portrait_unavailable}</span>
                             <div className="absolute inset-0 border border-amber-500/10 m-2" />
                         </div>
 
-                        <h1 className="text-3xl font-display text-amber-100 mb-2 tracking-wide uppercase">The Detective</h1>
+                        <h1 className="text-3xl font-display text-amber-100 mb-2 tracking-wide uppercase">{ui.char_title}</h1>
 
                         <div className="space-y-4 border-t border-stone-700 pt-4">
                             <div className="flex justify-between items-end">
-                                <span className="text-stone-400 text-sm uppercase tracking-widest">Rank</span>
-                                <span className="text-xl font-display text-amber-100">Level {charLevel}</span>
+                                <span className="text-stone-400 text-sm uppercase tracking-widest">{ui.char_rank_label}</span>
+                                <span className="text-xl font-display text-amber-100">{ui.char_level_label} {charLevel}</span>
                             </div>
                             <div className="flex justify-between items-end">
-                                <span className="text-stone-400 text-sm uppercase tracking-widest">Experience</span>
+                                <span className="text-stone-400 text-sm uppercase tracking-widest">{ui.char_xp_label}</span>
                                 <span className="text-stone-300 font-mono">{xp} XP</span>
                             </div>
 
                             {devPoints > 0 && (
                                 <div className="mt-6 p-4 bg-amber-900/20 border border-amber-500/30 rounded animate-pulse">
-                                    <h3 className="text-amber-400 font-bold uppercase tracking-widest text-xs mb-1">Development Points Available</h3>
+                                    <h3 className="text-amber-400 font-bold uppercase tracking-widest text-xs mb-1">{ui.char_dev_points_title}</h3>
                                     <p className="text-amber-100 text-lg">{devPoints} Pts</p>
-                                    <p className="text-amber-500/80 text-xs italic mt-1">Spend to improve skills instantly.</p>
+                                    <p className="text-amber-500/80 text-xs italic mt-1">{ui.char_dev_points_desc}</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     <div className="bg-stone-800/50 p-6 border border-stone-700">
-                        <h3 className="text-amber-500 font-display uppercase tracking-widest text-sm mb-4">Equipment</h3>
-                        <p className="text-stone-500 italic text-center py-8">No items equipped</p>
+                        <h3 className="text-amber-500 font-display uppercase tracking-widest text-sm mb-4">{ui.char_equipment_title}</h3>
+                        <p className="text-stone-500 italic text-center py-8">{ui.char_equipment_empty}</p>
                     </div>
                 </div>
 
@@ -75,7 +84,7 @@ export function CharacterPage() {
 
                         <h2 className="text-2xl font-display text-amber-100 mb-8 flex items-center gap-4">
                             <span className="w-8 h-[1px] bg-amber-500/50" />
-                            Parliament of Voices
+                            {ui.char_parliament_title}
                             <span className="flex-1 h-[1px] bg-amber-500/50" />
                         </h2>
 
@@ -148,10 +157,10 @@ export function CharacterPage() {
                     {/* Background / Bio */}
                     <div className="bg-stone-800/80 p-8 border border-amber-900/30 shadow-2xl relative">
                         <div className="absolute inset-0 bg-[url('/paper-texture.png')] opacity-5 mix-blend-overlay pointer-events-none" />
-                        <h2 className="text-2xl font-display text-amber-100 mb-6 border-b border-stone-700 pb-4">Background</h2>
+                        <h2 className="text-2xl font-display text-amber-100 mb-6 border-b border-stone-700 pb-4">{ui.char_background_title}</h2>
                         <div className="prose prose-invert prose-stone max-w-none text-stone-300">
                             <p>
-                                Arrived in Freiburg via the night train from Berlin. The luggage was lighter than the memories left behind.
+                                {ui.char_background_text}
                             </p>
                         </div>
                     </div>

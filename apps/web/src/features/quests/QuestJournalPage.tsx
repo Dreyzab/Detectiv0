@@ -4,12 +4,19 @@ import { cn } from '@/shared/lib/utils';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, BookOpen, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { useVNStore } from '../../entities/visual-novel/model/store';
+import { QUEST_UI } from './locales';
+import { getLocalizedText, asLocale } from './utils';
 
 type Tab = 'active' | 'completed' | 'failed';
 
 export const QuestJournalPage = () => {
     const navigate = useNavigate();
     const { userQuests, quests } = useQuestStore();
+    const { locale } = useVNStore();
+    const currentLocale = asLocale(locale);
+    const ui = QUEST_UI[currentLocale];
+
     const [activeTab, setActiveTab] = useState<Tab>('active');
 
     const filteredQuests = Object.values(userQuests).filter(q => {
@@ -31,15 +38,15 @@ export const QuestJournalPage = () => {
                         <ArrowLeft className="w-6 h-6 text-[#ca8a04] group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-bold text-[#ca8a04] tracking-wider uppercase">Investigation Journal</h1>
-                        <p className="text-[#a8a29e] italic">Case files and current objectives</p>
+                        <h1 className="text-3xl font-bold text-[#ca8a04] tracking-wider uppercase">{ui.header_journal}</h1>
+                        <p className="text-[#a8a29e] italic">{ui.subtitle_journal}</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="Search case files..."
+                            placeholder={ui.search_placeholder}
                             className="bg-[#0c0a09] border border-[#ca8a04]/30 rounded-full px-4 py-2 pl-10 text-sm focus:outline-none focus:border-[#ca8a04] w-64 text-[#e5e5e5]"
                         />
                         <Search className="w-4 h-4 text-[#78716c] absolute left-3 top-2.5" />
@@ -50,21 +57,21 @@ export const QuestJournalPage = () => {
             {/* Navigation Tabs */}
             <div className="max-w-4xl mx-auto mb-8 border-b border-[#ca8a04]/20 flex gap-8">
                 <TabButton
-                    label="Active Investigations"
+                    label={ui.tab_active}
                     icon={<BookOpen className="w-4 h-4" />}
                     isActive={activeTab === 'active'}
                     onClick={() => setActiveTab('active')}
                     count={Object.values(userQuests).filter(q => q.status === 'active').length}
                 />
                 <TabButton
-                    label="Solved Cases"
+                    label={ui.tab_solved}
                     icon={<CheckCircle2 className="w-4 h-4" />}
                     isActive={activeTab === 'completed'}
                     onClick={() => setActiveTab('completed')}
                     count={Object.values(userQuests).filter(q => q.status === 'completed').length}
                 />
                 <TabButton
-                    label="Cold Cases"
+                    label={ui.tab_failed}
                     icon={<XCircle className="w-4 h-4" />}
                     isActive={activeTab === 'failed'}
                     onClick={() => setActiveTab('failed')}
@@ -77,18 +84,22 @@ export const QuestJournalPage = () => {
                 {filteredQuests.length > 0 ? (
                     filteredQuests.map(uq => {
                         const quest = quests[uq.questId];
+                        const title = getLocalizedText(quest.title, currentLocale);
+                        const description = getLocalizedText(quest.description, currentLocale);
+
                         return (
                             <div key={uq.questId} className="bg-[#1c1917] border border-[#ca8a04]/20 rounded-lg p-6 hover:border-[#ca8a04]/50 transition-colors group relative overflow-hidden">
                                 {uq.status === 'completed' && <div className="absolute top-0 right-0 p-2"><CheckCircle2 className="w-6 h-6 text-green-500/50" /></div>}
                                 {uq.status === 'failed' && <div className="absolute top-0 right-0 p-2"><XCircle className="w-6 h-6 text-red-500/50" /></div>}
 
-                                <h3 className="text-xl font-bold text-[#ca8a04] mb-2 group-hover:text-[#eab308] transition-colors">{quest.title}</h3>
-                                <p className="text-[#a8a29e] text-sm mb-4 line-clamp-2">{quest.description}</p>
+                                <h3 className="text-xl font-bold text-[#ca8a04] mb-2 group-hover:text-[#eab308] transition-colors">{title}</h3>
+                                <p className="text-[#a8a29e] text-sm mb-4 line-clamp-2">{description}</p>
 
                                 <div className="space-y-3">
-                                    <div className="text-xs font-bold text-[#78716c] uppercase tracking-wider">Objectives</div>
+                                    <div className="text-xs font-bold text-[#78716c] uppercase tracking-wider">{ui.label_objectives}</div>
                                     {quest.objectives.map(obj => {
                                         const isDone = uq.completedObjectiveIds.includes(obj.id);
+                                        const objText = getLocalizedText(obj.text, currentLocale);
                                         return (
                                             <div key={obj.id} className="flex items-start gap-2 text-sm">
                                                 <div className={cn(
@@ -97,7 +108,7 @@ export const QuestJournalPage = () => {
                                                 )} />
                                                 <span className={cn(
                                                     isDone ? "text-[#78716c] line-through" : "text-[#d6d3d1]"
-                                                )}>{obj.text}</span>
+                                                )}>{objText}</span>
                                             </div>
                                         );
                                     })}
@@ -107,7 +118,7 @@ export const QuestJournalPage = () => {
                                     <span>ID: {uq.questId}</span>
                                     {uq.status === 'active' && (
                                         <span className="flex items-center gap-1 text-[#ca8a04]">
-                                            <Clock className="w-3 h-3" /> In Progress
+                                            <Clock className="w-3 h-3" /> {ui.label_in_progress}
                                         </span>
                                     )}
                                 </div>
@@ -119,8 +130,8 @@ export const QuestJournalPage = () => {
                         <div className="w-16 h-16 bg-[#ca8a04]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Search className="w-8 h-8 text-[#ca8a04]/40" />
                         </div>
-                        <h3 className="text-[#e5e5e5] font-bold text-lg">No entries found</h3>
-                        <p className="text-[#a8a29e]">There are no {activeTab} investigations at this time.</p>
+                        <h3 className="text-[#e5e5e5] font-bold text-lg">{ui.empty_no_entries}</h3>
+                        <p className="text-[#a8a29e]">{ui.empty_no_active}</p>
                     </div>
                 )}
             </div>

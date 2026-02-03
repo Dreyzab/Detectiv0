@@ -5,10 +5,19 @@ import { useInventoryStore } from '../../../entities/inventory/model/store';
 import { VOICE_GROUPS, VOICES, GROUP_ORDER } from '../lib/parliament';
 import { DeductionBoard } from '../ui/DeductionBoard';
 
+// Localization
+import { useVNStore } from '../../../entities/visual-novel/model/store';
+import { DETECTIVE_UI } from '../locales';
+import { asLocale } from '../../../features/quests/utils';
+
 export const Dossier = () => {
     const { entries, evidence, pointStates, isDossierOpen, toggleDossier } = useDossierStore();
     const { voiceLevels } = useInventoryStore();
     const [activeTab, setActiveTab] = useState<'facts' | 'evidence' | 'map' | 'voices' | 'board'>('facts');
+
+    // Localization context
+    const locale = useVNStore(state => state.locale);
+    const ui = DETECTIVE_UI[asLocale(locale)];
 
     if (!isDossierOpen) return null;
 
@@ -24,7 +33,7 @@ export const Dossier = () => {
             </button>
             {/* Header / Binding */}
             <div className="h-12 bg-[#2c1810] flex items-center justify-center relative shadow-md">
-                <h2 className="text-[#d4c5a3] font-bold text-lg tracking-widest uppercase">Case File #1</h2>
+                <h2 className="text-[#d4c5a3] font-bold text-lg tracking-widest uppercase">{ui.header_case_file}</h2>
                 <div className="absolute left-0 top-0 bottom-0 w-4 bg-[#1a0f0a]" /> {/* Spine */}
             </div>
 
@@ -39,7 +48,7 @@ export const Dossier = () => {
                             activeTab === tab && "bg-[#fdfbf7] text-[#2c1810] border-t-2 border-[#2c1810]"
                         )}
                     >
-                        {tab}
+                        {ui[`tab_${tab}`]}
                     </button>
                 ))}
             </div>
@@ -48,7 +57,7 @@ export const Dossier = () => {
             <div className="flex-1 p-4 overflow-y-auto bg-[url('/images/paper-texture.png')] bg-contain">
                 {activeTab === 'facts' && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
-                        {entries.length === 0 && <p className="italic text-gray-500 text-sm">No facts recorded yet.</p>}
+                        {entries.length === 0 && <p className="italic text-gray-500 text-sm">{ui.empty_facts}</p>}
                         {entries.map(entry => (
                             <div key={entry.id} className="border-b border-[#d4c5a3] pb-2">
                                 <h3 className="font-bold text-[#2c1810]">{entry.title}</h3>
@@ -60,7 +69,7 @@ export const Dossier = () => {
 
                 {activeTab === 'evidence' && (
                     <div className="grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
-                        {evidence.length === 0 && <p className="italic text-gray-500 text-sm col-span-2">No evidence collected.</p>}
+                        {evidence.length === 0 && <p className="italic text-gray-500 text-sm col-span-2">{ui.empty_evidence}</p>}
                         {evidence.map(item => (
                             <div key={item.id} className="border border-[#d4c5a3] p-2 bg-[#f4ebd0] shadow-sm">
                                 <div className="font-bold text-xs text-[#2c1810]">{item.name}</div>
@@ -72,7 +81,7 @@ export const Dossier = () => {
 
                 {activeTab === 'map' && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
-                        <h3 className="font-bold text-[#2c1810] mb-2 border-b border-[#d4c5a3]">Known Locations</h3>
+                        <h3 className="font-bold text-[#2c1810] mb-2 border-b border-[#d4c5a3]">{ui.header_known_locations}</h3>
                         <ul className="space-y-2">
                             {Object.entries(pointStates).map(([id, state]) => (
                                 state !== 'locked' && (
@@ -82,7 +91,7 @@ export const Dossier = () => {
                                             "text-[10px] px-1 rounded uppercase tracking-tighter border",
                                             state === 'completed' ? "bg-green-100 text-green-800 border-green-200" : "bg-blue-100 text-blue-800 border-blue-200"
                                         )}>
-                                            {state}
+                                            {ui[`state_${state}`] || state}
                                         </span>
                                     </li>
                                 )
@@ -138,7 +147,7 @@ export const Dossier = () => {
 
             {/* Footer */}
             <div className="p-2 border-t border-[#d4c5a3] text-center text-[10px] text-[#8c7b6c] uppercase bg-[#f4ebd0]/50 sticky bottom-0">
-                Freiburg Police Dept. • 1905
+                {ui.footer_police_dept}
             </div>
         </div>
     );

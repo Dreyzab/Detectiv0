@@ -13,6 +13,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { QUEST_UI } from '@/features/quests/locales';
+import { DETECTIVE_UI } from '@/features/detective/locales';
+import { SHARED_UI } from '@/shared/locales/ui';
+import { asLocale } from '@/features/quests/utils';
 
 const LOCALES = [
     { id: 'en', name: 'English', flag: '🇬🇧' },
@@ -26,7 +30,12 @@ export const Navbar = () => {
     const devDashboardEnabled = import.meta.env.VITE_ENABLE_DEV_DASHBOARD === 'true';
 
     // Stores
+    // Stores
     const { locale: currentLocale, setLocale } = useVNStore();
+    const ui = QUEST_UI[asLocale(currentLocale)];
+    const detectiveUi = DETECTIVE_UI[asLocale(currentLocale)];
+    const sharedUi = SHARED_UI[asLocale(currentLocale)];
+
     const {
         activeCaseId,
         isDossierOpen,
@@ -47,32 +56,32 @@ export const Navbar = () => {
             <div className="flex items-center gap-4">
                 <NavButton
                     icon={<Home className="w-5 h-5" />}
-                    label="Home"
+                    label={sharedUi.nav_home}
                     active={currentPath === '/'}
                     onClick={() => navigate('/')}
                 />
                 <NavButton
                     icon={<MapIcon className="w-5 h-5" />}
-                    label="Map"
+                    label={detectiveUi.nav_map}
                     active={currentPath === '/map'}
                     onClick={() => navigate('/map')}
                 />
                 <NavButton
                     icon={<BookOpen className="w-5 h-5" />}
-                    label="Dossier"
+                    label={detectiveUi.nav_dossier}
                     active={isDossierOpen}
                     onClick={() => toggleDossier()}
                 />
                 <NavButton
                     icon={<User className="w-5 h-5" />}
-                    label="Profile"
+                    label={detectiveUi.nav_profile}
                     active={currentPath === '/character'}
                     onClick={() => navigate('/character')}
                 />
                 {devDashboardEnabled && (
                     <NavButton
                         icon={<Wrench className="w-5 h-5" />}
-                        label="Dev"
+                        label={sharedUi.label_dev_tools}
                         active={currentPath === '/developer'}
                         onClick={() => navigate('/developer')}
                     />
@@ -87,15 +96,16 @@ export const Navbar = () => {
                         "flex items-center gap-2 text-primary hover:text-white transition-colors group/case",
                         currentPath === '/quests' ? "opacity-100" : "opacity-80 hover:opacity-100"
                     )}
+                    title={ui.nav_investigation}
                 >
                     <Search className="w-4 h-4 text-[#ca8a04]" />
                     <div className="flex flex-col items-start leading-none">
                         <span className={cn(
                             "text-[10px] uppercase tracking-widest font-bold transition-colors",
                             currentPath === '/quests' ? "text-[#ca8a04]" : "text-[#8c7b6c]"
-                        )}>Investigation</span>
+                        )}>{ui.nav_investigation}</span>
                         <span className="text-sm font-serif truncate max-w-[150px]">
-                            {activeCase?.title || "Journal"}
+                            {activeCase ? detectiveUi[`${activeCase.id}_title` as keyof typeof detectiveUi] || activeCase.title : ui.nav_journal}
                         </span>
                     </div>
                 </button>

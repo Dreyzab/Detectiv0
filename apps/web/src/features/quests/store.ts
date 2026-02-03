@@ -3,31 +3,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useDossierStore } from '../detective/dossier/store';
 
-// --- TYPES ---
-export interface QuestObjective {
-    id: string;
-    text: string;
-    condition: QuestCondition;
-    isCompleted?: boolean;
-    targetPointId?: string;
-}
-
-export type QuestCondition =
-    | { type: 'flag'; flag: string; value?: boolean }
-    | { type: 'logic_and'; conditions: QuestCondition[] }
-    | { type: 'logic_or'; conditions: QuestCondition[] };
-
-export interface Quest {
-    id: string;
-    title: string;
-    description: string;
-    objectives: QuestObjective[];
-    completionCondition: QuestCondition; // Or simplified 'AND' of all objectives
-    rewards: {
-        xp: number;
-        traits?: string[];
-    };
-}
+import type { Quest, QuestCondition } from './types';
+import { getLocalizedText } from './utils';
 
 export interface UserQuestState {
     questId: string;
@@ -56,11 +33,12 @@ interface QuestStoreState {
 const checkCondition = (condition: QuestCondition, flags: Record<string, boolean>): boolean => {
     switch (condition.type) {
         case 'flag':
+            if (!condition.flag) return false;
             return flags[condition.flag] === (condition.value !== false); // Default true
         case 'logic_and':
-            return condition.conditions.every(c => checkCondition(c, flags));
+            return (condition.conditions || []).every(c => checkCondition(c, flags));
         case 'logic_or':
-            return condition.conditions.some(c => checkCondition(c, flags));
+            return (condition.conditions || []).some(c => checkCondition(c, flags));
         default:
             return false;
     }
@@ -143,7 +121,7 @@ export const useQuestStore = create<QuestStoreState>()(
                             );
                         }
 
-                        console.log(`🏆 Quest Completed: ${quest.title}`);
+                        console.log(`🏆 Quest Completed: ${getLocalizedText(quest.title, 'en')}`);
                     } else if (hasChanges) {
                         updates[userQuest.questId] = userQuest;
                     }

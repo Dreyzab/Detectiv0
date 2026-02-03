@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const DEV_DASHBOARD_ENABLED = import.meta.env.VITE_ENABLE_DEV_DASHBOARD === 'true';
 const DEV_ADMIN_TOKEN = import.meta.env.VITE_DEV_ADMIN_TOKEN;
+import { getLocalizedText } from '@/features/quests/utils';
 
 export const DeveloperPage = () => {
     const [activeTab, setActiveTab] = useState<'points' | 'quests' | 'system' | 'layers'>('points');
@@ -162,9 +163,9 @@ const QuestsTab = () => {
                                 {!userState && <span className="text-gray-500">Not Started</span>}
                             </div>
 
-                            <h3 className="font-bold text-lg text-gray-200">{quest.title}</h3>
+                            <h3 className="font-bold text-lg text-gray-200">{getLocalizedText(quest.title, 'en')}</h3>
                             <p className="text-xs text-gray-500 font-mono mb-2">{quest.id}</p>
-                            <p className="text-sm text-gray-400 mb-4">{quest.description}</p>
+                            <p className="text-sm text-gray-400 mb-4">{getLocalizedText(quest.description, 'en')}</p>
 
                             {/* Objectives */}
                             <div className="space-y-1 mb-4 bg-black/20 p-2 rounded">
@@ -174,7 +175,7 @@ const QuestsTab = () => {
                                         <div key={obj.id} className="flex items-center gap-2 text-xs">
                                             <div className={cn("w-2 h-2 rounded-full", isDone ? "bg-green-500" : "bg-gray-600")} />
                                             <span className={cn(isDone ? "text-gray-500 line-through" : "text-gray-300")}>
-                                                {obj.text}
+                                                {getLocalizedText(obj.text, 'en')}
                                             </span>
                                         </div>
                                     )

@@ -1,5 +1,9 @@
+
 import React, { useState } from 'react'
 import { cn } from '@/shared/lib/utils'
+import { useVNStore } from '@/entities/visual-novel/model/store';
+import { DETECTIVE_UI } from '@/features/detective/locales';
+import { asLocale } from '@/features/quests/utils';
 
 interface OnboardingModalProps {
     onComplete: (name: string) => void
@@ -9,6 +13,8 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, onCancel }) => {
     const [name, setName] = useState('')
     const [touched, setTouched] = useState(false)
+    const { locale } = useVNStore();
+    const ui = DETECTIVE_UI[asLocale(locale)];
 
     const handleSubmit = () => {
         if (!name.trim()) {
@@ -58,13 +64,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, on
                     {/* Typewriter Body */}
                     <div className="font-mono text-[#2a2420] text-sm md:text-base leading-relaxed text-left w-full space-y-4 mb-8">
                         <p>
-                            <strong className="bg-[#2a2420] text-[#fdfaf5] px-1">STOP.</strong> BANKHAUS KREBS ROBBERY CONFIRMED.
-                        </p>
-                        <p>
-                            LOSSES EXCEED 100,000 MARKS. LOCAL GENDARMERIE COMPROMISED OR INCOMPETENT.
-                        </p>
-                        <p>
-                            REQUIRE IMMEDIATE INTERVENTION OF SPECIAL INSPECTOR. PROCEED TO FREIBURG BUREAU AT ONCE.
+                            <strong className="bg-[#2a2420] text-[#fdfaf5] px-1">STOP.</strong> {ui.onboarding_telegram_message}
                         </p>
                         <p className="pt-2 italic text-[#5c554f]">
                             IDENTIFY YOURSELF FOR CLEARANCE BELOW.
@@ -88,6 +88,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, on
                             placeholder="Sign Name Here..."
                             className={cn(
                                 "w-full bg-transparent border-b-2 border-[#a8a29e] text-[#1a1612] text-3xl font-serif italic text-center py-3 focus:outline-none focus:border-[#8b2323] transition-colors placeholder:text-[#d6d3ce]",
+                                "placeholder:italic placeholder:opacity-50",
                                 touched && !name.trim() && "border-red-500 placeholder:text-red-300"
                             )}
                             autoFocus
@@ -111,7 +112,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, on
                             onClick={handleSubmit}
                             className="flex-[2] py-5 bg-[#2a2420] text-[#fdfaf5] font-bold uppercase tracking-[0.15em] shadow-lg hover:bg-[#403630] active:translate-y-[1px] active:scale-[0.98] transition-all text-base flex items-center justify-center gap-2 group"
                         >
-                            <span>Accept Case</span>
+                            <span>{ui.onboarding_ack}</span>
                             <span className="group-hover:translate-x-1 transition-transform">→</span>
                         </button>
                     </div>
