@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.4.1",
+    "@elysiajs/swagger": "^1.3.1",
+    "@repo/shared": "workspace:*",
+    "drizzle-orm": "^0.45.1",
+    "elysia": "^1.2.9",
+    "elysia-clerk": "^0.13.2",
+    "ioredis": "^5.9.2",
+    "postgres": "^3.4.8",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "drizzle-kit": "^0.31.8"
+  },
+  "module": "src/index.ts"
+}

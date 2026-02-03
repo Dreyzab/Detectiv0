@@ -29,7 +29,7 @@
       "eslint --fix --config apps/web/eslint.config.js"
     ],
     "apps/server/src/**/*.ts": [
-      "eslint --fix"
+      "eslint --fix --config apps/server/eslint.config.js"
     ]
   },
   "dependencies": {
