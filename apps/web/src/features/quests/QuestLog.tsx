@@ -2,7 +2,7 @@
 import { useQuestStore } from './store';
 import { cn } from '@/shared/lib/utils';
 import { ChevronRight, CheckCircle2, Circle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useVNStore } from '../../entities/visual-novel/model/store';
 import { QUEST_UI } from './locales';
@@ -20,7 +20,25 @@ export const QuestLog = () => {
     const location = useLocation();
     const activeQuests = Object.values(userQuests).filter(q => q.status === 'active');
 
-    if (location.pathname !== '/map') return null;
+    // Auto-collapse logic: Collapse after 30 seconds
+    useEffect(() => {
+        if (isExpanded) {
+            const timer = setTimeout(() => setIsExpanded(false), 30000);
+            return () => clearTimeout(timer);
+        }
+    }, [isExpanded, userQuests]); // Reset timer on quest update
+
+    // Auto-expand on quest update
+    useEffect(() => {
+        if (activeQuests.length > 0) {
+            setIsExpanded(true);
+        }
+    }, [userQuests]);
+
+    // Visibility: Show only on Map and Visual Novel pages
+    const isVisible = location.pathname === '/map' || location.pathname.startsWith('/vn');
+
+    if (!isVisible) return null;
     if (activeQuests.length === 0) return null;
 
     return (

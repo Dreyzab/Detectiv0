@@ -7,6 +7,7 @@ import { logger } from '@repo/shared';
 import { resolveHardlink } from '../hardlinks';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+console.log('[API Config] Using API_URL:', API_URL);
 
 interface MapPointsResponse {
     points: MapPoint[];

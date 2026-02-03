@@ -201,30 +201,30 @@ export const CASE1_BRIEFING_LOGIC: VNScenarioLogic = {
         // ═══════════════════════════════════════════════════════════════
         'bank_path_1': {
             id: 'bank_path_1',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             nextSceneId: 'bank_path_2'
         },
         'bank_path_2': {
             id: 'bank_path_2',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             characterId: 'inspector',
             nextSceneId: 'mayor_arrives_bank'
         },
         'mayor_arrives_bank': {
             id: 'mayor_arrives_bank',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             characterId: 'mayor',
             nextSceneId: 'mayor_introduces_victoria_bank'
         },
         'mayor_introduces_victoria_bank': {
             id: 'mayor_introduces_victoria_bank',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             characterId: 'mayor',
             nextSceneId: 'victoria_bank_intro'
         },
         'victoria_bank_intro': {
             id: 'victoria_bank_intro',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             characterId: 'assistant',
             choices: [
                 {
@@ -247,19 +247,19 @@ export const CASE1_BRIEFING_LOGIC: VNScenarioLogic = {
         },
         'victoria_react_respect_bank': {
             id: 'victoria_react_respect_bank',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             characterId: 'assistant',
             nextSceneId: 'bank_path_exit'
         },
         'victoria_react_annoyed_bank': {
             id: 'victoria_react_annoyed_bank',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             characterId: 'assistant',
             nextSceneId: 'bank_path_exit'
         },
         'bank_path_exit': {
             id: 'bank_path_exit',
-            backgroundUrl: '/images/scenarios/bank_exterior.png',
+            backgroundUrl: '/images/scenarios/location_exterior_street.png',
             nextSceneId: 'END',
             onEnter: [
                 { type: 'unlock_point', payload: 'munsterplatz_bank' },
