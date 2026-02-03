@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - master
 
 env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }} # Set this in GitHub Repository Variables
