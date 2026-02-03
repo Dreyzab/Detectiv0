@@ -1,5 +1,5 @@
 
-import type { Locale } from './types';
+import type { Locale } from '@repo/shared/locales/types';
 
 export interface SharedUIStrings {
     // Actions

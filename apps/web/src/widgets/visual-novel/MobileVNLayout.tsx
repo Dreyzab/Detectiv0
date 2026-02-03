@@ -191,9 +191,9 @@ export function MobileVNLayout({
                 />
             )}
 
-            {/* === DIALOGUE PANEL (Bottom 38%) === */}
+            {/* === DIALOGUE PANEL (Bottom - Flexible) === */}
             <div
-                className={`absolute inset-x-0 bottom-0 h-[38%] flex flex-col shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.8)] border-t border-white/10 transition-all duration-700 ${isRevealMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}
+                className={`absolute inset-x-0 bottom-0 min-h-[35%] max-h-[65%] flex flex-col shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.8)] border-t border-white/10 transition-all duration-700 ${isRevealMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}
             >
                 {/* Art Deco border */}
                 <div className="h-[2px] bg-gradient-to-r from-transparent via-amber-600/80 to-transparent flex-shrink-0" />
@@ -248,7 +248,7 @@ export function MobileVNLayout({
                                     {entry.characterName}
                                 </div>
                             )}
-                            <div className="font-body text-base leading-relaxed text-stone-400">
+                            <div className="font-body text-sm sm:text-base leading-relaxed text-stone-400">
                                 {entry.text}
                             </div>
                             {/* Show choice made */}
@@ -261,7 +261,7 @@ export function MobileVNLayout({
                     ))}
 
                     {/* Current text (bright) */}
-                    <div className="font-body text-lg leading-relaxed text-stone-200">
+                    <div className="font-body text-base sm:text-lg leading-relaxed text-stone-200">
                         <TypedText
                             ref={typedTextRef}
                             key={scene.id}
@@ -280,7 +280,7 @@ export function MobileVNLayout({
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex-shrink-0 bg-stone-950/90 backdrop-blur-xl border-t border-white/10 px-6 py-4 space-y-1 max-h-[45%] overflow-y-auto shadow-inner"
+                            className="flex-shrink-0 bg-stone-950/90 backdrop-blur-xl border-t border-white/10 px-4 sm:px-6 py-2 sm:py-3 space-y-1 max-h-[50vh] overflow-y-auto shadow-inner"
                         >
                             {/* "What will you say?" Header/Context could go here */}
                             {scene.choices!.map((choice, index) => (
@@ -322,8 +322,8 @@ function ChoiceButton({ choice, index, onClick }: ChoiceButtonProps) {
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: index * 0.04, duration: 0.2 }}
             onClick={onClick}
-            className={`w-full min-h-[40px] px-4 py-3 
-                       transition-all duration-200 text-left flex items-start gap-4 group cursor-pointer border-l-2 
+            className={`w-full min-h-[44px] px-3 py-2 
+                       transition-all duration-200 text-left flex items-start gap-3 group cursor-pointer border-l-2 
                        ${isAction ? 'border-amber-500/50 bg-amber-950/10 hover:bg-amber-900/20' : 'border-transparent hover:border-stone-600 hover:bg-white/5'}
                        `}
         >
@@ -349,7 +349,7 @@ function ChoiceButton({ choice, index, onClick }: ChoiceButtonProps) {
                     </span>
                 )}
 
-                <span className={`font-body text-lg leading-snug transition-colors
+                <span className={`font-body text-base leading-snug transition-colors
                     ${isAction ? 'text-amber-100 font-medium group-hover:text-amber-50 shadow-black drop-shadow-sm' : ''}
                     ${isInquiry ? 'text-stone-300 group-hover:text-stone-100' : ''}
                     ${isFlavor ? 'text-blue-100/80 italic group-hover:text-blue-50' : ''}
