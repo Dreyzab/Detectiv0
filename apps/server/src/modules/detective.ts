@@ -18,7 +18,7 @@ export const detectiveModule = new Elysia({ prefix: '/detective' })
             data: saves.map(s => ({
                 slotId: s.slotId,
                 timestamp: s.timestamp,
-                data: JSON.parse(s.data) // Return parsed JSON for client convenience
+                data: s.data // Return raw JSON data (drizzle parses jsonb automatically)
             }))
         };
     })
@@ -41,7 +41,7 @@ export const detectiveModule = new Elysia({ prefix: '/detective' })
 
         return {
             success: true,
-            data: JSON.parse(save.data),
+            data: save.data,
             timestamp: save.timestamp
         };
     })
@@ -52,19 +52,19 @@ export const detectiveModule = new Elysia({ prefix: '/detective' })
         if (isNaN(slotId)) return { error: "Invalid slot ID" };
 
         const content = body as { data: any };
-        const dataStr = JSON.stringify(content.data);
-        const timestamp = Date.now();
+        // const dataStr = JSON.stringify(content.data); // Not needed for jsonb
+        const timestamp = new Date();
 
         await db.insert(detectiveSaves).values({
             id: crypto.randomUUID(),
             userId: DEMO_USER_ID,
             slotId: slotId,
-            data: dataStr,
+            data: content.data,
             timestamp: timestamp
         }).onConflictDoUpdate({
             target: [detectiveSaves.userId, detectiveSaves.slotId],
             set: {
-                data: dataStr,
+                data: content.data,
                 timestamp: timestamp
             }
         });

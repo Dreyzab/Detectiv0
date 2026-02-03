@@ -10,6 +10,7 @@
     "generate": "plop"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.1",
     "@types/bun": "latest",
     "@types/node": "^25.0.10",
     "concurrently": "^9.2.1",

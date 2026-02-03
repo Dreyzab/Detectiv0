@@ -23,7 +23,7 @@ describe('VN Engine', () => {
                     text: 'Logic Text 2'
                 }
             }
-        } as any; // Using any for partial mock of complex logic type if needed
+        } as unknown as VNScenarioLogic; // Partial mock
 
         const mockContent: VNContentPack = {
             locale: 'en',
@@ -45,13 +45,13 @@ describe('VN Engine', () => {
             const result = mergeScenario(mockLogic, mockContent);
 
             expect(result.id).toBe('test_scenario');
-            expect(result.scenes['scene_1'].text).toBe('Localized Text');
-            expect(result.scenes['scene_2'].text).toBe('Localized Text 2');
+            expect(result.scenes['scene_1']?.text).toBe('Localized Text');
+            expect(result.scenes['scene_2']?.text).toBe('Localized Text 2');
 
-            const choices = result.scenes['scene_1'].choices;
+            const choices = result.scenes['scene_1']?.choices;
             expect(choices).toBeDefined();
-            expect(choices![0].text).toBe('Localized Choice 1');
-            expect(choices![1].text).toBe('Localized Choice 2');
+            expect(choices?.[0]?.text).toBe('Localized Choice 1');
+            expect(choices?.[1]?.text).toBe('Localized Choice 2');
         });
 
         it('should handle missing content with fallbacks', () => {
@@ -63,6 +63,7 @@ describe('VN Engine', () => {
                         // Missing choices map
                     },
                     // Missing scene_2 entirely
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     'scene_2': { text: undefined } as any
                 }
             };
@@ -71,12 +72,12 @@ describe('VN Engine', () => {
 
             const result = mergeScenario(mockLogic, partialContent, fallbackContent);
 
-            expect(result.scenes['scene_1'].text).toBe('German Text');
+            expect(result.scenes['scene_1']?.text).toBe('German Text');
             // Falling back to EN choices
-            expect(result.scenes['scene_1'].choices![0].text).toBe('Localized Choice 1');
+            expect(result.scenes['scene_1']?.choices?.[0]?.text).toBe('Localized Choice 1');
 
             // Falling back to EN text for scene 2
-            expect(result.scenes['scene_2'].text).toBe('Localized Text 2');
+            expect(result.scenes['scene_2']?.text).toBe('Localized Text 2');
         });
 
         it('should output missing keys logic if no fallback provided', () => {
@@ -87,7 +88,7 @@ describe('VN Engine', () => {
 
             const result = mergeScenario(mockLogic, emptyContent);
 
-            expect(result.scenes['scene_1'].text).toContain('[MISSING TEXT: scene_1]');
+            expect(result.scenes['scene_1']?.text).toContain('[MISSING TEXT: scene_1]');
         });
     });
 });
