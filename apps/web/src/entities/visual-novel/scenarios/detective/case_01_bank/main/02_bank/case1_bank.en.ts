@@ -129,6 +129,33 @@ export const CASE1_BANK_EN: VNContentPack = {
         },
 
         // ─────────────────────────────────────────────────────────────
+        // OCCULT DISCOVERY
+        // ─────────────────────────────────────────────────────────────
+        'vault_occult_discovery': {
+            text: 'As you examine the floor where the chemical residue settles, something catches your eye. White chalk lines against the dark iron. Not scuff marks — these are deliberate. Geometric. A circle divided into segments, with strange symbols at each junction.'
+        },
+        'vault_occult_victoria': {
+            text: 'Victoria crouches beside you, her breath catching. "These markings... they resemble chemical notation. But the geometry is wrong. Alchemical, perhaps? Medieval?" She traces the air above the symbols without touching them. "Someone took considerable time to draw this. In a vault. During a robbery."',
+            choices: {
+                'occult_shivers_check': '[Occultism] Open yourself to what the symbols whisper.',
+                'dismiss_occult': '"Theatrical nonsense. Focus on the physical evidence."',
+                'ask_victoria_occult': '"What does your scientific eye make of this, Fräulein?"'
+            }
+        },
+        'vault_shivers_success': {
+            text: 'You trace the pattern with your eyes and something shifts. Not sight — something deeper. The air grows heavy. Cold seeps from the iron walls.\n\n*They were here.*\n\nNot robbers. Something that used the robbers. A presence that lingered after the flesh had fled. The symbols are not decoration — they are a signature. A warning. Or a calling card.'
+        },
+        'vault_shivers_fail': {
+            text: 'You stare at the chalk, waiting for... something. Insight? Revelation? Nothing comes. Just lines on metal. Your mind touches the edge of understanding but cannot grasp it.'
+        },
+        'vault_dismiss_theatrics': {
+            text: '"Chalk drawings are for children and charlatans." You stand, brushing dust from your knees. "Whoever staged this wanted to scare the police. Let us not give them the satisfaction."\n\nVictoria\'s expression is unreadable. "As you say, Inspector."'
+        },
+        'vault_victoria_analysis': {
+            text: 'Victoria\'s eyes narrow with professional interest. "The central figure resembles a hexagram, but inverted. The symbols at each point..." She pulls a small notebook from her satchel. "Mercury, sulfur, salt — alchemical principles. And here — a formula I do not recognize."\n\nShe sketches quickly. "This was drawn by someone with knowledge. Not a common criminal. Someone who has studied... forbidden texts."'
+        },
+
+        // ─────────────────────────────────────────────────────────────
         // CONCLUSION
         // ─────────────────────────────────────────────────────────────
         'bank_conclusion': {

@@ -12,6 +12,7 @@ import { CHARACTERS } from '@repo/shared/data/characters';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { soundManager } from '@/shared/lib/audio/SoundManager';
 import type { VNChoice } from '@/entities/visual-novel/model/types';
+import { ChoiceButton } from './ChoiceButton';
 
 export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'fullscreen' }) => {
     const location = useLocation();
@@ -24,7 +25,7 @@ export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'ful
 };
 
 const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fullscreen' }) => {
-    const { activeScenarioId, currentSceneId, advanceScene, endScenario, locale } = useVNStore();
+    const { activeScenarioId, currentSceneId, advanceScene, endScenario, locale, recordChoice, isChoiceVisited } = useVNStore();
     const { setPointState, addEvidence, setFlag, addEntry, recordCheckResult, voiceStats, gainVoiceXp } = useDossierStore();
     const { modifyRelationship, setCharacterStatus } = useCharacterStore();
     const navigate = useNavigate();
@@ -162,6 +163,11 @@ const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fulls
     };
 
     const handleChoice = (choice: VNChoice) => {
+        // Record this choice as visited
+        if (activeScenarioId && effectiveSceneId) {
+            recordChoice(activeScenarioId, effectiveSceneId, choice.id);
+        }
+
         // Skill Check Logic
         if (choice.skillCheck) {
             const { id, voiceId, difficulty, onSuccess, onFail } = choice.skillCheck;
@@ -202,7 +208,7 @@ const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fulls
         );
     }, []);
 
-    const handleGlobalAdvance = useCallback((target: EventTarget | null) => {
+    const handleGlobalAdvance = (target: EventTarget | null) => {
         // Ignore clicks on buttons/interactive elements to avoid double-firing or conflicts
         if (shouldIgnoreGlobalPointer(target)) {
             return;
@@ -228,7 +234,7 @@ const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fulls
             };
             handleChoice(continueChoice);
         }
-    }, [handleChoice, scene, sceneChoices, sceneNextSceneId, shouldIgnoreGlobalPointer]);
+    };
 
     const handlePointerDown = (e: React.PointerEvent) => {
         if (e.pointerType === 'mouse' && e.button !== 0) {
@@ -338,31 +344,23 @@ const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fulls
     const Choices = ({ choiceList }: { choiceList?: VNChoice[] }) => (
         <div className="flex flex-col gap-2 mt-4 relative z-10">
             {choiceList && choiceList.length > 0 && (
-                choiceList.map((choice, index) => (
-                    <button
-                        key={choice.id}
-                        onClick={() => handleChoice(choice)}
-                        className="w-full px-4 py-3 bg-white/5 hover:bg-white/10 active:scale-[0.99] border-l-2 border-transparent hover:border-amber-500/50 transition-all duration-200 text-left flex items-start gap-4 group cursor-pointer"
-                    >
-                        <span className="font-mono text-stone-500 text-sm mt-1 group-hover:text-amber-500 transition-colors">
-                            {index + 1}.
-                        </span>
+                choiceList.map((choice, index) => {
+                    const isVisited = activeScenarioId && effectiveSceneId
+                        ? isChoiceVisited(activeScenarioId, effectiveSceneId, choice.id)
+                        : false;
 
-                        <div className="flex-1 flex flex-col gap-1">
-                            {choice.skillCheck && (
-                                <span className="text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-2 self-start px-1.5 py-0.5 rounded-sm bg-red-900/30 text-red-400 border border-red-900/50">
-                                    [{choice.skillCheck.voiceId.toUpperCase()} {choice.skillCheck.difficulty}]
-                                </span>
-                            )}
-                            <span className="font-serif text-base uppercase tracking-widest text-primary group-hover:text-amber-100 transition-colors">
-                                <span className="text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity mr-2">—</span>
-                                {choice.text}
-                            </span>
-                        </div>
-                    </button>
-                ))
+                    return (
+                        <ChoiceButton
+                            key={choice.id}
+                            choice={choice}
+                            index={index}
+                            isVisited={isVisited}
+                            onClick={() => handleChoice(choice)}
+                        />
+                    );
+                })
             )}
-            {/* Standard "Continue" button is hidden in favor of click-anywhere, but prompt can be shown if needed */}
+            {/* Standard "Continue" prompt when no choices */}
             {(!choiceList || choiceList.length === 0) && (
                 <div className="h-6 animate-pulse mt-2 flex justify-center opacity-50">
                     <span className="text-[10px] font-mono tracking-widest text-stone-500">CLICK TO CONTINUE ▼</span>

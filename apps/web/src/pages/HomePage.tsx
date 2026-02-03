@@ -1,12 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useInventoryStore } from '../entities/inventory/model/store';
 import { useDossierStore } from '../features/detective/dossier/store';
 import { useQuestStore } from '../features/quests/store';
 import { useVNStore } from '../entities/visual-novel/model/store';
 import { Button } from '../shared/ui/Button';
 import { OnboardingModal } from '../features/detective/onboarding/OnboardingModal';
-import { useState } from 'react';
 import { getScenarioById } from '../entities/visual-novel/scenarios/registry';
 import { preloadManager, extractScenarioAssets, toPreloadQueue } from '../shared/lib/preload';
 
@@ -15,7 +14,7 @@ export const HomePage = () => {
     const navigate = useNavigate();
     const setGameMode = useInventoryStore(state => state.setGameMode);
     const setPlayerName = useInventoryStore(state => state.setPlayerName);
-    const [showTelegram, setShowTelegram] = useState(false);
+    const [telegramDismissed, setTelegramDismissed] = useState(false);
 
     // Check for active session
     const activeScenarioId = useVNStore(state => state.activeScenarioId);
@@ -62,46 +61,52 @@ export const HomePage = () => {
         navigate('/map');
     };
 
+    // Check for "Character Creation Complete" flag to trigger Telegram
+    // Check for "Character Creation Complete" flag to trigger Telegram
+    const flags = useDossierStore(state => state.flags); // Subscribe to flags
+    const showTelegram = Boolean(
+        flags['char_creation_complete'] &&
+        !flags['met_anna_intro'] &&
+        !telegramDismissed
+    );
+
     const handleNewGame = () => {
         if (confirm("Are you sure you want to start a new game? All progress will be lost.")) {
-            setShowTelegram(true);
+            // 1. Reset Everything
+            useInventoryStore.getState().resetAll();
+            useDossierStore.getState().resetDossier();
+            useQuestStore.getState().resetQuests();
+            useVNStore.getState().endScenario();
+
+            // 2. Start Character Creation
+            useVNStore.getState().startScenario('intro_char_creation');
+            navigate('/vn/intro_char_creation');
         }
     };
 
     const handleTelegramComplete = (name: string) => {
-        // 1. Reset All Stores
-        useInventoryStore.getState().resetAll();
-        useDossierStore.getState().resetDossier();
-        useQuestStore.getState().resetQuests();
-        useVNStore.getState().endScenario();
-
-        // 2. Set Player Details
+        // 1. Set Player Name
         setPlayerName(name);
 
-        // 3. Start Intro Scenario
-        // The ID 'detective_case1_briefing' must exist in your registry/content packs
-        useVNStore.getState().startScenario('detective_case1_briefing');
+        // 2. Start Journalist Intro (Cafe)
+        // We assume Journalist origin for now. In future, check flag to decide which intro.
+        // const flags = useVNStore.getState().flags;
+        // const scenarioId = flags['origin_journalist'] ? 'intro_journalist' : 'intro_default';
+        useVNStore.getState().startScenario('intro_journalist');
 
-        // Start the Quest immediately for testing
-        useQuestStore.getState().startQuest('case01_act1');
-
-        // 4. Navigate
-        // Seed the history with /map so when the VN ends (navigate(-1)), we land on the map
+        // 3. Navigate
         setGameMode('detective');
-        setShowTelegram(false);
-        navigate('/map');
-        setTimeout(() => {
-            navigate('/vn/detective_case1_briefing');
-        }, 0);
+        setTelegramDismissed(true);
+        navigate('/vn/intro_journalist');
     };
 
     return (
         <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-8 gap-8">
             {showTelegram && (
-                <OnboardingModal
-                    onComplete={handleTelegramComplete}
-                    onCancel={() => setShowTelegram(false)}
-                />
+                    <OnboardingModal
+                        onComplete={handleTelegramComplete}
+                        onCancel={() => setTelegramDismissed(true)}
+                    />
             )}
             <h1 className="text-4xl font-bold mb-8 text-[#d4c5a3] font-serif">Grezwanderer 4</h1>
 

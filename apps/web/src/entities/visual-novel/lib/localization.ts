@@ -52,6 +52,7 @@ export const mergeScenario = (
                     // Copy logic properties
                     id: choiceLogic.id,
                     nextSceneId: choiceLogic.nextSceneId || 'END', // Default safety
+                    type: choiceLogic.type, // action | inquiry | flavor
                     actions: choiceLogic.actions,
                     condition: choiceLogic.condition,
                     skillCheck: choiceLogic.skillCheck

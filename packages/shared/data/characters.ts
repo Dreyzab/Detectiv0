@@ -3,6 +3,8 @@
  * Used by Visual Novel engine for speaker identification
  */
 
+
+
 export type CharacterId =
     | 'inspector'
     | 'gendarm'
@@ -16,7 +18,6 @@ export type CharacterId =
     // P1: New Characters
     | 'coroner'
     | 'journalist'
-    // P2: Future Characters
     // P2: Future Characters
     | 'professor'
     | 'student'
@@ -39,346 +40,199 @@ export type CharacterId =
     | 'forger'
     | 'femme_fatale'
     | 'mastermind'
+    | 'corps_student'
+    | 'saccharin_maud'
     | 'unknown';
 
-export interface VNCharacter {
+export type CharacterTier = 'major' | 'functional' | 'generic';
+
+interface BaseCharacter {
     id: CharacterId;
     name: string;
-    avatarUrl?: string;
-    color?: string;
-    role?: 'protagonist' | 'antagonist' | 'companion' | 'npc';
+    tier: CharacterTier;
+    avatarUrl?: string; // Optional for all, but major/functional usually have one
+    color?: string;     // UI color for dialogue name
     age?: number;
     origin?: string;
     description?: string;
     tags?: string[];
 }
 
+// Tier 1: Major Characters (Protagonists, Companions, Main Villains)
+// Fully realized individuals with stats (Voices) and potential evolution.
+export type DetectiveOrigin = 'veteran' | 'journalist' | 'academic' | 'noble';
+
+export interface MajorCharacter extends BaseCharacter {
+    tier: 'major';
+    role: 'protagonist' | 'antagonist' | 'companion' | 'key_npc';
+    voiceStats?: Partial<Record<string, number>>; // 1-20 scale (Logic, Empathy, etc.)
+    secrets?: string[]; // Hidden info unlocked via Dossier
+    evolution?: {
+        stage: string; // e.g., 'cynic' | 'idealist'
+        possibleStages: string[];
+    };
+}
+
+export interface DetectiveCharacter extends MajorCharacter {
+    role: 'protagonist';
+    possibleOrigins: DetectiveOrigin[];
+    originStats: Record<DetectiveOrigin, Partial<Record<string, number>>>;
+}
+
+// Tier 2: Functional Characters (Merchants, Quest Givers)
+// Defined by their role in the city and service they provide.
+export interface FunctionalCharacter extends BaseCharacter {
+    tier: 'functional';
+    role: 'merchant' | 'service' | 'witness';
+    locationId?: string; // Map point where they can usually be found
+    serviceType?: string; // e.g., 'shop', 'info', 'craft'
+}
+
+// Tier 3: Generic Characters (The Crowd)
+// Archetypes sharing assets.
+export interface GenericCharacter extends BaseCharacter {
+    tier: 'generic';
+    role: 'npc' | 'mob' | 'obstacle';
+    archetypeId: string; // e.g. 'police_officer', 'worker_railway'
+}
+
+export type VNCharacter = DetectiveCharacter | MajorCharacter | FunctionalCharacter | GenericCharacter;
+
 export const CHARACTERS: Record<CharacterId, VNCharacter> = {
-    // Legacy ID: inspector -> The Detective (Player)
+    // ----------------------------------------------------
+    // TIER 1: MAJOR CHARACTERS
+    // ----------------------------------------------------
     inspector: {
         id: 'inspector',
+        tier: 'major',
         name: 'Arthur Vance',
         color: '#d4c5a3',
         role: 'protagonist',
+        possibleOrigins: ['veteran', 'journalist', 'academic', 'noble'],
+        originStats: {
+            veteran: { endurance: 4, authority: 3, perception: 2 },
+            journalist: { shivers: 4, rhetoric: 3, empathy: 2 },
+            academic: { logic: 4, encyclopaedia: 3, volition: 2 },
+            noble: { suggestion: 4, composure: 3, drama: 2 }
+        },
         age: 32,
         origin: 'Berlin',
-        description: 'A war veteran seeking a quiet life, pulled back into the darkness.',
-        avatarUrl: '/images/characters/inspector.png'
+        description: 'A private investigator operating in the grey zones of Freiburg. Hired to solve the bank robbery.',
+        avatarUrl: '/images/characters/inspector.png',
+        // Base stats (before origin modifiers)
+        voiceStats: { logic: 2, volition: 2, empathy: 2 }
     },
-    // P0: Fleshed Out Existing
-    gendarm: {
-        id: 'gendarm',
-        name: 'Fritz Müller',
-        color: '#3b82f6',
-        role: 'npc',
-        age: 35,
+    assistant: {
+        id: 'assistant',
+        tier: 'major',
+        name: 'Victoria Sterling',
+        color: '#8b5cf6',
+        role: 'companion',
+        age: 23,
+        origin: 'University of Freiburg',
+        description: '"The Woman in the Iron Lab Coat". A chemistry student driven by the mysterious death of her fiancé. Combines scientific genius with buried rage.',
+        avatarUrl: '/images/characters/assistant.png',
+        tags: ['companion', 'forensics', 'chemistry', 'vengeful'],
+        voiceStats: { logic: 6, forensics: 8, authority: 4 },
+        secrets: [
+            'Fiancé was murdered over a Saccharin synthesis formula',
+            'Has access to restricted University lab chemicals',
+            'Is secretly auditing medical faculty autopsy lectures'
+        ],
+        evolution: {
+            stage: 'vengeful_widow',
+            possibleStages: ['vengeful_widow', 'cold_case_expert', 'vigilante']
+        }
+    },
+    operator: {
+        id: 'operator',
+        tier: 'major',
+        name: 'Lotte Fischer',
+        color: '#f59e0b',
+        role: 'companion',
+        age: 24,
+        origin: 'Freiburg (Police HQ)',
+        description: '"The Spider in the Wire". Uses her position as switchboard operator to trade secrets and protect her family.',
+        avatarUrl: '/images/characters/operator.png',
+        tags: ['companion', 'information', 'broker'],
+        voiceStats: { encyclopaedia: 6, perception: 5, suggestion: 4 },
+        secrets: [
+            'Records police and city official conversations',
+            'Paying off brother\'s gambling debts to Kessler',
+            'Knows the true status of the Mayor\'s secret accounts'
+        ]
+    },
+    bank_manager: {
+        id: 'bank_manager',
+        tier: 'major',
+        name: 'Heinrich Galdermann',
+        color: '#ef4444',
+        role: 'antagonist',
+        age: 55,
         origin: 'Freiburg',
-        description: 'One of 73 officers for all of Freiburg. Follows orders without question. Not evil, just limited.',
-        avatarUrl: '/images/characters/gendarm.png',
-        tags: ['police', 'obstacle']
+        description: '"The Architect of Greed". A portly pillar of society hiding a massive embezzlement scheme.',
+        avatarUrl: '/images/characters/bank_manager.png',
+        tags: ['client', 'antagonist', 'corrupt'],
+        voiceStats: { authority: 8, logic: 6, rhetoric: 7 },
+        secrets: [
+            'The vault was empty before the robbery',
+            'Embezzled funds to build the Stadttheater',
+            'Terrified of the Journalist Anna Mahler'
+        ]
     },
-    worker: {
-        id: 'worker',
-        name: 'Hans Bauer',
-        color: '#16a34a',
-        role: 'npc',
-        age: 42,
-        origin: 'Stühlinger',
-        description: 'Construction worker from the Haus Kapferer renovation. Knows about the scaffolding access.',
-        avatarUrl: '/images/characters/worker.png',
-        tags: ['witness', 'labor']
-    },
-    socialist: {
-        id: 'socialist',
-        name: 'Karl Brenner',
-        color: '#dc2626',
-        role: 'npc',
-        age: 40,
-        origin: 'Stühlinger',
-        description: 'Union organizer. Writes for Volkswacht. Blamed for every crime by conservatives.',
-        avatarUrl: '/images/characters/socialist.png',
-        tags: ['suspect', 'informant', 'red_herring']
+    boss: {
+        id: 'boss',
+        tier: 'major',
+        name: 'Bruno Kessler',
+        color: '#1e293b',
+        role: 'antagonist',
+        age: 50,
+        origin: 'Schneckenvorstadt (Brewery Tunnels)',
+        description: '"The King of the Tunnels". Controls the illicit Saccharin trade. Desperate for social legitimacy.',
+        avatarUrl: '/images/characters/boss.png',
+        tags: ['underworld', 'antagonist', 'crime_lord'],
+        secrets: [
+            'Wants to buy his way into the City Council',
+            'Robbery is actually bad for his business',
+            'Saccharin is smuggled via Höllental railway'
+        ]
     },
     mayor: {
         id: 'mayor',
+        tier: 'major',
         name: 'Otto Winterer II',
         color: '#9333ea',
-        role: 'npc',
+        role: 'key_npc',
         age: 58,
         origin: 'Freiburg (Zentrumspartei)',
         description: 'Victoria\'s father. Trying to hold the city together. Wants the robbery solved quietly.',
         avatarUrl: '/images/characters/mayor.png',
         tags: ['politician', 'obstructor']
     },
-
-    // Core Characters (Fully Defined)
-    bank_manager: {
-        id: 'bank_manager',
-        name: 'Heinrich Galdermann',
-        color: '#ef4444',
-        role: 'antagonist',
-        age: 55,
-        origin: 'Freiburg',
-        description: 'The town\'s financial pillar. Ruthless, calculative, and dangerously polite.',
-        avatarUrl: '/images/characters/bank_manager.png',
-        tags: ['banker', 'antagonist']
-    },
-    clerk: {
-        id: 'clerk',
-        name: 'Ernst Vogel',
-        color: '#6b7280',
-        role: 'npc',
-        age: 28,
-        origin: 'Freiburg',
-        description: 'Junior clerk at Bankhaus Krebs. Nervous, meticulous. Was on night duty during the robbery. Knows more than he dares to say.',
-        avatarUrl: '/images/characters/clerk.png',
-        tags: ['witness', 'bank', 'scared']
-    },
-    assistant: {
-        id: 'assistant',
-        name: 'Victoria Sterling',
-        color: '#8b5cf6',
-        role: 'companion',
-        age: 27,
-        origin: 'Local (Mayor\'s Daughter)',
-        description: 'Sharp-tongued, aristocratic, and determined to solve her husband\'s murder.',
-        avatarUrl: '/images/characters/assistant.png',
-        tags: ['companion', 'detective']
-    },
-    operator: {
-        id: 'operator',
-        name: 'Lotte Fischer',
-        color: '#f59e0b',
-        role: 'companion',
-        age: 24,
-        origin: 'Freiburg',
-        description: 'The Police Commissioner\'s daughter and switchboard operator. The eyes and ears of the city.',
-        avatarUrl: '/images/characters/operator.png',
-        tags: ['companion', 'information']
-    },
-
-    // P1: New Core Characters
-    coroner: {
-        id: 'coroner',
-        name: 'Dr. Ernst Schiller',
-        color: '#64748b',
-        role: 'npc',
-        age: 48,
-        origin: 'Prussia (War Veteran)',
-        description: 'Former military surgeon. Prefers the dead — they don\'t scream. Master of Bertillonage.',
-        avatarUrl: '/images/characters/coroner.png',
-        tags: ['forensics', 'ally']
-    },
-    journalist: {
-        id: 'journalist',
-        name: 'Anna Mahler',
-        color: '#ec4899',
-        role: 'npc',
-        age: 30,
-        origin: 'Vienna → Freiburg',
-        description: 'Cynical reporter for Freiburger Zeitung. Knows everyone\'s dirt. Trades scoops for secrets.',
-        avatarUrl: '/images/characters/journalist.png',
-        tags: ['information', 'wildcard']
-    },
-
-    // P2: Future Characters (Stubs)
-    dancer: {
-        id: 'dancer',
-        name: 'Marlene Vogt',
-        color: '#f472b6',
-        role: 'npc',
-        age: 26,
-        description: 'Cabaret star from Schneckenvorstadt. Sees who meets whom in the dark.',
-        tags: ['nightlife', 'witness']
-    },
-
-    professor: {
-        id: 'professor',
-        name: 'Prof. Heinrich Kiliani',
-        color: '#0ea5e9',
-        role: 'npc',
-        age: 55,
-        origin: 'University of Freiburg',
-        description: 'Medical chemist. Expert on poisons, sugars, and explosives. Can analyze nitroglycerin residue.',
-        tags: ['forensics', 'academic']
-    },
-    student: {
-        id: 'student',
-        name: 'Friedrich von Holtz',
-        color: '#a855f7',
-        role: 'npc',
-        age: 23,
-        origin: 'Corps Suevia',
-        description: 'Privileged Corps student with gambling debts. Recently participated in a Mensur duel.',
-        tags: ['suspect', 'corps']
-    },
-    cleaner: {
-        id: 'cleaner',
-        name: 'Old Gustav',
-        color: '#78716c',
-        role: 'npc',
-        age: 60,
-        origin: 'Freiburg (Altstadt)',
-        description: 'Bächleputzer. Cleans the city water channels from dawn. Sees everything. People ignore him.',
-        tags: ['witness', 'invisible']
-    },
-
-    // Service NPCs
-    apothecary: {
-        id: 'apothecary',
-        name: 'Herr Adalbert Weiss',
-        color: '#22c55e',
-        role: 'npc',
-        age: 52,
-        origin: 'Altstadt',
-        description: 'Runs the Löwen-Apotheke near the Münster. Sells remedies... and discreetly, other things.',
-        avatarUrl: '/images/characters/apothecary.png',
-        tags: ['merchant', 'medicine', 'poison']
-    },
-    blacksmith: {
-        id: 'blacksmith',
-        name: 'Ignaz Hammer',
-        color: '#78350f',
-        role: 'npc',
-        age: 45,
-        origin: 'Stühlinger',
-        description: 'Master smith and locksmith. Can fix anything. Knows every lock in Freiburg.',
-        avatarUrl: '/images/characters/blacksmith.png',
-        tags: ['merchant', 'tools', 'repair']
-    },
-    tailor: {
-        id: 'tailor',
-        name: 'Herr Leopold Fein',
-        color: '#7c3aed',
-        role: 'npc',
-        age: 48,
-        origin: 'Vienna → Freiburg',
-        description: 'Jewish tailor. Creates disguises for theater... or other purposes. Discretion guaranteed.',
-        avatarUrl: '/images/characters/tailor.png',
-        tags: ['merchant', 'clothing', 'disguise']
-    },
-    innkeeper: {
-        id: 'innkeeper',
-        name: 'Frau Helga Brandt',
-        color: '#ca8a04',
-        role: 'npc',
-        age: 55,
-        origin: 'Schneckenvorstadt',
-        description: 'Runs Zum Goldenen Hirschen. Hears every rumor. Rents rooms, no questions asked.',
-        avatarUrl: '/images/characters/innkeeper.png',
-        tags: ['merchant', 'information', 'lodging']
-    },
-    pawnbroker: {
-        id: 'pawnbroker',
-        name: 'Moritz Silber',
-        color: '#71717a',
-        role: 'npc',
-        age: 60,
-        origin: 'Schneckenvorstadt',
-        description: 'Runs a pawnshop. Buys anything, sells everything. Knows the value of secrets.',
-        avatarUrl: '/images/characters/pawnbroker.png',
-        tags: ['merchant', 'fence', 'evidence']
-    },
-    priest: {
-        id: 'priest',
-        name: 'Pater Johannes Kreuzer',
-        color: '#1d4ed8',
-        role: 'npc',
-        age: 65,
-        origin: 'Münsterplatz',
-        description: 'Catholic priest at the Freiburg Münster. Hears confessions. Knows sins.',
-        avatarUrl: '/images/characters/priest.png',
-        tags: ['information', 'sanctuary', 'church']
-    },
-    librarian: {
-        id: 'librarian',
-        name: 'Dr. Margarethe Voss',
-        color: '#0891b2',
-        role: 'npc',
-        age: 42,
-        origin: 'University of Freiburg',
-        description: 'Spinster librarian. Has access to restricted archives. Loves puzzles and mysteries.',
-        avatarUrl: '/images/characters/librarian.png',
-        tags: ['research', 'archives', 'academic']
-    },
-    stationmaster: {
-        id: 'stationmaster',
-        name: 'Herr Wilhelm Gleisner',
-        color: '#334155',
-        role: 'npc',
-        age: 50,
-        origin: 'Hauptbahnhof',
-        description: 'Controls the Freiburg Hauptbahnhof. Knows who comes and goes. Höllentalbahn runs on his schedule.',
-        avatarUrl: '/images/characters/stationmaster.png',
-        tags: ['transport', 'information', 'travel']
-    },
-
-    // Antagonists & Villains
-    boss: {
-        id: 'boss',
-        name: 'Bruno Kessler',
-        color: '#1e293b',
-        role: 'antagonist',
-        age: 50,
-        origin: 'Schneckenvorstadt (Underworld)',
-        description: '"Der Schatten". The undisputed king of the Freiburg black market. Ruthless, pragmatic, and invisible.',
-        avatarUrl: '/images/characters/boss.png',
-        tags: ['underworld', 'antagonist', 'crime_lord']
-    },
-    enforcer: {
-        id: 'enforcer',
-        name: 'Viktor "Die Kralle" Brandt',
-        color: '#b91c1c', // dark red
-        role: 'antagonist',
-        age: 38,
-        origin: 'Alsace (Ex-Legionnaire)',
-        description: 'Kessler\'s right hand. A scarred brute with a twisted code of honor. Prefers a knife to a gun.',
-        avatarUrl: '/images/characters/enforcer.png',
-        tags: ['muscle', 'violence', 'loyal']
-    },
-    smuggler: {
-        id: 'smuggler',
-        name: '"Der Fuchs" (Hans Lehmann)',
-        color: '#d97706', // amber
-        role: 'antagonist',
-        age: 29,
-        origin: 'Höllentalbahn',
-        description: 'Charming, slippery, and runs the saccharin smuggling route. Impossible to catch, easy to bribe.',
-        avatarUrl: '/images/characters/smuggler.png',
-        tags: ['contraband', 'transport', 'charming']
-    },
     corrupt_cop: {
         id: 'corrupt_cop',
+        tier: 'major',
         name: 'Kommissar Dietrich Richter',
-        color: '#1e1b4b', // deeply dark blue
+        color: '#1e1b4b',
         role: 'antagonist',
         age: 52,
         origin: 'Police HQ',
         description: 'A decorated officer who sold his soul piece by piece. Uses the law to protect the lawless.',
         tags: ['police', 'corrupt', 'authority']
     },
-    forger: {
-        id: 'forger',
-        name: '"Herr Tinte" (Friedrich Schwarz)',
-        color: '#4c1d95', // violet
-        role: 'npc', // Not purely antagonist, utilitarian
-        age: 62,
-        origin: 'Attic in Stühlinger',
-        description: 'An artist who failed at life but succeeded at lies. Can create any document, for a price.',
-        tags: ['criminal', 'utility', 'documents']
-    },
     femme_fatale: {
         id: 'femme_fatale',
+        tier: 'major',
         name: 'Elise von Schwarzwald',
-        color: '#be123c', // rose red
+        color: '#be123c',
         role: 'antagonist',
         age: 28,
-        origin: 'Unknown',
         description: 'A chameleon. Today a countess, tomorrow a beggar. She wants chaos, and perhaps, revenge.',
-        tags: ['manipulator', 'spy', 'double_agent']
+        tags: ['manipulator', 'spy']
     },
     mastermind: {
         id: 'mastermind',
+        tier: 'major',
         name: '???',
         color: '#000000',
         role: 'antagonist',
@@ -386,7 +240,317 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         tags: ['unknown', 'boss', 'secret']
     },
 
-    unknown: { id: 'unknown', name: '???', color: '#a8a29e' },
+    // ----------------------------------------------------
+    // TIER 2: FUNCTIONAL CHARACTERS (MERCHANTS / SERVICES)
+    // ----------------------------------------------------
+    clerk: {
+        id: 'clerk',
+        tier: 'functional',
+        name: 'Ernst Vogel',
+        color: '#6b7280',
+        role: 'witness',
+        age: 28,
+        origin: 'Freiburg',
+        description: 'Junior clerk at Bankhaus Krebs. Nervous, meticulous. Was on night duty during the robbery. Knows more than he dares to say.',
+        avatarUrl: '/images/characters/clerk.png',
+        tags: ['witness', 'bank', 'scared'],
+        locationId: 'bank_krebs'
+    },
+    coroner: {
+        id: 'coroner',
+        tier: 'functional',
+        name: 'Dr. Ernst Schiller',
+        color: '#64748b',
+        role: 'service',
+        age: 48,
+        origin: 'Prussia (War Veteran)',
+        description: 'Former military surgeon obsessed with Bertillonage. Dismisses fingerprints as "French nonsense". Hates Victoria Sterling.',
+        avatarUrl: '/images/characters/coroner.png',
+        tags: ['forensics', 'bertillonage', 'obstructionist'],
+        serviceType: 'autopsy'
+    },
+    journalist: {
+        id: 'journalist',
+        tier: 'functional',
+        name: 'Anna Mahler',
+        color: '#ec4899',
+        role: 'service',
+        age: 30,
+        origin: 'Vienna → Freiburg',
+        description: 'Cynical reporter seeking the "Big Scoop". Wants to expose the hypocrisy of the Freiburg elite.',
+        avatarUrl: '/images/characters/journalist.png',
+        tags: ['information', 'wildcard', 'press'],
+        serviceType: 'information_broker'
+    },
+    apothecary: {
+        id: 'apothecary',
+        tier: 'functional',
+        name: 'Herr Adalbert Weiss',
+        color: '#22c55e',
+        role: 'merchant',
+        age: 52,
+        origin: 'Altstadt',
+        description: 'Runs the Löwen-Apotheke. Nervous fence for chemical goods (ether/alcohol) used by smugglers.',
+        avatarUrl: '/images/characters/apothecary.png',
+        tags: ['merchant', 'medicine', 'fence', 'scared'],
+        locationId: 'loewen_apotheke',
+        serviceType: 'pharmacy'
+    },
+    blacksmith: {
+        id: 'blacksmith',
+        tier: 'functional',
+        name: 'Ignaz Hammer',
+        color: '#78350f',
+        role: 'merchant',
+        age: 45,
+        origin: 'Stühlinger',
+        description: 'Industrial mechanic ("Schlosser"). Works on locomotive parts. Can pick any lock and fix any machine.',
+        avatarUrl: '/images/characters/blacksmith.png',
+        tags: ['merchant', 'mechanic', 'locksmith'],
+        serviceType: 'locksmith'
+    },
+    tailor: {
+        id: 'tailor',
+        tier: 'functional',
+        name: 'Herr Leopold Fein',
+        color: '#7c3aed',
+        role: 'merchant',
+        age: 48,
+        origin: 'Vienna → Freiburg',
+        description: 'Jewish tailor. Creates disguises for theater... or other purposes. Discretion guaranteed.',
+        avatarUrl: '/images/characters/tailor.png',
+        tags: ['merchant', 'clothing', 'disguise'],
+        serviceType: 'tailor'
+    },
+    innkeeper: {
+        id: 'innkeeper',
+        tier: 'functional',
+        name: 'Frau Helga Brandt',
+        color: '#ca8a04',
+        role: 'merchant',
+        age: 55,
+        origin: 'Schneckenvorstadt',
+        description: 'Runs Zum Goldenen Hirschen. Hears every rumor. Rents rooms, no questions asked.',
+        avatarUrl: '/images/characters/innkeeper.png',
+        tags: ['merchant', 'information', 'lodging'],
+        serviceType: 'inn'
+    },
+    pawnbroker: {
+        id: 'pawnbroker',
+        tier: 'functional',
+        name: 'Moritz Silber',
+        color: '#71717a',
+        role: 'merchant',
+        age: 60,
+        origin: 'Schneckenvorstadt',
+        description: 'Runs a pawnshop. Buys anything, sells everything. Knows the value of secrets.',
+        avatarUrl: '/images/characters/pawnbroker.png',
+        tags: ['merchant', 'fence', 'evidence'],
+        serviceType: 'pawnshop'
+    },
+    priest: {
+        id: 'priest',
+        tier: 'functional',
+        name: 'Pater Johannes Kreuzer',
+        color: '#1d4ed8',
+        role: 'service',
+        age: 65,
+        origin: 'Münsterplatz',
+        description: 'Catholic priest at the Freiburg Münster. Hears confessions. Knows sins.',
+        avatarUrl: '/images/characters/priest.png',
+        tags: ['information', 'sanctuary', 'church'],
+        serviceType: 'confessional'
+    },
+    librarian: {
+        id: 'librarian',
+        tier: 'functional',
+        name: 'Dr. Margarethe Voss',
+        color: '#0891b2',
+        role: 'service',
+        age: 42,
+        origin: 'University of Freiburg',
+        description: 'Spinster librarian. Has access to restricted archives. Loves puzzles and mysteries.',
+        avatarUrl: '/images/characters/librarian.png',
+        tags: ['research', 'archives', 'academic'],
+        serviceType: 'archives'
+    },
+    stationmaster: {
+        id: 'stationmaster',
+        tier: 'functional',
+        name: 'Herr Wilhelm Gleisner',
+        color: '#334155',
+        role: 'service',
+        age: 50,
+        origin: 'Hauptbahnhof',
+        description: 'Controls the Freiburg Hauptbahnhof. Knows who comes and goes. Höllentalbahn runs on his schedule.',
+        avatarUrl: '/images/characters/stationmaster.png',
+        tags: ['transport', 'information', 'travel'],
+        serviceType: 'transport'
+    },
+    enforcer: {
+        id: 'enforcer',
+        tier: 'functional',
+        name: 'Viktor "Die Kralle" Brandt',
+        color: '#b91c1c',
+        role: 'service', // Functional in the sense of being a 'boss battle' or 'guard'
+        age: 38,
+        origin: 'Alsace (Ex-Legionnaire)',
+        description: 'Kessler\'s right hand. A scarred brute with a twisted code of honor. Prefers a knife to a gun.',
+        avatarUrl: '/images/characters/enforcer.png',
+        tags: ['muscle', 'violence', 'loyal'],
+        serviceType: 'mercenary' // Stretch, but fits structure
+    },
+    smuggler: {
+        id: 'smuggler',
+        tier: 'functional',
+        name: '"Der Fuchs" (Hans Lehmann)',
+        color: '#d97706',
+        role: 'merchant',
+        age: 29,
+        origin: 'Höllentalbahn',
+        description: 'Charming, slippery, and runs the saccharin smuggling route. Impossible to catch, easy to bribe.',
+        avatarUrl: '/images/characters/smuggler.png',
+        tags: ['contraband', 'transport', 'charming'],
+        serviceType: 'smuggler'
+    },
+    forger: {
+        id: 'forger',
+        tier: 'functional',
+        name: '"Herr Tinte" (Friedrich Schwarz)',
+        color: '#4c1d95',
+        role: 'service',
+        age: 62,
+        origin: 'Attic in Stühlinger',
+        description: 'An artist who failed at life but succeeded at lies. Can create any document, for a price.',
+        tags: ['criminal', 'utility', 'documents'],
+        serviceType: 'forgery'
+    },
+    professor: {
+        id: 'professor',
+        tier: 'functional',
+        name: 'Prof. Heinrich Kiliani',
+        color: '#0ea5e9',
+        role: 'service',
+        age: 55,
+        origin: 'University of Freiburg',
+        description: 'Medical chemist. Expert on poisons, sugars, and explosives. Can analyze nitroglycerin residue.',
+        tags: ['forensics', 'academic'],
+        serviceType: 'expert_analysis'
+    },
+
+    // ----------------------------------------------------
+    // TIER 3: GENERIC CHARACTERS (ARCHETYPES / MOBS)
+    // ----------------------------------------------------
+    gendarm: {
+        id: 'gendarm',
+        tier: 'generic',
+        name: 'Fritz Müller',
+        color: '#3b82f6',
+        role: 'npc',
+        age: 35,
+        origin: 'Freiburg',
+        description: 'Schutzmann in a Pickelhaube helmet. Represents the visible arm of the law. Follows orders without question.',
+        avatarUrl: '/images/characters/gendarm.png',
+        tags: ['police', 'obstacle'],
+        archetypeId: 'schutzmann_01'
+    },
+    worker: {
+        id: 'worker',
+        tier: 'generic',
+        name: 'Hans Bauer',
+        color: '#16a34a',
+        role: 'npc',
+        age: 42,
+        origin: 'Stühlinger',
+        description: 'Construction worker from the Haus Kapferer renovation. Knows about the scaffolding access.',
+        avatarUrl: '/images/characters/worker.png',
+        tags: ['witness', 'labor'],
+        archetypeId: 'worker_01'
+    },
+    socialist: {
+        id: 'socialist',
+        tier: 'generic',
+        name: 'Karl Brenner',
+        color: '#dc2626',
+        role: 'npc',
+        age: 40,
+        origin: 'Stühlinger',
+        description: 'Union organizer. Writes for Volkswacht. Blamed for every crime by conservatives.',
+        avatarUrl: '/images/characters/socialist.png',
+        tags: ['suspect', 'informant', 'red_herring'],
+        archetypeId: 'socialist_agitator'
+    },
+    student: {
+        id: 'student',
+        tier: 'generic',
+        name: 'Friedrich von Holtz',
+        color: '#a855f7',
+        role: 'npc',
+        age: 23,
+        origin: 'Corps Suevia',
+        description: 'Privileged Corps student with gambling debts. Recently participated in a Mensur duel.',
+        tags: ['suspect', 'corps'],
+        archetypeId: 'student_corps'
+    },
+    cleaner: {
+        id: 'cleaner',
+        tier: 'generic',
+        name: 'Old Gustav',
+        color: '#78716c',
+        role: 'npc',
+        age: 60,
+        origin: 'Freiburg (Bächle)',
+        description: 'Bächleputzer. Finds everything the city washes away. Valuable source of discarded evidence.',
+        tags: ['witness', 'invisible', 'evidence_retrieval'],
+        archetypeId: 'baechle_cleaner'
+    },
+    corps_student: {
+        id: 'corps_student',
+        tier: 'generic',
+        name: 'Friedrich',
+        color: '#facc15',
+        role: 'npc',
+        age: 21,
+        origin: 'Corps Suevia',
+        description: 'Arrogant student in a yellow cap. Demands duels and blocks paths of "commoners".',
+        tags: ['obstacle', 'elite'],
+        archetypeId: 'corps_student_01'
+    },
+    saccharin_maud: {
+        id: 'saccharin_maud',
+        tier: 'generic',
+        name: 'Saccharin-Maud',
+        color: '#d1d5db',
+        role: 'npc',
+        age: 40,
+        origin: 'Underworld',
+        description: 'Underworld courier with bulky skirts hiding contraband powder.',
+        tags: ['smuggler', 'informant'],
+        archetypeId: 'saccharin_courier'
+    },
+    dancer: {
+        id: 'dancer',
+        tier: 'generic',
+        name: 'Marlene Vogt',
+        color: '#f472b6',
+        role: 'npc',
+        age: 26,
+        description: 'Cabaret star from Schneckenvorstadt. Sees who meets whom in the dark.',
+        tags: ['nightlife', 'witness'],
+        archetypeId: 'cabaret_dancer'
+    },
+    unknown: {
+        id: 'unknown',
+        tier: 'generic',
+        name: '???',
+        color: '#a8a29e',
+        role: 'npc',
+        archetypeId: 'mystery_figure'
+    },
 };
 
 export const getCharacter = (id: CharacterId): VNCharacter => CHARACTERS[id];
+
+export const getCharactersByTier = (tier: CharacterTier): VNCharacter[] => {
+    return Object.values(CHARACTERS).filter(char => char.tier === tier);
+};

@@ -12,6 +12,8 @@ import type { TextToken } from '@/shared/ui/TypedText/TypedText';
 import { ParliamentKeywordCard } from '@/features/detective/ui/ParliamentKeywordCard';
 import { PARLIAMENT_TOOLTIP_REGISTRY, getTooltipContent } from '@/features/detective/lib/tooltipRegistry';
 import { preloadManager } from '@/shared/lib/preload';
+import { OnboardingModal } from '@/features/detective/onboarding/OnboardingModal';
+import { useInventoryStore } from '@/entities/inventory/model/store';
 
 /**
  * Fullscreen Visual Novel Page
@@ -115,9 +117,31 @@ export const VisualNovelPage = () => {
     }, [activeScenario, scene, activeScenarioId, effectiveSceneId]);
 
     // Handle end scenario - navigate back
+    const [showTelegram, setShowTelegram] = useState(false);
+    const setPlayerName = useInventoryStore(state => state.setPlayerName);
+
+    // Handle end scenario - navigate back
     const handleEndScenario = () => {
+        const wasCreation = activeScenarioId === 'intro_char_creation';
+
+        if (wasCreation) {
+            setShowTelegram(true); // Show modal instead of navigating
+            return; // Don't end scenario, keep it active so useEffect doesn't restart it
+        }
+
         endScenario();
         navigate('/map'); // Return to map between scenarios
+    };
+
+    const handleTelegramComplete = (name: string) => {
+        // 1. Set Player Name
+        setPlayerName(name);
+
+        // 2. Start Station Arrival (Briefing)
+        setShowTelegram(false);
+
+        // Navigate to the new URL which will trigger the useEffect to startScenario
+        navigate('/vn/detective_case1_briefing');
     };
 
     // Token interaction (clues, notes)
@@ -249,6 +273,12 @@ export const VisualNovelPage = () => {
 
     return (
         <>
+            {showTelegram && (
+                <OnboardingModal
+                    onComplete={handleTelegramComplete}
+                    onCancel={() => setShowTelegram(false)}
+                />
+            )}
             <MobileVNLayout
                 scene={scene}
                 character={character}

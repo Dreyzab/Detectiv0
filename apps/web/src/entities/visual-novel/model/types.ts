@@ -27,6 +27,7 @@ export type VNAction =
     | { type: 'add_heat'; payload: number }
     | { type: 'modify_relationship'; payload: { characterId: CharacterId; amount: number } }
     | { type: 'set_character_status'; payload: { characterId: CharacterId; status: string } }
+    | { type: 'set_stat'; payload: { id: string; value: number } }
     | { type: 'start_battle'; payload: { scenarioId: string; deckType: string } };
 
 export interface VNSkillCheck {
@@ -51,6 +52,7 @@ export interface VNChoice {
     id: string;
     text: string;
     nextSceneId: string;
+    type?: 'action' | 'inquiry' | 'flavor'; // Visual distinction
     // Actions to trigger when selected
     actions?: VNAction[];
     // Conditions to show this choice
@@ -94,6 +96,7 @@ export interface VNSceneLogic {
     choices?: {
         id: ChoiceId;
         nextSceneId?: string;
+        type?: 'action' | 'inquiry' | 'flavor'; // Added here too
         actions?: VNAction[];
         condition?: (flags: Record<string, boolean>) => boolean;
         skillCheck?: VNSkillCheck;

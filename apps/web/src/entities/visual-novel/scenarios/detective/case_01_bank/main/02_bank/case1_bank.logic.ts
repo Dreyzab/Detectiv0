@@ -84,12 +84,13 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
             id: 'bank_hub',
             characterId: 'inspector',
             choices: [
-                { id: 'speak_manager', nextSceneId: 'manager_intro' },
-                { id: 'speak_clerk', nextSceneId: 'clerk_intro' },
-                { id: 'inspect_vault', nextSceneId: 'vault_inspection' },
+                { id: 'speak_manager', nextSceneId: 'manager_intro', type: 'inquiry' },
+                { id: 'speak_clerk', nextSceneId: 'clerk_intro', type: 'inquiry' },
+                { id: 'inspect_vault', nextSceneId: 'vault_inspection', type: 'inquiry' },
                 {
                     id: 'conclude_investigation',
                     nextSceneId: 'bank_conclusion',
+                    type: 'action',
                     condition: (flags) =>
                         flags['vault_inspected'] && flags['clerk_interviewed']
                 }
@@ -133,6 +134,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 {
                     id: 'read_clerk_empathy',
                     nextSceneId: 'clerk_empathy_result',
+                    type: 'flavor',
                     skillCheck: {
                         id: 'chk_bank_empathy_clerk',
                         voiceId: 'empathy',
@@ -158,11 +160,13 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'press_clerk',
-                    nextSceneId: 'clerk_press'
+                    nextSceneId: 'clerk_press',
+                    type: 'action'
                 },
                 {
                     id: 'leave_clerk',
-                    nextSceneId: 'bank_hub'
+                    nextSceneId: 'bank_hub',
+                    type: 'action'
                 }
             ]
         },
@@ -214,6 +218,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 {
                     id: 'examine_lock_logic',
                     nextSceneId: 'vault_logic_result',
+                    type: 'flavor',
                     skillCheck: {
                         id: 'chk_bank_logic_safe',
                         voiceId: 'logic',
@@ -240,6 +245,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 {
                     id: 'sense_atmosphere_intuition',
                     nextSceneId: 'vault_intuition_result',
+                    type: 'flavor',
                     skillCheck: {
                         id: 'chk_bank_intuition_atmosphere',
                         voiceId: 'intuition',
@@ -265,7 +271,8 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'return_to_hub',
-                    nextSceneId: 'vault_leave'
+                    nextSceneId: 'vault_leave',
+                    type: 'action'
                 }
             ]
         },
@@ -289,7 +296,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'vault_intuition_success': {
             id: 'vault_intuition_success',
             characterId: 'inspector',
-            nextSceneId: 'vault_continue',
+            nextSceneId: 'vault_occult_discovery',
             onEnter: [
                 { type: 'add_flag', payload: { 'found_residue': true } }
             ]
@@ -298,6 +305,91 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
             id: 'vault_intuition_fail',
             characterId: 'inspector',
             nextSceneId: 'vault_continue'
+        },
+
+        // ─────────────────────────────────────────────────────────────
+        // OCCULT SYMBOLS DISCOVERY — Hidden layer of mystery
+        // ─────────────────────────────────────────────────────────────
+        'vault_occult_discovery': {
+            id: 'vault_occult_discovery',
+            characterId: 'inspector',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            nextSceneId: 'vault_occult_victoria'
+        },
+        'vault_occult_victoria': {
+            id: 'vault_occult_victoria',
+            characterId: 'assistant',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            choices: [
+                {
+                    id: 'occult_shivers_check',
+                    nextSceneId: 'vault_shivers_result',
+                    type: 'flavor',
+                    skillCheck: {
+                        id: 'chk_bank_occultism_symbols',
+                        voiceId: 'occultism',
+                        difficulty: 14,
+                        onSuccess: {
+                            nextSceneId: 'vault_shivers_success',
+                            actions: [
+                                {
+                                    type: 'grant_evidence',
+                                    payload: {
+                                        id: 'ev_occult_circle',
+                                        name: 'Occult Circle',
+                                        description: 'Chalk markings with geometric precision. Not mere vandalism—a deliberate ritual pattern.',
+                                        packId: 'fbg1905'
+                                    }
+                                }
+                            ]
+                        },
+                        onFail: {
+                            nextSceneId: 'vault_shivers_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'dismiss_occult',
+                    nextSceneId: 'vault_dismiss_theatrics',
+                    type: 'action'
+                },
+                {
+                    id: 'ask_victoria_occult',
+                    nextSceneId: 'vault_victoria_analysis',
+                    type: 'inquiry'
+                }
+            ]
+        },
+        'vault_shivers_success': {
+            id: 'vault_shivers_success',
+            characterId: 'inspector',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            nextSceneId: 'vault_continue',
+            onEnter: [
+                { type: 'add_flag', payload: { 'sensed_presence': true } }
+            ]
+        },
+        'vault_shivers_fail': {
+            id: 'vault_shivers_fail',
+            characterId: 'inspector',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            nextSceneId: 'vault_continue'
+        },
+        'vault_dismiss_theatrics': {
+            id: 'vault_dismiss_theatrics',
+            characterId: 'inspector',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            nextSceneId: 'vault_continue'
+        },
+        'vault_victoria_analysis': {
+            id: 'vault_victoria_analysis',
+            characterId: 'assistant',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            nextSceneId: 'vault_continue',
+            onEnter: [
+                { type: 'modify_relationship', payload: { characterId: 'assistant', amount: 5 } },
+                { type: 'add_flag', payload: { 'victoria_analyzed_occult': true } }
+            ]
         },
 
         // Continue investigating or leave

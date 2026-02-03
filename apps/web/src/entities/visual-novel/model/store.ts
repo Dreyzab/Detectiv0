@@ -12,6 +12,7 @@ interface VNState {
     currentSceneId: string | null;
     history: string[];
     dialogueHistory: DialogueEntry[];
+    choiceHistory: string[]; // Array of "scenarioId:sceneId:choiceId" for visited tracking
 
     // Actions
     setLocale: (locale: string) => void;
@@ -22,6 +23,11 @@ interface VNState {
 
     // Dialogue History
     addDialogueEntry: (entry: Omit<DialogueEntry, 'id' | 'timestamp'>) => void;
+
+    // Choice History
+    recordChoice: (scenarioId: string, sceneId: string, choiceId: string) => void;
+    isChoiceVisited: (scenarioId: string, sceneId: string, choiceId: string) => boolean;
+
     // Persistence
     exportSave: () => string;
     importSave: (data: string) => void;
@@ -29,7 +35,7 @@ interface VNState {
     loadFromServer: (slotId: number) => Promise<boolean>;
 }
 
-type VNPersistedState = Pick<VNState, 'locale' | 'activeScenarioId' | 'currentSceneId' | 'history'>;
+type VNPersistedState = Pick<VNState, 'locale' | 'activeScenarioId' | 'currentSceneId' | 'history' | 'choiceHistory'>;
 
 const persistConfig: PersistOptions<VNState, VNPersistedState> = {
     name: 'gw4-vn-store',
@@ -41,6 +47,7 @@ const persistConfig: PersistOptions<VNState, VNPersistedState> = {
             return {
                 ...oldState,
                 dialogueHistory: [],
+                choiceHistory: [],
                 // Ensure all required action fields exist (will be replaced by store init)
                 setLocale: () => { },
                 startScenario: () => { },
@@ -49,6 +56,8 @@ const persistConfig: PersistOptions<VNState, VNPersistedState> = {
                 resetStore: () => { },
                 addDialogueEntry: () => { },
                 clearDialogueHistory: () => { },
+                recordChoice: () => { },
+                isChoiceVisited: () => false,
                 exportSave: () => "",
                 importSave: () => { },
                 syncToServer: async () => false,
@@ -61,8 +70,8 @@ const persistConfig: PersistOptions<VNState, VNPersistedState> = {
         locale: state.locale,
         activeScenarioId: state.activeScenarioId,
         currentSceneId: state.currentSceneId,
-        history: state.history
-        // Note: dialogueHistory is NOT persisted (session-only)
+        history: state.history,
+        choiceHistory: state.choiceHistory // Persist visited choices
     })
 };
 
@@ -71,7 +80,8 @@ const initialState = {
     activeScenarioId: null as string | null,
     currentSceneId: null as string | null,
     history: [] as string[],
-    dialogueHistory: [] as DialogueEntry[]
+    dialogueHistory: [] as DialogueEntry[],
+    choiceHistory: [] as string[]
 };
 
 export const useVNStore = create<VNState>()(
@@ -127,6 +137,21 @@ export const useVNStore = create<VNState>()(
 
             clearDialogueHistory: () => set({ dialogueHistory: [] }),
 
+            // --- Choice History Implementation ---
+
+            recordChoice: (scenarioId, sceneId, choiceId) => {
+                const key = `${scenarioId}:${sceneId}:${choiceId}`;
+                set((state) => {
+                    if (state.choiceHistory.includes(key)) return state;
+                    return { choiceHistory: [...state.choiceHistory, key] };
+                });
+            },
+
+            isChoiceVisited: (scenarioId, sceneId, choiceId) => {
+                const key = `${scenarioId}:${sceneId}:${choiceId}`;
+                return get().choiceHistory.includes(key);
+            },
+
             // --- Persistence Implementation ---
 
             exportSave: () => {
@@ -135,7 +160,8 @@ export const useVNStore = create<VNState>()(
                     locale: state.locale,
                     activeScenarioId: state.activeScenarioId,
                     currentSceneId: state.currentSceneId,
-                    history: state.history
+                    history: state.history,
+                    choiceHistory: state.choiceHistory
                 };
                 return JSON.stringify(data);
             },

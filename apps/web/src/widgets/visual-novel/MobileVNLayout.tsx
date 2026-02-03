@@ -5,7 +5,7 @@ import { SpeakerBadge } from '@/entities/character/ui/SpeakerBadge';
 import type { VNScene, VNChoice, VNCharacter, DialogueEntry } from '@/entities/visual-novel/model/types';
 import { getVoiceColor } from '@repo/shared/data/parliament';
 import { useGyroParallax } from '@/shared/lib/hooks/useGyroParallax';
-import { Smartphone, SmartphoneNfc } from 'lucide-react';
+import { Smartphone, SmartphoneNfc, ArrowRight, MessageCircle, Eye } from 'lucide-react';
 
 
 interface MobileVNLayoutProps {
@@ -105,7 +105,7 @@ export function MobileVNLayout({
                 // Debug logging removed
             }
         }
-    }, [scene.id, scene.text.length, shouldLog]);
+    }, [shouldLog]);
 
     const handleTapZone = () => {
         if (isRevealMode) {
@@ -309,7 +309,12 @@ interface ChoiceButtonProps {
 
 function ChoiceButton({ choice, index, onClick }: ChoiceButtonProps) {
     const hasSkillCheck = !!choice.skillCheck;
-    const listIndex = index + 1;
+    const type = choice.type || 'action'; // Default to action if undefined
+
+    // Styles based on type
+    const isAction = type === 'action';
+    const isInquiry = type === 'inquiry';
+    const isFlavor = type === 'flavor';
 
     return (
         <motion.button
@@ -317,14 +322,18 @@ function ChoiceButton({ choice, index, onClick }: ChoiceButtonProps) {
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: index * 0.04, duration: 0.2 }}
             onClick={onClick}
-            className="w-full min-h-[40px] px-4 py-3 
-                       hover:bg-white/5 active:scale-[0.99]
-                       transition-all duration-200 text-left flex items-start gap-3 group cursor-pointer border-l-2 border-transparent hover:border-amber-500/50"
+            className={`w-full min-h-[40px] px-4 py-3 
+                       transition-all duration-200 text-left flex items-start gap-4 group cursor-pointer border-l-2 
+                       ${isAction ? 'border-amber-500/50 bg-amber-950/10 hover:bg-amber-900/20' : 'border-transparent hover:border-stone-600 hover:bg-white/5'}
+                       `}
         >
-            {/* List Index / Bullet */}
-            <span className="font-mono text-stone-500 text-sm mt-0.5 group-hover:text-amber-500 transition-colors">
-                {listIndex}.
-            </span>
+            {/* Icon/Indicator based on Type */}
+            <div className="mt-1 flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                {isAction && <ArrowRight size={18} className="text-amber-500" />}
+                {isInquiry && <MessageCircle size={18} className="text-stone-400" />}
+                {isFlavor && <Eye size={18} className="text-blue-300/70" />}
+                {/* Fallback or skill check handling can go here if needed */}
+            </div>
 
             <div className="flex-1 flex flex-col gap-1">
                 {hasSkillCheck && (
@@ -340,8 +349,11 @@ function ChoiceButton({ choice, index, onClick }: ChoiceButtonProps) {
                     </span>
                 )}
 
-                <span className="font-body text-lg text-stone-300 group-hover:text-amber-50 leading-snug transition-colors">
-                    <span className="text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity mr-1">—</span>
+                <span className={`font-body text-lg leading-snug transition-colors
+                    ${isAction ? 'text-amber-100 font-medium group-hover:text-amber-50 shadow-black drop-shadow-sm' : ''}
+                    ${isInquiry ? 'text-stone-300 group-hover:text-stone-100' : ''}
+                    ${isFlavor ? 'text-blue-100/80 italic group-hover:text-blue-50' : ''}
+                `}>
                     {choice.text}
                 </span>
             </div>
