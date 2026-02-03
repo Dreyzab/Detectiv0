@@ -71,6 +71,8 @@ jobs:
 
       - name: Build Web
         run: bun run --filter web build
+        env:
+          VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
 
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0

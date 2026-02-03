@@ -3,13 +3,16 @@ import { useQuestStore } from './store';
 import { cn } from '@/shared/lib/utils';
 import { ChevronRight, CheckCircle2, Circle } from 'lucide-react';
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const QuestLog = () => {
     const { userQuests, quests } = useQuestStore();
     const [isExpanded, setIsExpanded] = useState(true);
 
+    const location = useLocation();
     const activeQuests = Object.values(userQuests).filter(q => q.status === 'active');
 
+    if (location.pathname !== '/map') return null;
     if (activeQuests.length === 0) return null;
 
     return (

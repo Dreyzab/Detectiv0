@@ -11,6 +11,8 @@ import { Navbar } from '@/widgets/navbar/Navbar';
 
 import { useQuestEngine } from "./features/quests/engine";
 import { QuestLog } from "./features/quests/QuestLog";
+import { QuestJournalPage } from "./features/quests/QuestJournalPage";
+import { QuestNotification } from "./features/quests/QuestNotification";
 
 function App() {
   useQuestEngine(); // Initialize Quest System
@@ -20,6 +22,7 @@ function App() {
     <BrowserRouter>
       {/* Global Overlays */}
       <QuestLog />
+      <QuestNotification />
       <Navbar />
       <VisualNovelOverlay />
 
@@ -32,6 +35,7 @@ function App() {
         {devDashboardEnabled && <Route path="/developer" element={<DeveloperPage />} />}
         <Route path="/vn/:scenarioId" element={<VisualNovelPage />} />
         <Route path="/battle" element={<BattlePage />} />
+        <Route path="/quests" element={<QuestJournalPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
