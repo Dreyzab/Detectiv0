@@ -39,7 +39,7 @@ export const useMapActionHandler = () => {
                 break;
             }
             case 'start_battle': {
-                console.log('Battle start not implemented yet', action.battleId);
+                console.log('Battle start not implemented yet', (action as any).scenarioId);
                 break;
             }
             case 'open_trade': {
