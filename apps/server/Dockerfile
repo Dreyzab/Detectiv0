@@ -7,7 +7,7 @@ COPY apps/server/package.json ./apps/server/
 COPY packages/shared/package.json ./packages/shared/
 
 # Bun workspaces install
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copy source
 COPY apps/server ./apps/server
