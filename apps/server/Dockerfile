@@ -22,4 +22,4 @@ ENV PORT=8080
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "bun run src/db/migrate.ts && bun run src/index.ts"]
+CMD ["bun", "run", "src/index.ts"]
