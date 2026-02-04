@@ -16,25 +16,37 @@ import { MapPointBindingSchema } from '@repo/shared/lib/map-validators';
 // So the server must execute STATE changes (unlock point) here.
 
 export const mapModule = new Elysia({ prefix: '/map' })
-    .get('/points', async ({ query }) => {
-        const packId = query.packId as string | undefined;
-        // Fetch points
-        const points = await db.select().from(mapPoints)
-            .where(packId ? eq(mapPoints.packId, packId) : undefined);
+    .get('/points', async ({ query, set }) => {
+        try {
+            const packId = query.packId as string | undefined;
+            // Fetch points
+            const points = await db.select().from(mapPoints)
+                .where(packId ? eq(mapPoints.packId, packId) : undefined);
 
-        // Fetch user state (mocking userId for now, or use auth)
-        // TODO: Get real userId from context
-        const userId = "demo_user";
-        const states = await db.select().from(userMapPointStates)
-            .where(eq(userMapPointStates.userId, userId));
+            // Fetch user state (mocking userId for now, or use auth)
+            // TODO: Get real userId from context
+            const userId = "demo_user";
+            const states = await db.select().from(userMapPointStates)
+                .where(eq(userMapPointStates.userId, userId));
 
-        // Transform user states to Record
-        const stateMap: Record<string, string> = {};
-        states.forEach(s => {
-            stateMap[s.pointId] = s.state;
-        });
+            // Transform user states to Record
+            const stateMap: Record<string, string> = {};
+            states.forEach(s => {
+                stateMap[s.pointId] = s.state;
+            });
 
-        return { points, userStates: stateMap };
+            return { points, userStates: stateMap };
+        } catch (error) {
+            console.error("CRITICAL: Failed to fetch map points from DB", error);
+            set.status = 500;
+            return {
+                error: "Database connection failed",
+                details: (error as Error).message,
+                stack: (error as Error).stack,
+                points: [],
+                userStates: {}
+            };
+        }
     })
 
     .post('/activate-qr', async ({ body, set }) => {
@@ -72,7 +84,11 @@ export const mapModule = new Elysia({ prefix: '/map' })
         // We parse bindings JSON
         let bindings: MapPointBinding[] = [];
         try {
-            bindings = JSON.parse(point.bindings);
+            if (typeof point.bindings === 'string') {
+                bindings = JSON.parse(point.bindings);
+            } else {
+                bindings = point.bindings as MapPointBinding[];
+            }
             // Optional: validate with Zod if needed, but we trust DB for speed or warn
         } catch (e) {
             console.error("Failed to parse bindings for point", point.id);

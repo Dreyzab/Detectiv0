@@ -45,7 +45,7 @@ export const Card: React.FC<CardProps> = ({
             }}
             className={`
                 relative w-40 h-56 rounded-xl border-2 transition-all duration-200
-                flex flex-col select-none touch-none
+                flex flex-col select-none touch-none group
                 ${!disabled && isPlayable ? 'cursor-grab active:cursor-grabbing bg-slate-900' : 'opacity-50 cursor-not-allowed bg-slate-950 grayscale'}
                 ${disabled ? 'opacity-40' : ''}
                 ${!disabled && isPlayable && !style?.position ? 'hover:-translate-y-4 hover:shadow-lg hover:z-10' : ''}
@@ -68,8 +68,21 @@ export const Card: React.FC<CardProps> = ({
 
             {/* Image Placeholder */}
             <div className="h-24 w-full bg-slate-800 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/80" />
-                <div className="w-full h-full opacity-30" style={{ backgroundColor: groupColorBg }} />
+                {card.artUrl ? (
+                    <>
+                        <img
+                            src={card.artUrl}
+                            alt={card.name}
+                            className="w-full h-full object-cover opacity-90 transition-opacity group-hover:opacity-100 duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-transparent pointer-events-none" />
+                    </>
+                ) : (
+                    <>
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/80" />
+                        <div className="w-full h-full opacity-30" style={{ backgroundColor: groupColorBg }} />
+                    </>
+                )}
             </div>
 
             {/* Content */}

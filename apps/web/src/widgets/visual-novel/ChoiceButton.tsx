@@ -75,12 +75,14 @@ export function ChoiceButton({
 
     return (
         <motion.button
-            initial={{ x: -10, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: index * 0.04, duration: 0.2 }}
+            variants={{
+                hidden: { x: -20, opacity: 0 },
+                visible: { x: 0, opacity: 1 }
+            }}
+            // Remove manual transition to let motion handle stagger
             onClick={onClick}
-            className={`w-full ${compact ? 'min-h-[36px] px-3 py-2' : 'min-h-[40px] px-4 py-3'} 
-                       transition-all duration-200 text-left flex items-start gap-4 group cursor-pointer border-l-2 
+            className={`w-full ${compact ? 'min-h-[36px] px-3 py-2' : 'min-h-[44px] px-3 py-2'} 
+                       transition-all duration-200 text-left flex items-start gap-3 group cursor-pointer border-l-2 
                        ${baseOpacity}
                        ${isAction
                     ? isVisited
@@ -116,7 +118,7 @@ export function ChoiceButton({
                 )}
 
                 {/* Choice Text */}
-                <span className={`${compact ? 'text-base' : 'text-lg'} leading-snug transition-colors
+                <span className={`${compact ? 'text-base' : 'text-base sm:text-lg'} leading-snug transition-colors
                     ${isAction
                         ? isVisited
                             ? 'text-stone-500 font-medium'

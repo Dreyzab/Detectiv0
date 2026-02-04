@@ -34,31 +34,8 @@ const mapBinding = (b: any): MapPointBinding => {
 const main = async () => {
     console.log('🌱 Seeding Map Points...');
 
-    // 0. Ensure tables exist (Dev / No-Migration env)
-    db.run(`CREATE TABLE IF NOT EXISTS map_points (
-        id TEXT PRIMARY KEY,
-        packId TEXT NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT,
-        lat REAL NOT NULL,
-        lng REAL NOT NULL,
-        category TEXT NOT NULL,
-        image TEXT,
-        qr_code TEXT,
-        bindings TEXT NOT NULL,
-        data TEXT,
-        schema_version INTEGER DEFAULT 1
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS user_map_point_user_states (
-        user_id TEXT NOT NULL,
-        point_id TEXT NOT NULL,
-        state TEXT NOT NULL,
-        data TEXT,
-        PRIMARY KEY (user_id, point_id),
-        FOREIGN KEY (point_id) REFERENCES map_points(id) ON DELETE CASCADE
-    )`);
-    // Note: User table referencing omitted for now as we might not have users table seeded
+    // Tables are now handled by Drizzle migrations.
+    // Ensure you've run migrations before seeding.
 
     // 1. Clear existing map points
     // Note: We might want to keep user states if we are just updating content, 
@@ -70,8 +47,8 @@ const main = async () => {
     // Let's try to delete points. If foreign key fails, we delete states first.
 
     try {
-        await db.delete(userMapPointStates).run(); // Reset user progress for safety in this dev script
-        await db.delete(mapPoints).run();
+        await db.delete(userMapPointStates); // Reset user progress for safety in this dev script
+        await db.delete(mapPoints);
     } catch (e) {
         console.warn("Could not clear tables, maybe they don't exist yet?", e);
     }
@@ -100,7 +77,7 @@ const main = async () => {
             bindings: JSON.stringify(bindings) as any,
             data: Object.keys(additionalData).length > 0 ? JSON.stringify(additionalData) as any : null,
             schemaVersion: 1
-        }).run();
+        });
 
         count++;
         console.log(`+ Added ${p.title} (${category})`);

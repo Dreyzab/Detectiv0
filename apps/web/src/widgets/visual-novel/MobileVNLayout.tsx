@@ -5,7 +5,7 @@ import { SpeakerBadge } from '@/entities/character/ui/SpeakerBadge';
 import type { VNScene, VNChoice, VNCharacter, DialogueEntry } from '@/entities/visual-novel/model/types';
 import { getVoiceColor } from '@repo/shared/data/parliament';
 import { useGyroParallax } from '@/shared/lib/hooks/useGyroParallax';
-import { Smartphone, SmartphoneNfc, ArrowRight, MessageCircle, Eye } from 'lucide-react';
+import { Smartphone, SmartphoneNfc, ArrowRight, MessageCircle, Eye, MapPin } from 'lucide-react';
 
 
 interface MobileVNLayoutProps {
@@ -166,6 +166,8 @@ export function MobileVNLayout({
                         />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-transparent to-black/30" />
+                    {/* === GLOBAL ATMOSPHERE === */}
+                    <div className="absolute inset-0 z-[10] pointer-events-none mix-blend-overlay opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIxIi8+PC9zdmc+')] brightness-100 contrast-150" />
                 </motion.div>
             </AnimatePresence>
 
@@ -198,11 +200,21 @@ export function MobileVNLayout({
                 {/* Art Deco border */}
                 <div className="h-[2px] bg-gradient-to-r from-transparent via-amber-600/80 to-transparent flex-shrink-0" />
 
-                {/* Scene Context Header */}
-                <div className="absolute top-[-2rem] right-0 flex items-center gap-3 text-[10px] font-mono tracking-widest text-stone-400 opacity-80 z-20">
-                    <span className="uppercase">{scene.id.split('_').slice(1).join(' ')}</span>
-                    <span>//</span>
-                    <span>14:00</span>
+                {/* === ATMOSPHERIC LAYERS === */}
+
+
+                {/* === CINEMATIC HEADER (Top) === */}
+                <div className="absolute top-0 inset-x-0 p-6 pt-12 flex justify-between items-start z-[100] bg-gradient-to-b from-black/90 via-black/40 to-transparent pb-32 pointer-events-none">
+                    <div className="flex flex-col gap-2 transform translate-y-0 transition-transform duration-700">
+                        <div className="flex items-center gap-2 text-amber-500/90 uppercase tracking-[0.2em] text-[10px] font-bold">
+                            <MapPin size={12} className="text-amber-500" />
+                            <span>Current Location</span>
+                        </div>
+                        <h1 className="text-3xl font-display text-white font-bold tracking-tight drop-shadow-2xl opacity-90">
+                            {scene.id.split('_').slice(1).join(' ')}
+                        </h1>
+                        <div className="h-[1px] w-24 bg-gradient-to-r from-amber-500/50 to-transparent mt-1" />
+                    </div>
                 </div>
 
                 {/* Speaker Badge - Connected Floating Label */}
@@ -224,9 +236,10 @@ export function MobileVNLayout({
                 {/* Scrollable Dialogue Area */}
                 <div
                     ref={scrollRef}
-                    className={`flex-1 bg-gradient-to-b from-stone-950/20 to-black/50 backdrop-blur-md overflow-y-auto px-6 ${character ? 'pt-12 pb-6' : 'py-6'} relative
+                    className={`flex-1 bg-gradient-to-b from-stone-950/20 to-black/50 backdrop-blur-md overflow-y-auto px-6 py-6 relative
                                border-t-0 border-r-0 border-b-0 border-l-[1px] border-l-white/5
-                               rounded-tr-[2rem]`} // Asymmetrical corner
+                               rounded-tr-[2rem]
+                               ${character ? 'pt-12' : ''}`}
                 >
                     {/* Paper texture overlay with better blending */}
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none" />
@@ -248,7 +261,7 @@ export function MobileVNLayout({
                                     {entry.characterName}
                                 </div>
                             )}
-                            <div className="font-body text-sm sm:text-base leading-relaxed text-stone-400">
+                            <div className="font-body text-base sm:text-lg leading-relaxed text-stone-200">
                                 {entry.text}
                             </div>
                             {/* Show choice made */}
@@ -277,9 +290,21 @@ export function MobileVNLayout({
                 <AnimatePresence>
                     {!isTyping && hasChoices && (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            initial="hidden"
+                            animate="visible"
+                            exit="hidden"
+                            variants={{
+                                visible: {
+                                    opacity: 1,
+                                    transition: {
+                                        staggerChildren: 0.1,
+                                        delayChildren: 0.1
+                                    }
+                                },
+                                hidden: {
+                                    opacity: 0
+                                }
+                            }}
                             className="flex-shrink-0 bg-stone-950/90 backdrop-blur-xl border-t border-white/10 px-4 sm:px-6 py-2 sm:py-3 space-y-1 max-h-[50vh] overflow-y-auto shadow-inner"
                         >
                             {/* "What will you say?" Header/Context could go here */}

@@ -11,8 +11,20 @@ import { detectiveModule } from "./modules/detective";
 
 const app = new Elysia()
   .use(cors({
-    origin: true, // Allow all origins in dev
+    origin: (request) => {
+      const origin = request.headers.get('origin');
+      if (!origin) return true; // Allow non-browser requests
+      const allowedOrigins = [
+        'https://detective-prod-8f6f0.web.app',
+        'http://localhost:5173',
+        'http://localhost:4173'
+      ];
+      // Allow if exact match or strict subdirectory if needed (usually exact match is safer)
+      return allowedOrigins.includes(origin);
+    },
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   }))
   .use(swagger())
   .use(healthModule)

@@ -198,6 +198,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     // 🔵 INTELLECT (3 cards)
     {
         id: 'card_logical_argument',
+        artUrl: '/images/cards/card_logical_argument.png',
         name: 'Logical Argument',
         nameRu: 'Логический аргумент',
         description: 'Present cold, hard facts. Deal 4 damage.',
@@ -209,6 +210,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_analyze_weakness',
+        artUrl: '/images/cards/card_analyze_weakness.png',
         name: 'Analyze Weakness',
         nameRu: 'Анализ слабости',
         description: 'Study your opponent. Deal 2 damage and draw 1 card.',
@@ -223,6 +225,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_deduction',
+        artUrl: '/images/cards/card_deduction.png',
         name: 'Brilliant Deduction',
         nameRu: 'Блестящая дедукция',
         description: 'Your logic is undeniable. Deal 8 damage.',
@@ -236,6 +239,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     // 🟣 PSYCHE (3 cards)
     {
         id: 'card_empathic_appeal',
+        artUrl: '/images/cards/card_empathic_appeal.png',
         name: 'Empathic Appeal',
         nameRu: 'Эмпатический призыв',
         description: 'Connect emotionally. Heal 3 resolve.',
@@ -247,6 +251,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_gut_feeling',
+        artUrl: '/images/cards/card_gut_feeling.png',
         name: 'Gut Feeling',
         nameRu: 'Внутреннее чутьё',
         description: 'Trust your instincts. Gain 4 block.',
@@ -258,6 +263,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_read_intent',
+        artUrl: '/images/cards/card_read_intent.png',
         name: 'Read Intent',
         nameRu: 'Чтение намерений',
         description: 'Anticipate their move. Gain 6 block and draw 1 card.',
@@ -274,6 +280,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     // 🔴 SOCIAL (3 cards)
     {
         id: 'card_assertive_stance',
+        artUrl: '/images/cards/card_assertive_stance.png',
         name: 'Assertive Stance',
         nameRu: 'Напористая позиция',
         description: 'Command respect. Deal 3 damage, gain 2 block.',
@@ -288,6 +295,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_silver_tongue',
+        artUrl: '/images/cards/card_silver_tongue.png',
         name: 'Silver Tongue',
         nameRu: 'Серебряный язык',
         description: 'Charm your way through. Deal 5 damage.',
@@ -299,6 +307,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_commanding_presence',
+        artUrl: '/images/cards/card_commanding_presence.png',
         name: 'Commanding Presence',
         nameRu: 'Властное присутствие',
         description: 'Dominate the conversation. Deal 6 damage, gain 3 block.',
@@ -315,6 +324,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     // 🟢 PHYSICAL (2 cards)
     {
         id: 'card_steady_nerves',
+        artUrl: '/images/cards/card_steady_nerves.png',
         name: 'Steady Nerves',
         nameRu: 'Стальные нервы',
         description: 'Stay calm under pressure. Gain 5 block.',
@@ -326,6 +336,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_relentless',
+        artUrl: '/images/cards/card_relentless.png',
         name: 'Relentless',
         nameRu: 'Неумолимый',
         description: 'Push through exhaustion. Deal 4 damage, gain 1 AP.',
@@ -342,6 +353,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     // ⚫ SHADOW (2 cards)
     {
         id: 'card_misdirection',
+        artUrl: '/images/cards/card_misdirection.png',
         name: 'Misdirection',
         nameRu: 'Отвлечение внимания',
         description: 'Keep them guessing. Opponent discards 1 card.',
@@ -353,6 +365,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_veiled_threat',
+        artUrl: '/images/cards/card_veiled_threat.png',
         name: 'Veiled Threat',
         nameRu: 'Скрытая угроза',
         description: 'Imply consequences. Deal 6 damage.',
@@ -366,6 +379,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     // 🟠 SPIRIT (2 cards)
     {
         id: 'card_appeal_to_tradition',
+        artUrl: '/images/cards/card_appeal_to_tradition.png',
         name: 'Appeal to Tradition',
         nameRu: 'Призыв к традиции',
         description: 'Invoke shared values. Heal 2 and gain 3 block.',
@@ -380,6 +394,7 @@ export const STARTER_CARDS: CardDefinition[] = [
     },
     {
         id: 'card_poetic_strike',
+        artUrl: '/images/cards/card_poetic_strike.png',
         name: 'Poetic Strike',
         nameRu: 'Поэтический удар',
         description: 'Words as weapons. Deal 7 damage.',

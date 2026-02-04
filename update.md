@@ -4,6 +4,23 @@
 
 ---
 
+## [04.02.2026] — Database Migration to Supabase (PostgreSQL)
+
+### Added
+- **Supabase Integration**: Local SQLite migrated to a hosted Supabase project.
+- **PgBouncer Support**: Configured `DATABASE_URL` with transaction pooling (port 6543) for stability.
+- **SQL Seeding**: Created manual SQL seed for map points and quests to bypass local connection issues.
+
+### Changed
+- **Drizzle Schema**: Updated table definitions for Postgres compatibility (e.g. `user_map_point_user_states`).
+- **Seed Scripts**: `seed-map.ts` and `seed-quests.ts` updated to use Postgres-specific syntax (`.values()`).
+
+### Fixed
+- **Env Config**: Removed invalid characters from `.env` connection strings.
+- **SSL Issues**: Enabled `rejectUnauthorized: false` for reliable connections from local environment.
+
+---
+
 ## [01.02.2026] - Dialogue Duels Migration (FSD + Immer)
 
 ### Added

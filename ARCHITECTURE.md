@@ -19,7 +19,7 @@ Follows FSD (Feature-Sliced Design):
 - **entities/**: Business logic and stores (User, Inventory, VisualNovel, Quest).
 - **shared/**: Reusable UI components and pure logic (UI Kit, Mapbox Libs, i18n).
 
-### `apps/server` (Backend: ElysiaJS + Bun + SQLite)
+### `apps/server` (Backend: ElysiaJS + Bun + Supabase/PostgreSQL)
 - **api/**: REST/Eden Treaty endpoints.
 - **db/**: Drizzle schema, migrations, and seed data.
 - **modules/**: Domain logic (Auth, Map, Progress, Combat).
@@ -48,8 +48,8 @@ Currently the project focuses on **Detective Mode** (Freiburg 1905).
 
 | Domain | Source | Status |
 |--------|--------|--------|
-| **Map Points** | SQLite (`map_points`) | ✅ Migrated |
-| **User Progress** | SQLite (`user_map_point_states`) | ✅ Migrated |
+| **Map Points** | Supabase (`map_points`) | ✅ Migrated |
+| **User Progress** | Supabase (`user_map_point_user_states`) | ✅ Migrated |
 | **Hardlinks (QR)** | `hardlinks.ts` | ⏳ Phase 2 → DB |
 | **Cases/Chapters** | `cases.ts` | ⏳ Phase 2 → DB |
 | **Deductions** | `deductions.ts` | ⏳ Phase 2 → DB |

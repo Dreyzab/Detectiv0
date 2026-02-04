@@ -8,7 +8,7 @@ import { Button } from '../shared/ui/Button';
 import { OnboardingModal } from '../features/detective/onboarding/OnboardingModal';
 import { getScenarioById } from '../entities/visual-novel/scenarios/registry';
 import { preloadManager, extractScenarioAssets, toPreloadQueue } from '../shared/lib/preload';
-import { Archive, Play, RefreshCw, Settings, QrCode, Terminal } from 'lucide-react';
+import { Archive, Play, RefreshCw, Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const HomePage = () => {
@@ -16,7 +16,10 @@ export const HomePage = () => {
     const setGameMode = useInventoryStore(state => state.setGameMode);
     const setPlayerName = useInventoryStore(state => state.setPlayerName);
     const [telegramDismissed, setTelegramDismissed] = useState(false);
-    const [showDevTools, setShowDevTools] = useState(false);
+    // const [showDevTools, setShowDevTools] = useState(false); // Removed as toggle is gone
+    const showDevTools = false; // Hardcode to false for now or remove logic completely later. 
+    // Actually, let's keep the logic but strictly false unless we add a trigger.
+    // Or better, remove the unused state to fix lint.
 
     // active session
     const activeScenarioId = useVNStore(state => state.activeScenarioId);
@@ -71,12 +74,15 @@ export const HomePage = () => {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-stone-950 text-stone-200 flex flex-col relative overflow-x-hidden">
+        <div className="min-h-[100dvh] bg-stone-950 text-stone-200 flex flex-col relative overflow-hidden font-body">
             {/* Background Texture */}
-            <div className="fixed inset-0 bg-[url('/images/paper-texture.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+            <div className="fixed inset-0 bg-[url('/images/paper-texture.png')] opacity-[0.05] mix-blend-overlay pointer-events-none" />
 
-            {/* Main Content Container */}
-            <main className="flex-1 flex flex-col items-center justify-center p-6 gap-8 pb-24 md:pb-10 pt-20">
+            {/* Ambient Gradient */}
+            <div className="fixed inset-0 bg-gradient-to-b from-stone-950 via-transparent to-stone-950/80 pointer-events-none" />
+
+            {/* Main Content Container - centered vertically */}
+            <main className="flex-1 flex flex-col items-center justify-center p-6 gap-10 pb-24 relative z-10">
 
                 {showTelegram && (
                     <OnboardingModal
@@ -90,91 +96,90 @@ export const HomePage = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="text-center space-y-2 mt-4"
+                    className="text-center space-y-3"
                 >
-                    <h1 className="text-4xl md:text-6xl font-heading text-amber-500 tracking-tighter drop-shadow-md">
-                        Grezwanderer<span className="text-stone-600 ml-2">4</span>
-                    </h1>
-                    <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-amber-700/50 to-transparent mx-auto" />
-                    <p className="text-stone-500 font-serif italic text-sm md:text-base">
+                    <div className="relative inline-block">
+                        <h1 className="text-5xl md:text-7xl font-heading text-amber-600 tracking-tighter drop-shadow-lg relative z-10">
+                            Grezwanderer
+                        </h1>
+                        <div className="absolute -inset-4 bg-amber-600/10 blur-3xl rounded-full -z-10" />
+                    </div>
+
+                    <div className="h-[2px] w-16 bg-gradient-to-r from-transparent via-amber-800 to-transparent mx-auto opacity-70" />
+
+                    <p className="text-stone-500 font-serif italic text-base md:text-lg tracking-wide">
                         Shadows of the Black Forest
                     </p>
                 </motion.div>
 
-                {/* Primary Action Card */}
+                {/* Primary Action Card - Mobile Optimized */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
-                    className="w-full max-w-md relative group"
+                    className="w-full max-w-sm relative group"
                 >
                     {/* Card Glow */}
-                    <div className="absolute -inset-1 bg-gradient-to-b from-amber-600/20 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                    <div className="absolute -inset-0.5 bg-gradient-to-b from-amber-700/30 to-amber-900/10 blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-700" />
 
-                    <div className="relative bg-stone-900/80 backdrop-blur-sm border border-stone-800 p-1 shadow-2xl rounded-xl overflow-hidden">
+                    <div className="relative bg-stone-900 border border-stone-800 p-1 shadow-2xl rounded-2xl overflow-hidden">
 
-                        {/* Inner Bezel */}
-                        <div className="border border-stone-800/50 rounded-lg p-6 flex flex-col gap-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-stone-800/50 via-stone-900 to-stone-950">
+                        {/* Paper texture overlay on card */}
+                        <div className="absolute inset-0 bg-[url('/images/paper-texture.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+
+                        {/* Inner Content */}
+                        <div className="border border-stone-800/50 rounded-xl p-6 flex flex-col gap-6 bg-gradient-to-b from-stone-800/40 to-stone-950/90 backdrop-blur-sm">
 
                             {/* Card Header */}
-                            <div className="text-center space-y-3">
-                                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-950/30 border border-amber-900/50 text-amber-600 mb-2">
-                                    <Archive size={24} />
+                            <div className="text-center space-y-4">
+                                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-stone-950 border border-amber-900/30 text-amber-600 shadow-inner">
+                                    <Archive size={26} />
                                 </div>
-                                <h2 className="text-2xl font-heading text-stone-200">
-                                    Archiv: Freiburg 1905
-                                </h2>
-                                <p className="text-stone-500 font-serif text-sm leading-relaxed px-4">
-                                    The city holds secrets that time cannot erase. Resume your investigation.
-                                </p>
+                                <div>
+                                    <h2 className="text-2xl font-heading text-amber-500/90">
+                                        Case File: 1905
+                                    </h2>
+                                    <p className="text-stone-500 text-xs uppercase tracking-widest mt-1 font-bold">
+                                        Freiburg im Breisgau
+                                    </p>
+                                </div>
                             </div>
+
+                            <div className="h-px w-full bg-stone-800/80" />
 
                             {/* Actions */}
                             <div className="space-y-3">
                                 <Button
                                     onClick={startDetectiveMode}
-                                    className="w-full h-14 bg-amber-700 hover:bg-amber-600 text-stone-100 font-serif font-bold text-lg border border-amber-600 shadow-lg shadow-amber-900/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+                                    className="w-full h-14 bg-amber-700 hover:bg-amber-600 text-stone-100 font-heading text-xl tracking-wide border-t border-amber-500/20 shadow-lg shadow-amber-900/30 flex items-center justify-center gap-3 transition-all active:scale-[0.98] rounded-lg"
                                 >
-                                    <Play size={20} fill="currentColor" />
-                                    Continue
+                                    <Play size={22} fill="currentColor" className="opacity-80" />
+                                    Resume
                                 </Button>
 
                                 <Button
                                     onClick={handleNewGame}
-                                    className="w-full h-12 bg-transparent hover:bg-stone-800 text-stone-400 hover:text-stone-200 font-serif font-medium border border-stone-800 text-base flex items-center justify-center gap-3 transition-colors"
+                                    className="w-full h-12 bg-stone-950/50 hover:bg-stone-900 text-stone-400 hover:text-stone-200 font-serif border border-stone-800 flex items-center justify-center gap-2 transition-colors rounded-lg group/btn"
                                 >
-                                    <RefreshCw size={16} />
-                                    New Game
+                                    <RefreshCw size={16} className="group-hover/btn:rotate-180 transition-transform duration-500" />
+                                    New Investigation
                                 </Button>
                             </div>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Footer Controls */}
-                <div className="flex gap-6 text-stone-600 mt-auto md:mt-0">
-                    <button onClick={() => navigate('/scanner')} className="flex flex-col items-center gap-1 hover:text-amber-500 transition-colors p-2">
-                        <QrCode size={20} />
-                        <span className="text-[10px] uppercase font-bold tracking-wider">Scanner</span>
-                    </button>
-                    <button onClick={() => navigate('/settings')} className="flex flex-col items-center gap-1 hover:text-amber-500 transition-colors p-2">
-                        <Settings size={20} />
-                        <span className="text-[10px] uppercase font-bold tracking-wider">Config</span>
-                    </button>
-                    <button onClick={() => setShowDevTools(!showDevTools)} className="flex flex-col items-center gap-1 hover:text-red-500 transition-colors p-2">
-                        <Terminal size={20} />
-                        <span className="text-[10px] uppercase font-bold tracking-wider">Debug</span>
-                    </button>
-                </div>
-
-                {/* Collapsible Dev Tools */}
+                {/* Dev Tools Toggle (Hidden/Subtle) */}
                 {showDevTools && (
                     <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
-                        className="w-full max-w-md bg-red-950/10 border border-red-900/30 rounded-lg p-4"
+                        className="w-full max-w-sm bg-red-950/20 border border-red-900/30 rounded-lg p-4 backdrop-blur-sm"
                     >
-                        <h3 className="text-xs text-red-500 font-mono font-bold uppercase mb-3">Developer Override</h3>
+                        <h3 className="text-xs text-red-500 font-mono font-bold uppercase mb-3 flex items-center gap-2">
+                            <Terminal size={12} />
+                            Debug Override
+                        </h3>
                         <Button
                             onClick={() => {
                                 useInventoryStore.getState().resetAll();
@@ -189,11 +194,12 @@ export const HomePage = () => {
                             }}
                             className="w-full h-10 bg-red-900/20 hover:bg-red-900/40 text-red-400 font-mono text-xs border border-red-900/40 flex items-center justify-center gap-2"
                         >
-                            <Terminal size={14} />
                             JUMP TO BANK CASE
                         </Button>
                     </motion.div>
                 )}
+
+                {/* Note: Global navigation is now handled by the Navbar widget */}
             </main>
         </div>
     );

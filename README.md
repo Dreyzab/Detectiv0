@@ -7,7 +7,7 @@
 ## 🚀 Основные возможности (Features)
 
 ### 🕵️ Detective Investigation Engine
-- **Unified Map System (v2)**: Полностью БД-управляемая система точек (SQLite) с категориями (`CRIME_SCENE`, `NPC`, `QUEST` и др.) и прямым хранением изображений.
+- **Unified Map System (v2)**: Полностью БД-управляемая система точек (Supabase/PostgreSQL) с категориями (`CRIME_SCENE`, `NPC`, `QUEST` и др.) и прямым хранением изображений.
   - ✅ `map_points`: полностью мигрированы
   - ⏳ `hardlinks`, `cases`, `deductions`: запланированы на Фазу 2 (Content Editor)
 - **Narrative Threads**: Визуализация логических связей между уликами прямо на карте.
@@ -74,7 +74,7 @@
 ### Основной Стек (Tech Stack)
 - **Runtime**: [Bun](https://bun.sh) (управление пакетами, тесты, выполнение скриптов)
 - **Frontend**: React 19 + Vite 7 + Tailwind CSS v4
-- **Backend**: ElysiaJS + Drizzle ORM + SQLite
+- **Backend**: ElysiaJS + Drizzle ORM + Supabase (PostgreSQL)
 - **Infrastructure**: Redis (Pub/Sub) + Clerk (Auth)
 
 ### Структура Директорий
@@ -107,7 +107,7 @@
 │   └── server/                     # [Backend] ElysiaJS + Bun
 │       ├── src/
 │       │   ├── config/             # Env vars (Redis, Clerk, Mapbox)
-│       │   ├── db/                 # Drizzle Schemas & Migrations (SQLite)
+│       │   ├── db/                 # Drizzle Schemas & Migrations (Supabase/PostgreSQL)
 │       │   ├── middleware/         # Auth (Clerk) & Logging
 │       │   ├── modules/            # API Endpoints (Map, Health)
 │       │   ├── scripts/            # Утилиты (Seeding, Maintenance)
@@ -145,7 +145,7 @@ Vite настроен на автоматическую загрузку пер�
 - `VITE_MAPBOX_TOKEN`: Токен для визуализации карт.
 - `VITE_CLERK_PUBLISHABLE_KEY`: Публичный ключ авторизации.
 - `CLERK_SECRET_KEY`: Секретный ключ сервера.
-- `DATABASE_URL`: Строка подключения к базе.
+- `DATABASE_URL`: Строка подключения к базе. **Важно**: Для надежности на Windows используйте порт 6543 (PgBouncer) с параметром `?pgbouncer=true`.
 
 ---
 

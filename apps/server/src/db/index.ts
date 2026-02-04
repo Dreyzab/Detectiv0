@@ -3,6 +3,7 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 const databaseUrl = process.env.DATABASE_URL;
+console.log("🔌 Initializing DB with URL:", databaseUrl ? databaseUrl.replace(/:[^:@]+@/, ':***@') : "UNDEFINED");
 
 if (!databaseUrl) {
     console.warn("⚠️ DATABASE_URL is not set. The server will likely fail to connect to the database.");

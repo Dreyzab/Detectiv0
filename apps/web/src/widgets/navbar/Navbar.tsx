@@ -1,0 +1,74 @@
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Map, QrCode, Settings, Terminal, User } from 'lucide-react';
+
+// Checking imports in HomePage: no 'cn' or 'clsx' used.
+// I will standard className strings for safety or check if standard/shared/lib/css exists.
+// Let's use template literals and conditional logic for simplicity or import 'clsx' if installed.
+// "import { Button } from '../shared/ui/Button';" is used.
+// Let's stick to standard Tailwind classes.
+
+const NavItem = ({ to, icon: Icon, label, isActive }: { to: string; icon: any; label: string; isActive: boolean }) => (
+    <Link
+        to={to}
+        className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${isActive ? 'text-amber-500' : 'text-stone-500 hover:text-stone-300'
+            }`}
+    >
+        <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+        <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+    </Link>
+);
+
+export const Navbar = () => {
+    const location = useLocation();
+    const pathname = location.pathname;
+
+    // Hide navbar on VN pages logic?
+    // User requested "redesign HomePage and Navbar".
+    // Typically VN plays in full screen.
+    // But let's keep it simple first.
+    // If route starts with /vn/, maybe hide? 
+    // Usually Visual Novels want immersion.
+    // Let's hide on /vn/ routes.
+    if (pathname.startsWith('/vn/')) return null;
+
+    return (
+        <>
+            {/* Mobile Bottom Bar */}
+            <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-stone-950/95 backdrop-blur-md border-t border-stone-800 hidden md:flex items-center justify-center px-4">
+                {/* Desktop/Tablet View - Centered Floating or just same logic? */}
+                {/* For now, let's use the same layout for simplicity as "Phone format" is priority, 
+                   but usually desktop has it at top.
+                   However, let's stick to the requested "Phone format" focus. 
+                   I will make it a bottom bar for mobile (default) and valid for desktop too for now.
+               */}
+                <div className="flex items-center justify-around w-full max-w-md mx-auto h-full">
+                    <NavItem to="/" icon={Home} label="Home" isActive={pathname === '/'} />
+                    <NavItem to="/map" icon={Map} label="Map" isActive={pathname === '/map'} />
+                    <NavItem to="/character" icon={User} label="Dossier" isActive={pathname === '/character'} />
+                    <NavItem to="/scanner" icon={QrCode} label="Scan" isActive={pathname === '/scanner'} />
+                    <NavItem to="/settings" icon={Settings} label="Config" isActive={pathname === '/settings'} />
+                </div>
+            </nav>
+
+            {/* Mobile Bottom Navigation - default visible */}
+            <nav className="fixed bottom-0 left-0 right-0 z-50 h-[safe-area-inset-bottom+4rem] pb-[safe-area-inset-bottom] bg-stone-950/95 backdrop-blur-md border-t border-stone-800 flex md:hidden items-center px-2">
+                <div className="flex items-center justify-between w-full h-16">
+                    <NavItem to="/" icon={Home} label="Home" isActive={pathname === '/'} />
+                    <NavItem to="/map" icon={Map} label="Map" isActive={pathname === '/map'} />
+                    <NavItem to="/character" icon={User} label="Dossier" isActive={pathname === '/character'} />
+                    <NavItem to="/scanner" icon={QrCode} label="Scan" isActive={pathname === '/scanner'} />
+                    {/* <NavItem to="/developer" icon={Terminal} label="Debug" isActive={pathname === '/developer'} /> */}
+                    {/* Only show debug if enabled? Or just put it there. User asked for it. */}
+                    <Link
+                        to="/developer"
+                        className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${pathname === '/developer' ? 'text-red-500' : 'text-stone-600 hover:text-stone-400'
+                            }`}
+                    >
+                        <Terminal size={24} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Debug</span>
+                    </Link>
+                </div>
+            </nav>
+        </>
+    );
+};
