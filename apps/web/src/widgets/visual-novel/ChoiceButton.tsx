@@ -75,6 +75,7 @@ export function ChoiceButton({
 
     return (
         <motion.button
+            layout
             variants={{
                 hidden: { x: -20, opacity: 0 },
                 visible: { x: 0, opacity: 1 }

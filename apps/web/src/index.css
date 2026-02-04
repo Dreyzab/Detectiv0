@@ -84,4 +84,82 @@ body,
   .animate-bounce-slight {
     animation: bounce-slight 2s ease-in-out infinite;
   }
+
+  /* VN Pan Animations (Ken Burns) */
+  @keyframes vn-bg-pan-narrow {
+
+    0%,
+    100% {
+      transform: translate3d(-3%, 0, 0) scale(1.05);
+    }
+
+    50% {
+      transform: translate3d(3%, 0, 0) scale(1.05);
+    }
+  }
+
+  @keyframes vn-bg-pan-normal {
+
+    0%,
+    100% {
+      transform: translate3d(-8%, 0, 0) scale(1.05);
+    }
+
+    50% {
+      transform: translate3d(8%, 0, 0) scale(1.05);
+    }
+  }
+
+  @keyframes vn-bg-pan-wide {
+
+    0%,
+    100% {
+      transform: translate3d(-15%, 0, 0) scale(1.05);
+    }
+
+    50% {
+      transform: translate3d(15%, 0, 0) scale(1.05);
+    }
+  }
+
+  @keyframes vn-bg-pan-ultrawide {
+
+    0%,
+    100% {
+      transform: translate3d(-25%, 0, 0) scale(1.05);
+    }
+
+    50% {
+      transform: translate3d(25%, 0, 0) scale(1.05);
+    }
+  }
+
+  @media (orientation: portrait) {
+    .vn-bg-pan-narrow {
+      animation: vn-bg-pan-narrow 18s ease-in-out infinite alternate;
+    }
+
+    .vn-bg-pan-normal {
+      animation: vn-bg-pan-normal 10s ease-in-out infinite alternate;
+    }
+
+    .vn-bg-pan-wide {
+      animation: vn-bg-pan-wide 6s ease-in-out infinite alternate;
+    }
+
+    .vn-bg-pan-ultrawide {
+      animation: vn-bg-pan-ultrawide 4s ease-in-out infinite alternate;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+
+    .vn-bg-pan-narrow,
+    .vn-bg-pan-normal,
+    .vn-bg-pan-wide,
+    .vn-bg-pan-ultrawide {
+      animation: none;
+      transform: translate3d(0, 0, 0) scale(1.05);
+    }
+  }
 }

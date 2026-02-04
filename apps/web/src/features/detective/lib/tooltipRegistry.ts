@@ -86,12 +86,102 @@ export const PARLIAMENT_TOOLTIP_REGISTRY: Record<string, KeywordTooltip> = {
                 text: 'He is hiding something. A nervous tic in his signature? A hesitation in his decree?'
             }
         ]
+    },
+    // ═══════════════════════════════════════════════════════════════
+    // GERMAN KEYWORDS (Alt Briefing)
+    // ═══════════════════════════════════════════════════════════════
+    'Insiderwissen': {
+        id: 'insider_knowledge',
+        title: 'Insiderwissen',
+        fact: 'Ein Überfall ohne Gewaltspuren deutet auf intime Kenntnis der Banksicherheit hin. Jemand kannte die Kombination oder hatte einen Schlüssel.',
+        voices: [
+            {
+                voiceId: 'logic',
+                threshold: 2,
+                text: 'Kein Einbruch — ein Einlass. Die Statistik sagt: 70% aller Banküberfälle haben interne Helfer.'
+            },
+            {
+                voiceId: 'deception',
+                threshold: 3,
+                text: 'Jemand in dieser Bank hat gelogen. Und wird wieder lügen.'
+            }
+        ]
+    },
+    'Clara von Altenburg': {
+        id: 'clara_altenburg',
+        title: 'Clara von Altenburg',
+        fact: 'Tochter des Bürgermeisters. Medizinstudentin und Witwe. Bekannt für ihre unkonventionelle Faszination für Kriminologie.',
+        voices: [
+            {
+                voiceId: 'empathy',
+                threshold: 2,
+                text: 'Sie trägt Trauer wie eine Rüstung. Der Tod ihres Mannes hat sie nicht gebrochen — er hat sie geschärft.'
+            },
+            {
+                voiceId: 'encyclopedia',
+                threshold: 3,
+                text: 'Eine der wenigen Frauen, die Medizin studieren dürfen. Das spricht für Charakterstärke... oder mächtige Verbindungen.'
+            }
+        ]
+    },
+    'Geruch': {
+        id: 'smell_clue',
+        title: 'Der verdächtige Geruch',
+        fact: 'Ein chemischer Geruch am Tatort kann auf spezielle Werkzeuge oder hinterlassene Substanzen hinweisen.',
+        voices: [
+            {
+                voiceId: 'forensics',
+                threshold: 3,
+                text: 'Bittere Mandeln? Nicht Zyankali — etwas Industrielles. Äther? Chloroform? Nitroglyzerin-Rückstände?'
+            },
+            {
+                voiceId: 'intuition',
+                threshold: 2,
+                text: 'Dieser Geruch gehört nicht hierher. Er erzählt eine Geschichte, die niemand sonst hören kann.'
+            }
+        ]
+    },
+    'Fenster': {
+        id: 'window_clue',
+        title: 'Das entriegelte Fenster',
+        fact: 'Ein nicht eingeschlagenes, sondern entriegeltes Fenster deutet auf Zugang von innen oder einen Komplizen.',
+        voices: [
+            {
+                voiceId: 'perception',
+                threshold: 2,
+                text: 'Keine Splitter. Keine Kratzer am Rahmen. Dieses Fenster wurde geöffnet, nicht aufgebrochen.'
+            },
+            {
+                voiceId: 'logic',
+                threshold: 3,
+                text: 'Jemand musste es von innen öffnen. Oder einen Schlüssel haben. Die Liste der Verdächtigen wird kürzer.'
+            }
+        ]
+    },
+    'Banküberfall': {
+        id: 'bank_robbery',
+        title: 'Der Banküberfall',
+        fact: 'In der Nacht wurde das Bankhaus J.A. Krebs überfallen. Keine Gewalt, keine Zeugen, professionelle Ausführung.',
+        voices: [
+            {
+                voiceId: 'logic',
+                threshold: 1,
+                text: 'Zu sauber. Zu präzise. Das ist kein gewöhnlicher Raubüberfall — das ist ein Auftrag.'
+            },
+            {
+                voiceId: 'authority',
+                threshold: 2,
+                text: 'Die Polizei ist ratlos. Sie brauchen jemanden, der außerhalb des Systems denkt.'
+            }
+        ]
     }
 };
+
 
 /**
  * Helper to normalize keys (case insensitive lookup)
  */
+
 export function getTooltipContent(key: string): KeywordTooltip | null {
     // 1. Try exact match
     if (PARLIAMENT_TOOLTIP_REGISTRY[key]) return PARLIAMENT_TOOLTIP_REGISTRY[key];

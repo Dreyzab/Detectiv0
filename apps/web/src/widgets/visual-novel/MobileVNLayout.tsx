@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TypedText, type TextToken, type TypedTextHandle } from '@/shared/ui/TypedText/TypedText';
 import { SpeakerBadge } from '@/entities/character/ui/SpeakerBadge';
 import type { VNScene, VNChoice, VNCharacter, DialogueEntry } from '@/entities/visual-novel/model/types';
-import { getVoiceColor } from '@repo/shared/data/parliament';
 import { useGyroParallax } from '@/shared/lib/hooks/useGyroParallax';
-import { Smartphone, SmartphoneNfc, ArrowRight, MessageCircle, Eye, MapPin } from 'lucide-react';
+import { Smartphone, SmartphoneNfc, MapPin } from 'lucide-react';
+import ChoiceButton from './ChoiceButton';
 
 
 interface MobileVNLayoutProps {
@@ -53,6 +53,7 @@ export function MobileVNLayout({
     const shouldLog = import.meta.env.DEV;
 
     const [isRevealMode, setIsRevealMode] = useState(false);
+    const [visitedChoices, setVisitedChoices] = useState<Set<string>>(new Set());
     const lastBackgroundRef = useRef(background);
 
     // Gyro Parallax
@@ -62,6 +63,33 @@ export function MobileVNLayout({
         sensitivity: 0.8,
         maxTilt: 15
     });
+
+    // Cinematic Camera & Panning Logic
+    const [panClass, setPanClass] = useState('');
+
+    const cameraPosition = useMemo(() => {
+        if (!background) return '50% 50%';
+
+        // Logic: specific backgrounds can have fixed camera positions based on speaker
+        const isCoupe = background.includes('coupe4p');
+        if (isCoupe && character) {
+            // Example: Fritz (Player) on Left, Others on Right
+            const isPlayer = character.name.includes('Fritz');
+            return isPlayer ? '20% 50%' : '80% 50%';
+        }
+
+        return '50% 50%';
+    }, [background, character]);
+
+    const handleImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+        const img = e.currentTarget;
+        const ratio = img.naturalWidth / img.naturalHeight;
+
+        if (ratio < 1.5) setPanClass('vn-bg-pan-narrow');
+        else if (ratio < 2) setPanClass('vn-bg-pan-normal');
+        else if (ratio < 2.5) setPanClass('vn-bg-pan-wide');
+        else setPanClass('vn-bg-pan-ultrawide');
+    }, []);
 
     const handleGyroToggle = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -156,14 +184,20 @@ export function MobileVNLayout({
                     className="absolute inset-x-0 top-0 bottom-0 overflow-hidden"
                 >
                     {background && (
-                        <div
-                            className="absolute inset-0 bg-cover bg-center transition-transform duration-100 ease-out will-change-transform"
-                            style={{
-                                backgroundImage: `url(${background})`,
-                                filter: 'sepia(0.2) contrast(1.05) brightness(0.6)',
-                                transform: `scale(1.15) translateX(${gyroX}%)`
-                            }}
-                        />
+                        <motion.div
+                            className="w-full h-full bg-black"
+                            style={{ transform: `scale(1.15) translateX(${gyroX}%)` }}
+                        >
+                            <motion.img
+                                src={background}
+                                onLoad={handleImageLoad}
+                                initial={{ objectPosition: '50% 50%' }}
+                                animate={{ objectPosition: cameraPosition }}
+                                transition={{ objectPosition: { duration: 0.8, ease: 'easeInOut' } }}
+                                className={`w-full h-full object-cover brightness-[0.6] sepia-[0.2] contrast-[1.05] ${cameraPosition === '50% 50%' ? panClass : ''}`}
+                                alt="Scene Background"
+                            />
+                        </motion.div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-transparent to-black/30" />
                     {/* === GLOBAL ATMOSPHERE === */}
@@ -193,9 +227,23 @@ export function MobileVNLayout({
                 />
             )}
 
+            {/* === CINEMATIC HEADER (Top) === */}
+            <div className="absolute top-0 inset-x-0 p-6 pt-12 flex justify-between items-start z-[100] bg-gradient-to-b from-black/90 via-black/40 to-transparent pb-32 pointer-events-none">
+                <div className="flex flex-col gap-2 transform translate-y-0 transition-transform duration-700">
+                    <div className="flex items-center gap-2 text-amber-500/90 uppercase tracking-[0.2em] text-[10px] font-bold">
+                        <MapPin size={12} className="text-amber-500" />
+                        <span>Current Location</span>
+                    </div>
+                    <h1 className="text-3xl font-display text-white font-bold tracking-tight drop-shadow-2xl opacity-90">
+                        {scene.id.split('_').slice(1).join(' ')}
+                    </h1>
+                    <div className="h-[1px] w-24 bg-gradient-to-r from-amber-500/50 to-transparent mt-1" />
+                </div>
+            </div>
+
             {/* === DIALOGUE PANEL (Bottom - Flexible) === */}
             <div
-                className={`absolute inset-x-0 bottom-0 min-h-[35%] max-h-[65%] flex flex-col shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.8)] border-t border-white/10 transition-all duration-700 ${isRevealMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}
+                className={`absolute inset-x-0 bottom-0 z-[150] min-h-[35%] max-h-[65%] flex flex-col shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.8)] border-t border-white/10 transition-all duration-700 ${isRevealMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}
             >
                 {/* Art Deco border */}
                 <div className="h-[2px] bg-gradient-to-r from-transparent via-amber-600/80 to-transparent flex-shrink-0" />
@@ -203,19 +251,7 @@ export function MobileVNLayout({
                 {/* === ATMOSPHERIC LAYERS === */}
 
 
-                {/* === CINEMATIC HEADER (Top) === */}
-                <div className="absolute top-0 inset-x-0 p-6 pt-12 flex justify-between items-start z-[100] bg-gradient-to-b from-black/90 via-black/40 to-transparent pb-32 pointer-events-none">
-                    <div className="flex flex-col gap-2 transform translate-y-0 transition-transform duration-700">
-                        <div className="flex items-center gap-2 text-amber-500/90 uppercase tracking-[0.2em] text-[10px] font-bold">
-                            <MapPin size={12} className="text-amber-500" />
-                            <span>Current Location</span>
-                        </div>
-                        <h1 className="text-3xl font-display text-white font-bold tracking-tight drop-shadow-2xl opacity-90">
-                            {scene.id.split('_').slice(1).join(' ')}
-                        </h1>
-                        <div className="h-[1px] w-24 bg-gradient-to-r from-amber-500/50 to-transparent mt-1" />
-                    </div>
-                </div>
+
 
                 {/* Speaker Badge - Connected Floating Label */}
                 {character && (
@@ -236,10 +272,10 @@ export function MobileVNLayout({
                 {/* Scrollable Dialogue Area */}
                 <div
                     ref={scrollRef}
-                    className={`flex-1 bg-gradient-to-b from-stone-950/20 to-black/50 backdrop-blur-md overflow-y-auto px-6 py-6 relative
+                    className={`flex-1 bg-gradient-to-b from-stone-950/20 to-black/50 backdrop-blur-md overflow-y-auto px-6 relative
                                border-t-0 border-r-0 border-b-0 border-l-[1px] border-l-white/5
                                rounded-tr-[2rem]
-                               ${character ? 'pt-12' : ''}`}
+                               ${character ? 'pt-12' : 'py-6'}`}
                 >
                     {/* Paper texture overlay with better blending */}
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none" />
@@ -248,23 +284,15 @@ export function MobileVNLayout({
 
                     {/* History entries (dimmed) */}
                     {dialogueHistory.map((entry) => (
-                        <div
-                            key={entry.id}
-                            className="mb-4 opacity-50"
-                        >
-                            {/* Speaker name for history */}
+                        <div key={entry.id} className="mb-4 opacity-50">
                             {entry.characterName && (
-                                <div
-                                    className="text-xs uppercase tracking-widest mb-1"
-                                    style={{ color: '#8b8b8b' }}
-                                >
+                                <div className="text-xs uppercase tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
                                     {entry.characterName}
                                 </div>
                             )}
                             <div className="font-body text-base sm:text-lg leading-relaxed text-stone-200">
                                 {entry.text}
                             </div>
-                            {/* Show choice made */}
                             {entry.choiceMade && (
                                 <div className="mt-2 text-sm text-amber-600/60 italic pl-4 border-l-2 border-amber-600/30">
                                     ► {entry.choiceMade}
@@ -287,7 +315,7 @@ export function MobileVNLayout({
                 </div>
 
                 {/* === CHOICES (Embedded List Style) === */}
-                <AnimatePresence>
+                <AnimatePresence mode="popLayout">
                     {!isTyping && hasChoices && (
                         <motion.div
                             initial="hidden"
@@ -313,7 +341,11 @@ export function MobileVNLayout({
                                     key={choice.id}
                                     choice={choice}
                                     index={index}
-                                    onClick={() => onChoice(choice)}
+                                    isVisited={visitedChoices.has(choice.id)}
+                                    onClick={() => {
+                                        setVisitedChoices(prev => new Set(prev).add(choice.id));
+                                        onChoice(choice);
+                                    }}
                                 />
                             ))}
                         </motion.div>
@@ -325,63 +357,4 @@ export function MobileVNLayout({
     );
 }
 
-// === CHOICE BUTTON COMPONENT ===
-interface ChoiceButtonProps {
-    choice: VNChoice;
-    index: number;
-    onClick: () => void;
-}
-
-function ChoiceButton({ choice, index, onClick }: ChoiceButtonProps) {
-    const hasSkillCheck = !!choice.skillCheck;
-    const type = choice.type || 'action'; // Default to action if undefined
-
-    // Styles based on type
-    const isAction = type === 'action';
-    const isInquiry = type === 'inquiry';
-    const isFlavor = type === 'flavor';
-
-    return (
-        <motion.button
-            initial={{ x: -10, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: index * 0.04, duration: 0.2 }}
-            onClick={onClick}
-            className={`w-full min-h-[44px] px-3 py-2 
-                       transition-all duration-200 text-left flex items-start gap-3 group cursor-pointer border-l-2 
-                       ${isAction ? 'border-amber-500/50 bg-amber-950/10 hover:bg-amber-900/20' : 'border-transparent hover:border-stone-600 hover:bg-white/5'}
-                       `}
-        >
-            {/* Icon/Indicator based on Type */}
-            <div className="mt-1 flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-                {isAction && <ArrowRight size={18} className="text-amber-500" />}
-                {isInquiry && <MessageCircle size={18} className="text-stone-400" />}
-                {isFlavor && <Eye size={18} className="text-blue-300/70" />}
-                {/* Fallback or skill check handling can go here if needed */}
-            </div>
-
-            <div className="flex-1 flex flex-col gap-1">
-                {hasSkillCheck && (
-                    <span
-                        className="text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-2 self-start px-1.5 py-0.5 rounded-sm"
-                        style={{
-                            backgroundColor: `${getVoiceColor(choice.skillCheck!.voiceId)}15`,
-                            color: getVoiceColor(choice.skillCheck!.voiceId),
-                            border: `1px solid ${getVoiceColor(choice.skillCheck!.voiceId)}30`
-                        }}
-                    >
-                        {choice.skillCheck!.voiceId} {choice.skillCheck!.difficulty}
-                    </span>
-                )}
-
-                <span className={`font-body text-base leading-snug transition-colors
-                    ${isAction ? 'text-amber-100 font-medium group-hover:text-amber-50 shadow-black drop-shadow-sm' : ''}
-                    ${isInquiry ? 'text-stone-300 group-hover:text-stone-100' : ''}
-                    ${isFlavor ? 'text-blue-100/80 italic group-hover:text-blue-50' : ''}
-                `}>
-                    {choice.text}
-                </span>
-            </div>
-        </motion.button>
-    );
-}
+// ChoiceButton component moved to ./ChoiceButton.tsx

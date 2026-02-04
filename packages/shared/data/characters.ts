@@ -18,6 +18,8 @@ export type CharacterId =
     // P1: New Characters
     | 'coroner'
     | 'journalist'
+    | 'clara_altenburg'
+
     // P2: Future Characters
     | 'professor'
     | 'student'
@@ -282,6 +284,29 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         tags: ['information', 'wildcard', 'press'],
         serviceType: 'information_broker'
     },
+    clara_altenburg: {
+        id: 'clara_altenburg',
+        tier: 'major',
+        name: 'Clara von Altenburg',
+        color: '#b8860b', // Dark golden brown
+        role: 'companion',
+        age: 26,
+        origin: 'Freiburg (Bürgermeisterfamilie)',
+        description: 'Tochter des Bürgermeisters, verwitwete Medizinstudentin. Eine scharfe Beobachterin mit Faszination für Kriminologie, angetrieben vom ungelösten Tod ihres Mannes.',
+        avatarUrl: '/images/characters/clara_altenburg.png',
+        tags: ['companion', 'criminology', 'medicine', 'widow', 'nobility'],
+        voiceStats: { empathy: 6, perception: 7, logic: 5, tradition: 4 },
+        secrets: [
+            'Ihr Mann starb unter mysteriösen Umständen',
+            'Sie hat Zugang zu den privaten Akten ihres Vaters',
+            'Studiert heimlich Forensik an der Universität'
+        ],
+        evolution: {
+            stage: 'determined_widow',
+            possibleStages: ['determined_widow', 'trusted_partner', 'romantic_interest']
+        }
+    },
+
     apothecary: {
         id: 'apothecary',
         tier: 'functional',
