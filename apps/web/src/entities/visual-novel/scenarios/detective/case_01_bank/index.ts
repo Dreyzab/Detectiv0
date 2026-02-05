@@ -2,7 +2,7 @@
 
 // Main Story Path
 // Using explicit exports to ensure module resolution
-export { CASE1_BRIEFING_LOGIC } from './main/01_briefing/case1_briefing.logic';
+// export { CASE1_BRIEFING_LOGIC } from './main/01_briefing/case1_briefing.logic'; // FIXME: Module missing
 export { CASE1_ALT_BRIEFING_LOGIC } from './main/01_briefing/case1_alt_briefing.logic';
 export { CASE1_BANK_LOGIC } from './main/02_bank/case1_bank.logic';
 export { CASE1_ARCHIVE_SCENE } from './main/03_archive/case1_archive';
