@@ -1,4 +1,4 @@
-import type { VoiceId } from '../../lib/parliament';
+import type { VoiceId } from '../lib/parliament';
 
 export interface MindPalaceState {
     activeVoice: VoiceId | null;

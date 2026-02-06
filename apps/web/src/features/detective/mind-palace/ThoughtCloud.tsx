@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getVoiceColor, VOICES } from '../../lib/parliament';
+import { getVoiceColor, VOICES } from '../lib/parliament';
 import type { ThoughtCloudProps } from './types';
 
 export const ThoughtCloud: React.FC<ThoughtCloudProps> = ({
     text,
     voiceId,
-    isVisible,
+    isVisible
 }) => {
     const color = getVoiceColor(voiceId);
     const voiceName = VOICES[voiceId].name;
