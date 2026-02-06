@@ -283,7 +283,7 @@ const VisualNovelOverlayInner = () => {
 
     const OverlayLayout = () => (
         <div
-            className="fixed inset-0 z-[200] flex flex-col cursor-pointer" // Add cursor-pointer to indicate interactivity
+            className="fixed inset-0 z-200 flex flex-col cursor-pointer" // Add cursor-pointer to indicate interactivity
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerCancel}
@@ -291,10 +291,10 @@ const VisualNovelOverlayInner = () => {
         >
             <div className="flex-1" />
             <div className="pointer-events-auto p-0 max-w-4xl mx-auto w-full z-10 mb-8 px-4 cursor-default">
-                <div className="relative bg-gradient-to-b from-stone-950/30 to-black/60 border-l-[1px] border-l-white/10 rounded-tr-[3rem] p-8 shadow-2xl backdrop-blur-xl min-h-[200px] flex flex-col gap-4">
+                <div className="relative bg-linear-to-b from-stone-950/30 to-black/60 border-l border-l-white/10 rounded-tr-[3rem] p-8 shadow-2xl backdrop-blur-xl min-h-[200px] flex flex-col gap-4">
 
                     {/* Decorative Backgrounds */}
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none rounded-tr-[3rem]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none rounded-tr-[3rem]" />
                     <div className="absolute inset-0 bg-[url('/paper-texture.png')] opacity-[0.05] mix-blend-overlay pointer-events-none rounded-tr-[3rem]" />
 
                     {/* Speaker Badge - Connected Floating Label */}
@@ -305,12 +305,12 @@ const VisualNovelOverlayInner = () => {
 
                             <div className="relative px-6 py-2 bg-stone-950 border-l-[3px] border-amber-500 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform -skew-x-12 origin-bottom-left transition-transform duration-300 group-hover:-skew-x-6">
                                 <div className="transform skew-x-12">
-                                    <span className="font-heading font-bold text-lg uppercase tracking-[0.1em] text-[#d4c5a3]">
+                                    <span className="font-heading font-bold text-lg uppercase tracking-widest text-[#d4c5a3]">
                                         {character.name}
                                     </span>
                                 </div>
                                 {/* Corner Accent */}
-                                <div className="absolute -top-[1px] -right-[1px] w-2 h-2 border-t border-r border-amber-500/60" />
+                                <div className="absolute -top-px -right-px w-2 h-2 border-t border-r border-amber-500/60" />
                             </div>
                         </div>
                     )}
@@ -373,12 +373,12 @@ const VisualNovelOverlayInner = () => {
             <OverlayLayout />
 
             {/* Mind Palace Layer - Fixed to ensure correct positioning relative to viewport */}
-            <div className="fixed inset-0 pointer-events-none z-[210]">
+            <div className="fixed inset-0 pointer-events-none z-210">
                 <MindPalaceOverlay />
             </div>
 
             {toast && (
-                <div className="fixed top-8 right-8 z-[250] bg-surface border border-primary p-4 shadow-xl animate-bounce-in min-w-[300px]">
+                <div className="fixed top-8 right-8 z-250 bg-surface border border-primary p-4 shadow-xl animate-bounce-in min-w-[300px]">
                     <div className="flex items-center gap-3">
                         <div className={`w-1 h-10 ${toast.type === 'evidence' ? 'bg-accent' : 'bg-primary'}`} />
                         <div>

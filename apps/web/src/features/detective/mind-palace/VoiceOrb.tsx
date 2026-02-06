@@ -40,7 +40,7 @@ export const VoiceOrb: React.FC<VoiceOrbProps> = ({
     return (
         <div className={`relative flex items-center justify-center ${className}`}>
             <motion.div
-                className={`rounded-full bg-gradient-to-br from-white/20 to-transparent backdrop-blur-sm border border-white/30 ${sizeClasses[size]}`}
+                className={`rounded-full bg-linear-to-br from-white/20 to-transparent backdrop-blur-sm border border-white/30 ${sizeClasses[size]}`}
                 style={{
                     backgroundColor: `${color}40`, // 25% opacity
                     boxShadow: `0 0 20px ${color}60`

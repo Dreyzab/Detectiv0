@@ -40,7 +40,7 @@ export const ThoughtCloud: React.FC<ThoughtCloudProps> = ({
                         </p>
 
                         {/* Decorative Elements */}
-                        <div className="absolute -left-[5px] top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+                        <div className="absolute -left-[5px] top-0 bottom-0 w-px bg-linear-to-b from-transparent via-white/20 to-transparent" />
                     </div>
                 </motion.div>
             )}

@@ -121,3 +121,20 @@ passiveFailText?: string;   // Optional, for future use
 - **Playwright E2E**: Config at root, smoke test in `e2e/smoke.spec.ts`. Run: `bun run test:e2e`.
 - **Drizzle Migrations**: `bun drizzle-kit generate` for schema changes. Migrations in `apps/server/drizzle/`.
 - **Master Scripts**: `.agent/scripts/checklist.py` for comprehensive project audits.
+
+## 2026-02-06 - Controlled Map Integration Contour
+
+### Map module testability
+- `apps/server/src/modules/map.ts` now exports `createMapModule(repository?: MapRepository)` and `createDrizzleMapRepository()`.
+- Route logic is decoupled from Drizzle queries via `MapRepository`, so integration tests can run against deterministic in-memory data.
+
+### Covered integration behavior
+- `GET /map/points`: visibility filtering by `scope`, `retention_policy`, `active`, and active case (`caseId`).
+- `GET /map/resolve-code/:code`: event-code resolution path (`event_codes`) and QR map-point path with lifecycle upsert.
+- Unknown codes return `404` with a stable error payload.
+
+### Validation commands
+- `bun test apps/server/test/modules/map.test.ts`
+- `bun test apps/server/test/simple.test.ts`
+- `bun test packages/shared/lib/map-resolver.test.ts`
+- `bun x tsc -p apps/server/tsconfig.json --noEmit`

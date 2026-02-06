@@ -166,3 +166,14 @@ Vite настроен на автоматическую загрузку пер�
 
 ---
 *Grezwanderer 4 — Путешествие начинается здесь.*
+
+## Статус QA и тестового контура (06.02.2026)
+
+- Интеграционные map-тесты переведены на контролируемый контур без `skip`.
+- `apps/server/test/modules/map.test.ts` использует in-memory `MapRepository` через `createMapModule(repository)`.
+- Покрыты ключевые сценарии: lifecycle-фильтрация точек, `resolve-code` для `event_codes`, `resolve-code` для QR-точек с `persistentUnlock`, ответ `404` для неизвестного кода.
+- Проверенные команды:
+  - `bun test apps/server/test/modules/map.test.ts`
+  - `bun test apps/server/test/simple.test.ts`
+  - `bun test packages/shared/lib/map-resolver.test.ts`
+  - `bun x tsc -p apps/server/tsconfig.json --noEmit`

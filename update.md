@@ -502,3 +502,22 @@ apps/web/src/features/detective/mind-palace/
 ---
 *Следующий этап: Развитие системы навыков и интеграция Внутреннего Парламента в механики дедукции.*
 
+
+## [2026-02-06] - Outdated Tests Block Closed (Map Integration)
+
+### Added
+- Controlled integration contour for map API: `createMapModule(repository?)` + explicit `MapRepository` contract.
+- Deterministic integration suite `apps/server/test/modules/map.test.ts` without `skip` and without external DB dependency.
+
+### Changed
+- `apps/server/src/modules/map.ts` split into route logic and repository adapter (`createDrizzleMapRepository`).
+- `/map/resolve-code/:code` response schema updated so `actions` preserve full payload (`t.Array(t.Any())`).
+
+### Verified
+- `bun test apps/server/test/modules/map.test.ts` - 4/4 passed.
+- `bun test apps/server/test/simple.test.ts` - 1/1 passed.
+- `bun test packages/shared/lib/map-resolver.test.ts` - 4/4 passed.
+- `bun x tsc -p apps/server/tsconfig.json --noEmit` - passed.
+
+### Docs
+- Updated `README.md` and `ARCHITECTURE.md` to describe controlled map test contour and validation commands.

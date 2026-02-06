@@ -1,93 +1,252 @@
-import { describe, expect, it, beforeAll, afterAll } from 'bun:test';
-import { Database } from 'bun:sqlite';
-
-import { app } from '../../src/index';
+import { beforeEach, describe, expect, it } from 'bun:test';
+import { Elysia } from 'elysia';
+import type { MapAction } from '@repo/shared/lib/detective_map_types';
+import {
+    createMapModule,
+    type EventCodeRow,
+    type MapPointRow,
+    type MapRepository,
+    type UpsertUserPointStateInput,
+    type UserPointStateRow
+} from '../../src/modules/map';
 
 const BASE_URL = 'http://localhost:3000';
-const runIntegration = process.env.RUN_MAP_INTEGRATION === '1';
-const mapDescribe = runIntegration ? describe : describe.skip;
+const DEMO_USER_ID = 'demo_user';
 
-const setupTestDb = () => {
-    console.log("Setting up Test DB...");
-    const db = new Database("test.db");
-    // Create tables manually to match schema (simplified for test)
-    db.run(`CREATE TABLE IF NOT EXISTS map_points (
-        id TEXT PRIMARY KEY,
-        packId TEXT NOT NULL,
-        title TEXT NOT NULL,
-        lat REAL NOT NULL,
-        lng REAL NOT NULL,
-        qr_code TEXT,
-        bindings TEXT NOT NULL,
-        data TEXT,
-        schema_version INTEGER DEFAULT 1
-    )`);
+interface MockRepositoryContext {
+    repo: MapRepository;
+    points: MapPointRow[];
+    states: UserPointStateRow[];
+    eventCodes: EventCodeRow[];
+    upserts: UpsertUserPointStateInput[];
+}
 
-    db.run(`CREATE TABLE IF NOT EXISTS user_map_point_user_states (
-        user_id TEXT NOT NULL,
-        point_id TEXT NOT NULL,
-        state TEXT NOT NULL,
-        data TEXT,
-        PRIMARY KEY (user_id, point_id)
-    )`);
+const createMockRepository = (): MockRepositoryContext => {
+    const points: MapPointRow[] = [];
+    const states: UserPointStateRow[] = [];
+    const eventCodes: EventCodeRow[] = [];
+    const upserts: UpsertUserPointStateInput[] = [];
 
-    // Seed mock data
-    db.run(`DELETE FROM map_points`);
-    db.run(`DELETE FROM user_map_point_user_states`);
+    const repo: MapRepository = {
+        getPoints: async (packId) => {
+            if (!packId) {
+                return points;
+            }
+            return points.filter((point) => point.packId === packId);
+        },
+        getUserStates: async (userId) =>
+            states.filter((state) => (state.userId ?? DEMO_USER_ID) === userId),
+        findActiveEventCode: async (code) =>
+            eventCodes.find((eventCode) => eventCode.code === code && eventCode.active !== false) ?? null,
+        findPointByQrCode: async (code) =>
+            points.find((point) => point.qrCode === code) ?? null,
+        upsertUserPointState: async (input) => {
+            upserts.push(input);
+            const idx = states.findIndex(
+                (state) =>
+                    (state.userId ?? DEMO_USER_ID) === input.userId &&
+                    state.pointId === input.pointId
+            );
 
-    db.run(`INSERT INTO map_points (id, packId, title, lat, lng, qr_code, bindings) VALUES 
-        ('p1', 'test_pack', 'Test Point', 0, 0, 'TEST_QR_123', '${JSON.stringify([{ trigger: 'qr_scan', actions: [{ type: 'unlock_point', pointId: 'p1' }] }])}')
-    `);
-    console.log("DB Setup Complete");
+            const nextState: UserPointStateRow = {
+                userId: input.userId,
+                pointId: input.pointId,
+                state: input.state,
+                persistentUnlock: input.persistentUnlock,
+                unlockedByCaseId: input.unlockedByCaseId,
+                data: input.data,
+                meta: input.meta
+            };
 
-    return db;
+            if (idx >= 0) {
+                states[idx] = nextState;
+            } else {
+                states.push(nextState);
+            }
+        }
+    };
+
+    return { repo, points, states, eventCodes, upserts };
 };
 
-mapDescribe('Map Module', () => {
-    beforeAll(() => {
-        setupTestDb();
+describe('Map Module (Controlled Integration)', () => {
+    let context: MockRepositoryContext;
+    let app: { handle: (request: Request) => Promise<Response> };
+
+    beforeEach(() => {
+        context = createMockRepository();
+        app = new Elysia().use(createMapModule(context.repo));
     });
 
-    it('GET /map/points returns points list', async () => {
-        console.log("Testing GET /map/points");
-        const response = await app.handle(
-            new Request(`${BASE_URL}/map/points`)
+    it('GET /map/points filters points by lifecycle rules and case', async () => {
+        context.points.push(
+            {
+                id: 'p_global',
+                packId: 'fbg1905',
+                title: 'Global Point',
+                lat: 0,
+                lng: 0,
+                category: 'INTEREST',
+                bindings: [],
+                scope: 'global',
+                retentionPolicy: 'permanent',
+                active: true
+            },
+            {
+                id: 'p_case_01',
+                packId: 'fbg1905',
+                title: 'Case Point 01',
+                lat: 0,
+                lng: 0,
+                category: 'QUEST',
+                bindings: [],
+                scope: 'case',
+                caseId: 'case_01_bank',
+                retentionPolicy: 'temporary',
+                active: true
+            },
+            {
+                id: 'p_case_02',
+                packId: 'fbg1905',
+                title: 'Case Point 02',
+                lat: 0,
+                lng: 0,
+                category: 'QUEST',
+                bindings: [],
+                scope: 'case',
+                caseId: 'case_02_other',
+                retentionPolicy: 'temporary',
+                active: true
+            },
+            {
+                id: 'p_progression',
+                packId: 'fbg1905',
+                title: 'Progression Point',
+                lat: 0,
+                lng: 0,
+                category: 'EVENT',
+                bindings: [],
+                scope: 'progression',
+                caseId: 'case_01_bank',
+                retentionPolicy: 'persistent_on_unlock',
+                active: true
+            },
+            {
+                id: 'p_inactive',
+                packId: 'fbg1905',
+                title: 'Inactive Point',
+                lat: 0,
+                lng: 0,
+                category: 'EVENT',
+                bindings: [],
+                scope: 'global',
+                retentionPolicy: 'permanent',
+                active: false
+            }
         );
-        console.log("GET Response status:", response.status);
+
+        context.states.push({
+            userId: DEMO_USER_ID,
+            pointId: 'p_progression',
+            state: 'visited',
+            persistentUnlock: true
+        });
+
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/points?packId=fbg1905&caseId=case_01_bank`)
+        );
+
         expect(response.status).toBe(200);
-        const data = await response.json() as any;
-        console.log("GET Response data keys:", Object.keys(data));
-        expect(data).toHaveProperty('points');
-        expect(data.points).toBeInstanceOf(Array);
-        expect(data.points.length).toBeGreaterThan(0);
-        expect(data.points[0].id).toBe('p1');
+        const data = await response.json() as {
+            points: Array<{ id: string }>;
+            userStates: Record<string, string>;
+        };
+
+        const pointIds = data.points.map((point) => point.id).sort();
+        expect(pointIds).toEqual(['p_case_01', 'p_global', 'p_progression']);
+        expect(data.userStates.p_progression).toBe('visited');
     });
 
-    it('GET /map/resolve-code/:code handles valid code', async () => {
-        console.log("Testing GET /map/resolve-code/:code");
+    it('GET /map/resolve-code/:code returns event action without upsert', async () => {
+        const eventActions: MapAction[] = [
+            { type: 'add_flags', flags: ['case01_started'] }
+        ];
+
+        context.eventCodes.push({
+            code: 'TEST_EVENT',
+            actions: eventActions,
+            active: true
+        });
+
         const response = await app.handle(
-            new Request(`${BASE_URL}/map/resolve-code/TEST_QR_123`)
+            new Request(`${BASE_URL}/map/resolve-code/TEST_EVENT`)
         );
-        console.log("POST Valid Response status:", response.status);
-        if (response.status !== 200) {
-            const text = await response.text();
-            console.log("POST Valid Response Body:", text);
-        }
 
         expect(response.status).toBe(200);
-        const data = await response.json() as any;
+        const data = await response.json() as {
+            success: boolean;
+            type: string;
+            actions: MapAction[];
+        };
 
         expect(data.success).toBe(true);
-        expect(data.type === 'event' || data.type === 'map_point').toBe(true);
+        expect(data.type).toBe('event');
+        expect(data.actions).toEqual(eventActions);
+        expect(context.upserts.length).toBe(0);
     });
 
-    it('GET /map/resolve-code/:code handles invalid code', async () => {
-        console.log("Testing GET /map/resolve-code/:code INVALID");
+    it('GET /map/resolve-code/:code resolves map point and persists unlock lifecycle flags', async () => {
+        context.points.push({
+            id: 'p_case_unlock',
+            packId: 'fbg1905',
+            title: 'Unlock Point',
+            lat: 0,
+            lng: 0,
+            category: 'CRIME_SCENE',
+            qrCode: 'QR_CASE_UNLOCK',
+            bindings: [
+                {
+                    id: 'qr_unlock',
+                    trigger: 'qr_scan',
+                    priority: 10,
+                    actions: [{ type: 'unlock_point', pointId: 'p_case_unlock' }]
+                }
+            ],
+            scope: 'progression',
+            caseId: 'case_01_bank',
+            retentionPolicy: 'persistent_on_unlock',
+            active: true
+        });
+
         const response = await app.handle(
-            new Request(`${BASE_URL}/map/resolve-code/INVALID_CODE`)
+            new Request(`${BASE_URL}/map/resolve-code/QR_CASE_UNLOCK`)
         );
-        console.log("POST Invalid Response status:", response.status);
+
+        expect(response.status).toBe(200);
+        const data = await response.json() as {
+            success: boolean;
+            type: string;
+            pointId: string;
+            actions: MapAction[];
+        };
+
+        expect(data.success).toBe(true);
+        expect(data.type).toBe('map_point');
+        expect(data.pointId).toBe('p_case_unlock');
+        expect(data.actions[0]?.type).toBe('unlock_point');
+        expect(context.upserts.length).toBe(1);
+        expect(context.upserts[0]?.persistentUnlock).toBe(true);
+        expect(context.upserts[0]?.unlockedByCaseId).toBe('case_01_bank');
+    });
+
+    it('GET /map/resolve-code/:code returns 404 for unknown code', async () => {
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/resolve-code/UNKNOWN_CODE`)
+        );
 
         expect(response.status).toBe(404);
+        const data = await response.json() as { success: boolean; error: string };
+        expect(data.success).toBe(false);
+        expect(data.error).toBe('Invalid Code');
     });
 });
