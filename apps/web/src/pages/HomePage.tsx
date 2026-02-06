@@ -27,7 +27,7 @@ export const HomePage = () => {
 
     // Preload VN assets
     useEffect(() => {
-        const targetId = activeScenarioId || 'detective_case1_briefing';
+        const targetId = activeScenarioId || 'detective_case1_alt_briefing';
         const scenario = getScenarioById(targetId, locale);
         if (scenario) {
             const assets = extractScenarioAssets(scenario);

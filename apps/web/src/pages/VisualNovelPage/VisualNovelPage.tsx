@@ -141,7 +141,7 @@ export const VisualNovelPage = () => {
         setShowTelegram(false);
 
         // Navigate to the new URL which will trigger the useEffect to startScenario
-        navigate('/vn/detective_case1_briefing');
+        navigate('/vn/detective_case1_alt_briefing');
     };
 
     // Token interaction (clues, notes)

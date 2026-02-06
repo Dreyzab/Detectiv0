@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { getVoiceColor, VOICES } from '../lib/parliament';
 import type { VoiceOrbProps } from './types';
 
@@ -35,7 +35,7 @@ export const VoiceOrb: React.FC<VoiceOrbProps> = ({
             ],
             transition: { repeat: Infinity, duration: 2, ease: "easeInOut" }
         }
-    } as const;
+    } satisfies Variants;
 
     return (
         <div className={`relative flex items-center justify-center ${className}`}>
