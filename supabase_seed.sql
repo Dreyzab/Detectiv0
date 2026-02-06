@@ -30,6 +30,29 @@ INSERT INTO "map_points" ("id", "packId", "title", "description", "lat", "lng", 
 ('p_telephone', 'fbg1905', 'Telegraph Office', 'A message is waiting for you.', 47.9965, 7.8485, 'QUEST', '/images/detective/loc_rathaus_archiv.png', NULL, '[{"id":"trigger_interlude_b","trigger":"marker_click","label":"Answer Call","priority":100,"actions":[{"type":"start_vn","scenarioId":"interlude_lotte_warning"}]}]', NULL, 1)
 ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description, lat = EXCLUDED.lat, lng = EXCLUDED.lng, category = EXCLUDED.category, image = EXCLUDED.image, bindings = EXCLUDED.bindings, data = EXCLUDED.data;
 
+-- Lifecycle defaults for Case 01 content
+-- Most points remain case-scoped by default.
+UPDATE "map_points"
+SET "case_id" = 'case_01_bank',
+    "scope" = 'case',
+    "retention_policy" = 'temporary',
+    "default_state" = COALESCE("default_state", 'locked')
+WHERE "packId" = 'fbg1905';
+
+-- Persistent world services (example: healer/apothecary)
+UPDATE "map_points"
+SET "scope" = 'global',
+    "retention_policy" = 'permanent',
+    "default_state" = 'discovered',
+    "case_id" = NULL
+WHERE "id" IN ('loc_apothecary');
+
+-- Progression points: unlock in case, remain after unlock
+UPDATE "map_points"
+SET "scope" = 'progression',
+    "retention_policy" = 'persistent_on_unlock'
+WHERE "id" IN ('p_uni_chem', 'p_uni_med');
+
 INSERT INTO "event_codes" ("code", "actions", "active", "description") VALUES
 ('CASE01_BRIEFING_01', '[{"type":"start_vn","scenarioId":"detective_case1_briefing"},{"type":"unlock_point","pointId":"p_hbf"},{"type":"add_flags","flags":["case01_started"]}]', true, 'Initial briefing for Case 01'),
 ('CASE01_BANK_02', '[{"type":"start_vn","scenarioId":"detective_case1_bank_scene"},{"type":"unlock_point","pointId":"p_bank"},{"type":"grant_evidence","evidenceId":"ev_torn_fabric"}]', true, 'Bank investigation + Evidence'),

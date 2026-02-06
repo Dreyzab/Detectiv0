@@ -24,6 +24,11 @@ export const items = pgTable("items", {
 export const mapPoints = pgTable("map_points", {
     id: text("id").primaryKey(),
     packId: text("packId").notNull(),
+    scope: text("scope").notNull().default('case'), // global | case | progression
+    caseId: text("case_id"),
+    retentionPolicy: text("retention_policy").notNull().default('temporary'), // temporary | persistent_on_unlock | permanent
+    defaultState: text("default_state").notNull().default('locked'),
+    active: boolean("active").notNull().default(true),
     title: text("title").notNull(),
     description: text("description"),
     lat: doublePrecision("lat").notNull(),
@@ -40,7 +45,10 @@ export const userMapPointStates = pgTable("user_map_point_user_states", {
     userId: text("user_id").references(() => users.id).notNull(),
     pointId: text("point_id").references(() => mapPoints.id).notNull(),
     state: text("state").notNull(), // 'locked', 'discovered', 'visited', 'completed'
+    persistentUnlock: boolean("persistent_unlock").notNull().default(false),
+    unlockedByCaseId: text("unlocked_by_case_id"),
     data: jsonb("data"), // JSON for specific flags/counters for this point
+    meta: jsonb("meta"),
 }, (table) => [
     primaryKey({ columns: [table.userId, table.pointId] })
 ]);

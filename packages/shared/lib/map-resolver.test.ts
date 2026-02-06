@@ -51,6 +51,6 @@ describe('Map Resolver Logic', () => {
         ];
 
         const result = resolveAvailableInteractions(bindings, 'marker_click', mockCtx);
-        expect(result[0]?.isAvailable).toBe(false);
+        expect(result[0]?.enabled).toBe(false);
     });
 });

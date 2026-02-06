@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useDossierStore } from '../dossier/store';
 import { performSkillCheck } from '@repo/shared/lib/dice';
 import type { VNScene } from '@/entities/visual-novel/model/types';
-import type { VoiceId } from '../../lib/parliament';
+import type { VoiceId } from '../lib/parliament';
 
 export const usePassiveChecks = (currentScene?: VNScene) => {
     const { voiceStats, recordCheckResult } = useDossierStore();

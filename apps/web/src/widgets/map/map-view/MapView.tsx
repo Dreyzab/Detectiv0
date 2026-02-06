@@ -1,12 +1,11 @@
-
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Map, { NavigationControl, type MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { REGIONS } from '@/shared/hexmap/regions';
 import { DetectiveModeLayer } from './DetectiveModeLayer';
 import { cn } from '@/shared/lib/utils';
 import { useDossierStore } from '@/features/detective/dossier/store';
-import { resolveAvailableInteractions, type ResolverOption, type MapPointBinding, logger } from '@repo/shared';
+import { resolveAvailableInteractions, type ResolverOption, type MapPointBinding, logger, type PointStateEnum } from '@repo/shared';
 
 import { DetectiveMapPin } from './DetectiveMapPin';
 import { ThreadLayer } from './ThreadLayer';
@@ -15,7 +14,6 @@ import { useVNStore } from '@/entities/visual-novel/model/store';
 import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { useMapPoints } from '@/features/detective/data/useMapPoints';
 import { useQuestStore } from '@/features/quests/store';
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -24,6 +22,7 @@ const INITIAL_REGION = REGIONS['FREIBURG_1905'];
 export const MapView = () => {
     const mapRef = useRef<MapRef>(null);
     const flags = useDossierStore((state) => state.flags);
+    const activeCaseId = useDossierStore((state) => state.activeCaseId);
     const startScenario = useVNStore(state => state.startScenario);
     const locale = useVNStore(state => state.locale);
     const navigate = useNavigate();
@@ -66,14 +65,16 @@ export const MapView = () => {
     }, [activePointIds]);
 
     // Unified Map Hook
-    const { points, pointStates } = useMapPoints();
+    const { points, pointStates } = useMapPoints({
+        caseId: activeCaseId ?? undefined
+    });
 
     const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
     const [availableActions, setAvailableActions] = useState<ResolverOption[]>([]);
     const [isMapLoaded, setIsMapLoaded] = useState(false);
 
     // TODO: move inventory to a unified context
-    const inventory = {};
+    const inventory = useMemo<Record<string, number>>(() => ({}), []);
 
     const handlePointClick = useCallback((pointId: string) => {
         const point = points.find(p => p.id === pointId);
@@ -168,8 +169,15 @@ export const MapView = () => {
                         )}
 
                         {points.map((point) => {
-                            const state = pointStates[point.id] ?? 'discovered';
+                            const state = (pointStates[point.id] ?? 'discovered') as PointStateEnum;
                             if (point.isHiddenInitially && state === 'locked') return null;
+
+                            const markerState: 'hidden' | 'discovered' | 'unlocked' | 'investigated' | 'locked' =
+                                state === 'locked'
+                                    ? 'locked'
+                                    : (state === 'visited' || state === 'completed')
+                                        ? 'investigated'
+                                        : 'discovered';
 
                             return (
                                 <Marker
@@ -180,7 +188,7 @@ export const MapView = () => {
                                 >
                                     <DetectiveMapPin
                                         point={point}
-                                        state={state as 'discovered' | 'locked'}
+                                        state={markerState}
                                         isActive={activePointIds.has(point.id)}
                                         onClick={() => handlePointClick(point.id)}
                                     />

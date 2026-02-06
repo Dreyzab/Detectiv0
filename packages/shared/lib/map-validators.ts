@@ -55,6 +55,9 @@ export const MapPointCategorySchema = z.enum([
     'CRIME_SCENE', 'NPC', 'QUEST', 'EVENT', 'ACTIVITY', 'INTEREST', 'TRAVEL'
 ]);
 
+export const MapPointScopeSchema = z.enum(['global', 'case', 'progression']);
+export const MapPointRetentionPolicySchema = z.enum(['temporary', 'persistent_on_unlock', 'permanent']);
+
 export const MapPointSchema = z.object({
     id: z.string(),
     title: z.string(),
@@ -65,7 +68,11 @@ export const MapPointSchema = z.object({
     image: z.string().optional(),
 
     packId: z.string(),
+    scope: MapPointScopeSchema.optional(),
     caseId: z.string().optional(),
+    retentionPolicy: MapPointRetentionPolicySchema.optional(),
+    defaultState: PointStateSchema.optional(),
+    active: z.boolean().optional(),
     bindings: z.array(MapPointBindingSchema),
 
     iconOverride: z.string().optional(),
@@ -81,4 +88,6 @@ export type MapCondition = z.infer<typeof MapConditionSchema>;
 export type MapAction = z.infer<typeof MapActionSchema>;
 export type MapPointBinding = z.infer<typeof MapPointBindingSchema>;
 export type MapPointCategory = z.infer<typeof MapPointCategorySchema>;
+export type MapPointScope = z.infer<typeof MapPointScopeSchema>;
+export type MapPointRetentionPolicy = z.infer<typeof MapPointRetentionPolicySchema>;
 export type MapPoint = z.infer<typeof MapPointSchema>;

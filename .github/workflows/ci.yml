@@ -20,6 +20,9 @@ jobs:
         
     - name: Install Dependencies
       run: bun install
+
+    - name: Install Playwright Browser
+      run: bun x playwright install --with-deps chromium
       
     - name: Lint
       run: bun run --filter web lint

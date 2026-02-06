@@ -1,15 +1,12 @@
-
 import { db } from '../db';
 import { mapPoints, userMapPointStates } from '../db/schema';
-import { DETECTIVE_POINTS, type DetectivePoint } from '@repo/shared/data/points';
-import type { MapPoint, MapPointCategory, MapPointBinding, MapCondition } from '@repo/shared';
-
+import type { MapPointCategory, MapPointBinding, MapCondition } from '@repo/shared';
 import { CASE_01_POINTS } from './data/case_01_points';
+import { resolvePointLifecycle } from './data/point_lifecycle';
 
 const mapCategory = (type: string): MapPointCategory => {
     switch (type) {
         case 'crime': return 'CRIME_SCENE';
-        // 'support' usually means an NPC or location giving help/resources
         case 'support': return 'NPC';
         case 'bureau': return 'QUEST';
         case 'interest': return 'INTEREST';
@@ -17,75 +14,98 @@ const mapCategory = (type: string): MapPointCategory => {
     }
 };
 
-const mapBinding = (b: any): MapPointBinding => {
-    // Handle singular condition legacy field
-    const conditions: MapCondition[] = b.conditions || (b.condition ? [b.condition] : []);
+const mapBinding = (binding: Record<string, unknown>): MapPointBinding => {
+    const condition = binding.condition as MapCondition | undefined;
+    const conditions = binding.conditions as MapCondition[] | undefined;
+    const rawConditions: MapCondition[] = conditions || (condition ? [condition] : []);
 
     return {
-        id: b.id,
-        trigger: b.trigger,
-        label: b.label,
-        priority: b.priority || 0,
-        conditions: conditions.length > 0 ? conditions : undefined,
-        actions: b.actions
+        id: String(binding.id),
+        trigger: binding.trigger as MapPointBinding['trigger'],
+        label: typeof binding.label === 'string' ? binding.label : undefined,
+        priority: typeof binding.priority === 'number' ? binding.priority : 0,
+        conditions: rawConditions.length > 0 ? rawConditions : undefined,
+        actions: (binding.actions as MapPointBinding['actions']) ?? []
     };
 };
 
 const main = async () => {
-    console.log('🌱 Seeding Map Points...');
+    console.log('Seeding map points...');
+    const hardReset = process.env.SEED_HARD_RESET === '1';
 
-    // Tables are now handled by Drizzle migrations.
-    // Ensure you've run migrations before seeding.
-
-    // 1. Clear existing map points
-    // Note: We might want to keep user states if we are just updating content, 
-    // but the user said "reseed everything", so we'll clear points. 
-    // Foreign key constraints might block deletion if we don't clear states first.
-    // However, usually ON DELETE CASCADE isn't set up unless specified.
-    // Let's clear states too for a fresh start or risk errors.
-    // Actually, preserving user progress is nice, but for dev "reseed everything" usually means data reset.
-    // Let's try to delete points. If foreign key fails, we delete states first.
-
-    try {
-        await db.delete(userMapPointStates); // Reset user progress for safety in this dev script
-        await db.delete(mapPoints);
-    } catch (e) {
-        console.warn("Could not clear tables, maybe they don't exist yet?", e);
+    if (hardReset) {
+        try {
+            await db.delete(userMapPointStates);
+            await db.delete(mapPoints);
+            console.log('Hard reset enabled: cleared map_points and user_map_point_user_states');
+        } catch (error) {
+            console.warn('Could not clear tables before seeding:', error);
+        }
     }
 
     const points = Object.values(CASE_01_POINTS);
-    let count = 0;
+    let upsertedCount = 0;
 
-    for (const p of points) {
-        const category = mapCategory(p.type);
+    for (const point of points) {
+        const category = mapCategory(point.type);
+        const lifecycle = resolvePointLifecycle(point.id);
 
-        // Prepare data field (voices only, image is now a direct field)
-        const additionalData: Record<string, any> = {};
-        if (p.voices) additionalData.voices = p.voices;
+        const additionalData: Record<string, unknown> = {};
+        if (point.voices) {
+            additionalData.voices = point.voices;
+        }
 
-        const bindings = p.bindings.map(mapBinding);
+        const bindings = point.bindings.map((binding) => mapBinding(binding as Record<string, unknown>));
+        const dataPayload = Object.keys(additionalData).length > 0 ? additionalData : null;
 
         await db.insert(mapPoints).values({
-            id: p.id,
-            packId: p.packId,
-            title: p.title,
-            description: p.description,
-            lat: p.lat,
-            lng: p.lng,
-            category: category,
-            image: p.image, // Direct field!
-            bindings: JSON.stringify(bindings) as any,
-            data: Object.keys(additionalData).length > 0 ? JSON.stringify(additionalData) as any : null,
+            id: point.id,
+            packId: point.packId,
+            scope: lifecycle.scope,
+            caseId: lifecycle.caseId,
+            retentionPolicy: lifecycle.retentionPolicy,
+            defaultState: lifecycle.defaultState,
+            active: lifecycle.active,
+            title: point.title,
+            description: point.description,
+            lat: point.lat,
+            lng: point.lng,
+            category,
+            image: point.image,
+            bindings,
+            data: dataPayload,
             schemaVersion: 1
+        }).onConflictDoUpdate({
+            target: [mapPoints.id],
+            set: {
+                packId: point.packId,
+                scope: lifecycle.scope,
+                caseId: lifecycle.caseId,
+                retentionPolicy: lifecycle.retentionPolicy,
+                defaultState: lifecycle.defaultState,
+                active: lifecycle.active,
+                title: point.title,
+                description: point.description,
+                lat: point.lat,
+                lng: point.lng,
+                category,
+                image: point.image,
+                bindings,
+                data: dataPayload,
+                schemaVersion: 1
+            }
         });
 
-        count++;
-        console.log(`+ Added ${p.title} (${category})`);
+        upsertedCount++;
+        console.log(`Upserted ${point.title} (${category}) [scope=${lifecycle.scope}, retention=${lifecycle.retentionPolicy}]`);
     }
 
-    console.log(`✅ Seeded ${count} map points.`);
+    console.log(`Seed complete. Upserted ${upsertedCount} map points.`);
 };
 
 if (import.meta.main) {
-    main().catch(console.error);
+    main().catch((error) => {
+        console.error('Map seed failed:', error);
+        process.exit(1);
+    });
 }

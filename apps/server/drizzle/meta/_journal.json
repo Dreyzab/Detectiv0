@@ -15,6 +15,13 @@
       "when": 1770325181787,
       "tag": "0001_lovely_slapstick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770377597378,
+      "tag": "0002_point_lifecycle",
+      "breakpoints": true
     }
   ]
 }

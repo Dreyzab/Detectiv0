@@ -26,14 +26,15 @@ export const QuestLog = () => {
             const timer = setTimeout(() => setIsExpanded(false), 30000);
             return () => clearTimeout(timer);
         }
-    }, [isExpanded, userQuests]); // Reset timer on quest update
+    }, [isExpanded, activeQuests.length]); // Reset timer on quest update
 
     // Auto-expand on quest update
     useEffect(() => {
         if (activeQuests.length > 0) {
-            setIsExpanded(true);
+            const timer = setTimeout(() => setIsExpanded(true), 0);
+            return () => clearTimeout(timer);
         }
-    }, [userQuests]);
+    }, [activeQuests.length]);
 
     // Visibility: Show only on Map and Visual Novel pages
     const isVisible = location.pathname === '/map' || location.pathname.startsWith('/vn');

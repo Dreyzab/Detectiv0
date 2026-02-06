@@ -2,7 +2,6 @@ import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
 import { logger } from "@repo/shared";
-import { db } from "./db";
 import { healthModule } from "./modules/health";
 import { mapModule } from "./modules/map";
 import { adminModule } from "./modules/admin";
