@@ -77,6 +77,13 @@ export const detectiveSaves = pgTable("detective_saves", {
     data: jsonb("data").notNull(), // JSON blob of creating Store state
     timestamp: timestamp("timestamp").notNull(),
 }, (t) => [
-    // Composite unique index to ensure one save per slot per user
     primaryKey({ columns: [t.userId, t.slotId] }),
 ]);
+
+// --- EVENT CODES (QR / MANUAL) ---
+export const eventCodes = pgTable("event_codes", {
+    code: text("code").primaryKey(), // The scanner code (CASE01_BRIEFING_01)
+    actions: jsonb("actions").notNull(), // List of actions to execute
+    active: boolean("active").default(true),
+    description: text("description"), // For admin/logging
+});

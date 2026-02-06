@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { resolveHardlink } from '../features/detective/hardlinks';
+// import { resolveHardlink } from '../features/detective/hardlinks'; // REMOVED
+import { api } from '@/shared/api/client';
 import { useDossierStore } from '../features/detective/dossier/store';
 import { Button } from '../shared/ui/Button';
 import { useVNStore } from '../entities/visual-novel/model/store';
 import { getScenarioById } from '../entities/visual-novel/scenarios/registry';
+import { EVIDENCE_REGISTRY } from '../features/detective/registries';
 
 // Localization
 import { SCANNER_UI } from '../features/scanner/locales';
 import { asLocale } from '../features/quests/utils';
+
+// Types
+import type { MapAction } from '@repo/shared/lib/detective_map_types';
 
 export const QRScannerPage = () => {
     const { setPointState, addEvidence, setFlag } = useDossierStore();
@@ -18,17 +23,20 @@ export const QRScannerPage = () => {
     const { locale } = useVNStore();
     const ui = SCANNER_UI[asLocale(locale)];
 
-    const handleScan = (code: string) => {
-        const actions = resolveHardlink(code);
+    const handleScan = async (code: string) => {
+        // Eden Treaty Call
+        const { data, error } = await api.map['resolve-code']({ code }).get();
 
-        if (!actions) {
-            setLastResult(`${ui.result_unknown} ${code}`);
+        if (error || !data?.success || !data.actions) {
+            setLastResult(`${ui.result_unknown} ${code} (${error?.status || 'Active'})`);
             return;
         }
 
+        // Cast strictly to shared type, as API returns JSONB/Any currently
+        const actions = data.actions as MapAction[];
         let summary = '';
 
-        actions.forEach(action => {
+        actions.forEach((action) => {
             switch (action.type) {
                 case 'start_vn': {
                     // Pass scenario ID, not scenario object
@@ -37,16 +45,22 @@ export const QRScannerPage = () => {
                     summary += scenario ? `${ui.result_scenario} ${scenario.title}\n` : `${ui.result_scenario} ${action.scenarioId}\n`;
                     break;
                 }
-                case 'grant_evidence':
-                    addEvidence(action.evidence);
-                    summary += `${ui.result_evidence} ${action.evidence.name}\n`;
+                case 'grant_evidence': {
+                    const evidence = EVIDENCE_REGISTRY[action.evidenceId];
+                    if (evidence) {
+                        addEvidence(evidence);
+                        summary += `${ui.result_evidence} ${evidence.name}\n`;
+                    } else {
+                        summary += `${ui.result_evidence} [ID: ${action.evidenceId}] (?)\n`;
+                    }
                     break;
+                }
                 case 'unlock_point':
                     setPointState(action.pointId, 'discovered');
                     summary += `${ui.result_map} ${action.pointId}\n`;
                     break;
                 case 'add_flags':
-                    Object.entries(action.flags).forEach(([k, v]) => setFlag(k, v));
+                    action.flags.forEach(f => setFlag(f, true));
                     summary += `${ui.result_flags}\n`;
                     break;
             }

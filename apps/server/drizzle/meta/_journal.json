@@ -8,6 +8,13 @@
       "when": 1770161730679,
       "tag": "0000_perpetual_robin_chapel",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770325181787,
+      "tag": "0001_lovely_slapstick",
+      "breakpoints": true
     }
   ]
 }

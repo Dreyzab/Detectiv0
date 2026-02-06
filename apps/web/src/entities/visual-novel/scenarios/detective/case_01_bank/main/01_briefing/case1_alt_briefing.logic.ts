@@ -23,7 +23,18 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
         'arrival_platform': {
             id: 'arrival_platform',
             backgroundUrl: '/images/scenarios/bahnhof_platform.png',
-            nextSceneId: 'platform_atmosphere'
+            nextSceneId: 'platform_atmosphere',
+            // [TEST] Passive Check: Logic (Easy) - Should pass
+            passiveChecks: [
+                {
+                    id: 'check_arrival_logic',
+                    voiceId: 'logic',
+                    difficulty: 2, // Very easy
+                    isPassive: true,
+                    passiveText: "The train station structure suggests a late 19th-century construction. Efficient.",
+                    passiveFailText: "It's just a train station."
+                }
+            ]
         },
         'platform_atmosphere': {
             id: 'platform_atmosphere',
@@ -34,7 +45,18 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
             id: 'police_approach',
             backgroundUrl: '/images/scenarios/bahnhof_platform.png',
             characterId: 'gendarm',
-            nextSceneId: 'police_briefing'
+            nextSceneId: 'police_briefing',
+            // [TEST] Passive Check: Empathy (Impossible) - Should fail
+            passiveChecks: [
+                {
+                    id: 'check_police_empathy',
+                    voiceId: 'empathy',
+                    difficulty: 99, // Impossible (avoids crit chance)
+                    isPassive: true,
+                    passiveText: "He is hiding something deep beneath that uniform.",
+                    passiveFailText: "He seems like a standard officer. Nothing special."
+                }
+            ]
         },
         'police_briefing': {
             id: 'police_briefing',

@@ -4,6 +4,62 @@
 
 ---
 
+## [05.02.2026] — Phase 2: Mind Palace (Parliament Overlay)
+
+### Добавлено
+- **Mind Palace Overlay**: Система пассивных проверок навыков, интегрированная в VN-движок.
+    - **`usePassiveChecks` hook**: Обрабатывает `scene.passiveChecks[]` при входе в сцену. Использует `processedSceneIdRef` для предотвращения повторных бросков. Записывает результаты через `recordCheckResult`. Автоматическое скрытие через 6 секунд.
+    - **`VoiceOrb`**: Анимированный орб с цветом группы голоса (framer-motion, пульсация + glow).
+    - **`ThoughtCloud`**: Стилизованная карточка текста (Art Deco, border-left accent по цвету голоса, fade-in/exit анимации).
+    - **`MindPalaceOverlay`**: Контейнер, читающий состояние VN store и рендерящий VoiceOrb + ThoughtCloud при успешной пассивной проверке.
+- **Расширение типов VN**: В `VNSkillCheck` добавлены поля `isPassive`, `passiveText`, `passiveFailText`. В `VNScene` и `VNSceneLogic` добавлено `passiveChecks?: VNSkillCheck[]`.
+- **Тестовые данные**: В `case1_alt_briefing.logic.ts` добавлены две пассивные проверки:
+    - Logic (difficulty 2) — гарантированный успех.
+    - Empathy (difficulty 99) — гарантированный провал.
+
+### Интеграция
+- **MobileVNLayout** (fullscreen): Mind Palace на `z-[125]` (между header и dialogue panel).
+- **VisualNovelOverlay** (map overlay): Mind Palace на `z-[210]` (выше VN панели, ниже toast).
+
+### Структура файлов
+```
+apps/web/src/features/detective/mind-palace/
+├── MindPalaceOverlay.tsx   # Контейнер overlay
+├── VoiceOrb.tsx            # Визуал голоса (цвет, анимация)
+├── ThoughtCloud.tsx        # Текст вмешательства
+├── usePassiveChecks.ts     # Хук обработки passive checks
+└── types.ts                # Локальные типы (VoiceOrbProps, ThoughtCloudProps)
+```
+
+---
+
+## [05.02.2026] — Phase 1.5: Smart Migration (Hardlinks → DB + Eden Treaty)
+
+### Добавлено
+- **`event_codes` таблица**: Новая таблица в Supabase для хранения QR/ручных кодов (CASE01_BRIEFING_01 и т.д.).
+    - Schema: `code` (PK), `actions` (JSONB), `active` (boolean), `description`.
+    - Drizzle migration: `0001_lovely_slapstick.sql`.
+    - Seed: 6 записей (5 сюжетных + 1 тестовый).
+- **`GET /map/resolve-code/:code`**: Новый серверный эндпоинт. Сначала проверяет `event_codes` (stateless), затем `map_points` по QR-коду (stateful unlock). Возвращает типизированные `MapAction[]`.
+- **Eden Treaty клиент**: `apps/web/src/shared/api/client.ts` — типизированный клиент API через `@elysiajs/eden`.
+- **Playwright**: Конфигурация (`playwright.config.ts`), smoke test (`e2e/smoke.spec.ts`), скрипт `test:e2e` в `package.json`.
+
+### Изменено
+- **`useMapPoints.ts`**: Переведён на Eden Treaty (`api.map.points.get()`). Удалена ручная типизация `MapPointsResponse`. Удалена логика merge с hardlinks (96 → 56 строк).
+- **`QRScannerPage.tsx`**: Переведён на Eden Treaty (`api.map['resolve-code']`). Импортирует `MapAction` из shared types.
+- **`supabase_seed.sql`**: Добавлены INSERT для `event_codes`. Данные приведены к соответствию Zod-схеме (`evidenceId` вместо объекта, `flags` как массив строк).
+- **`map.ts` (server)**: Удалён legacy `activate-qr`. Добавлен response schema с Elysia `t.Object()`. Actions кастуются через `as MapAction[]`.
+
+### Удалено
+- **`hardlinks.ts`**: Полностью удалён. Данные разделены на:
+    - Map bindings (встроены в `map_points.bindings` в seed).
+    - Event codes (новая таблица `event_codes`).
+
+### Рефакторинг
+- **Parliament consolidation**: Единый источник в `packages/shared/data/parliament.ts`. Старая версия сохранена как `parliament_legacy.ts.bak`. Все импорты ведут к одному файлу (напрямую или через re-export).
+
+---
+
 ## [04.02.2026] — Database Migration to Supabase (PostgreSQL)
 
 ### Added
@@ -227,16 +283,14 @@
     - Исправлен `MapPointSchema` (добавлено поле `image`).
     - Устранены ошибки импорта модулей в `CaseCard` и `DetectiveMapPin`.
 
-### Архитектура данных
+### Архитектура данных (на момент 04.02)
 | Домен | Источник | Статус |
 |-------|----------|--------|
-| Map Points | SQLite | ✅ Мигрировано |
-| User Progress | SQLite | ✅ Мигрировано |
-| Hardlinks | `hardlinks.ts` | ⏳ Фаза 2 |
-| Cases | `cases.ts` | ⏳ Фаза 2 |
-| Deductions | `deductions.ts` | ⏳ Фаза 2 |
-
-> **План**: `hardlinks.ts`, `cases.ts`, `deductions.ts` мигрируют в БД при реализации Content Editor.
+| Map Points | Supabase (`map_points`) | ✅ Мигрировано |
+| User Progress | Supabase (`user_map_point_user_states`) | ✅ Мигрировано |
+| Hardlinks | `hardlinks.ts` | ✅ Мигрировано (05.02 → `event_codes` + `map_points.bindings`) |
+| Cases | `cases.ts` | ⏳ Фаза 3 |
+| Deductions | `deductions.ts` | ⏳ Фаза 3 |
 
 ---
 

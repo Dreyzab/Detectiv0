@@ -1,87 +1,47 @@
-
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDossierStore } from '../dossier/store';
-import type { MapPoint, PointStateEnum } from '@repo/shared';
 import { logger } from '@repo/shared';
-import { resolveHardlink } from '../hardlinks';
+// import { resolveHardlink } from '../hardlinks'; // REMOVED: Legacy
+import { api } from '@/shared/api/client';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-console.log('[API Config] Using API_URL:', API_URL);
-
-interface MapPointsResponse {
-    points: MapPoint[];
-    userStates: Record<string, PointStateEnum>;
-}
-
-/**
- * Fetches map points from server database.
- * No legacy merge - all data comes from DB.
- */
 export const useMapPoints = (packId?: string) => {
     const { pointStates } = useDossierStore(); // Local override/optimistic state
 
-    const { data, isLoading, error } = useQuery<MapPointsResponse>({
+    const { data, isLoading, error } = useQuery({
         queryKey: ['map-points', packId],
         queryFn: async () => {
-            const res = await fetch(`${API_URL}/map/points${packId ? `?packId=${packId}` : ''}`);
-            if (!res.ok) {
-                console.warn("Failed to fetch map points");
+            // Eden Treaty call
+            const { data, error } = await api.map.points.get({
+                query: packId ? { packId } : undefined
+            });
+
+            if (error) {
+                console.warn("Failed to fetch map points", error);
                 return { points: [], userStates: {} };
             }
-            return res.json();
+
+            return data;
         },
         enabled: true,
-        staleTime: 5 * 60 * 1000,      // 5 minutes - data considered fresh
-        gcTime: 30 * 60 * 1000,         // 30 minutes - keep in cache
-        refetchOnWindowFocus: false     // Don't refetch on tab switch
+        staleTime: 5 * 60 * 1000,      // 5 minutes
+        gcTime: 30 * 60 * 1000,        // 30 minutes
+        refetchOnWindowFocus: false
     });
 
     // Merge States: Local Store (Optimistic) > Server State
+    // User states come typed from Eden now
     const mergedStates = useMemo(() => ({
         ...data?.userStates,
         ...pointStates
     }), [data?.userStates, pointStates]);
 
-    // Merge Hardlinks (Client-side logic) into Points - memoized
-    const enrichedPoints = useMemo(() => {
-        return (data?.points || []).map(point => {
-            const hardlinks = resolveHardlink(point.id);
-            if (hardlinks) {
-                // Append a default 'marker_click' binding if one doesn't exist or merge it?
-                // For now, we assume if hardlinks exist, we want a 'marker_click' binding to execute them.
-                // Ensure bindings is an array (handle potential DB schema mismatch or json parsing issue)
-                const bindingsRaw = point.bindings;
-                const existingBindings = Array.isArray(bindingsRaw) ? bindingsRaw : [];
-
-                // Check if we already have a marker_click binding
-                const hasClickBinding = existingBindings.some(b => b.trigger === 'marker_click');
-
-                if (!hasClickBinding) {
-                    return {
-                        ...point,
-                        bindings: [
-                            ...existingBindings,
-                            {
-                                id: `auto_${point.id}`,
-                                trigger: 'marker_click' as const,
-                                label: 'Investigate', // Default label
-                                priority: 0,
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                actions: hardlinks as any,
-                                conditions: [] // Always available unless point is locked, which is handled by renderer
-                            }
-                        ]
-                    };
-                }
-            }
-            return point;
-        });
-    }, [data?.points]);
+    // Legacy Hardlink Merge Logic REMOVED.
+    // Bindings now come directly from the DB via Eden.
+    const enrichedPoints = data?.points || [];
 
     if (enrichedPoints.length > 0) {
-        // Debug: Log point IDs to verify matching
-        logger.debug("Map Points Loaded", {
+        logger.debug("Map Points Loaded via Eden", {
             count: enrichedPoints.length,
             ids: enrichedPoints.map(p => p.id).join(', ')
         });

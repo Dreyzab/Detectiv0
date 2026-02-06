@@ -13,18 +13,19 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { soundManager } from '@/shared/lib/audio/SoundManager';
 import type { VNChoice } from '@/entities/visual-novel/model/types';
 import { ChoiceButton } from './ChoiceButton';
+import { MindPalaceOverlay } from '@/features/detective/mind-palace/MindPalaceOverlay';
 
-export const VisualNovelOverlay = ({ mode: propMode }: { mode?: 'overlay' | 'fullscreen' }) => {
+export const VisualNovelOverlay = () => {
     const location = useLocation();
 
     if (location.pathname === '/' || location.pathname.startsWith('/vn')) {
         return null;
     }
 
-    return <VisualNovelOverlayInner mode={propMode} />;
+    return <VisualNovelOverlayInner />;
 };
 
-const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fullscreen' }) => {
+const VisualNovelOverlayInner = () => {
     const { activeScenarioId, currentSceneId, advanceScene, endScenario, locale, recordChoice, isChoiceVisited } = useVNStore();
     const { setPointState, addEvidence, setFlag, addEntry, recordCheckResult, voiceStats, gainVoiceXp } = useDossierStore();
     const { modifyRelationship, setCharacterStatus } = useCharacterStore();
@@ -67,8 +68,6 @@ const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fulls
     const sceneNextSceneId = scene?.nextSceneId;
 
     const character = scene?.characterId ? CHARACTERS[scene.characterId] : null;
-    const mode = activeScenario?.mode || propMode || 'overlay';
-    const isFullscreen = mode === 'fullscreen';
 
     // 3. Audio Effect
     useEffect(() => {
@@ -369,14 +368,15 @@ const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fulls
         </div>
     );
 
-    // Fullscreen mode: render only on the dedicated page
-    if (isFullscreen) {
-        return null;
-    }
-
     return (
         <>
             <OverlayLayout />
+
+            {/* Mind Palace Layer - Fixed to ensure correct positioning relative to viewport */}
+            <div className="fixed inset-0 pointer-events-none z-[210]">
+                <MindPalaceOverlay />
+            </div>
+
             {toast && (
                 <div className="fixed top-8 right-8 z-[250] bg-surface border border-primary p-4 shadow-xl animate-bounce-in min-w-[300px]">
                     <div className="flex items-center gap-3">
@@ -390,6 +390,7 @@ const VisualNovelOverlayInner = ({ mode: propMode }: { mode?: 'overlay' | 'fulls
                     </div>
                 </div>
             )}
+
             {activeTooltip && (
                 <ParliamentKeywordCard
                     keyword={activeTooltip.keyword}

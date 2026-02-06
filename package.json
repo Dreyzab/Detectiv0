@@ -7,7 +7,8 @@
     "dev": "concurrently \"bun run --filter server dev\" \"bun run --filter web dev\"",
     "build": "bun run --filter '*' build",
     "prepare": "husky",
-    "generate": "plop"
+    "generate": "plop",
+    "test:e2e": "bun x playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",

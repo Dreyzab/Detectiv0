@@ -45,7 +45,9 @@ export interface VNSkillCheck {
         actions?: VNAction[]; // e.g., Add Heat, Lock Choice
     };
 
-    isPassive?: boolean; // If true, performed automatically on entering scene? (Future scope)
+    isPassive?: boolean; // If true, performed automatically on entering scene
+    passiveText?: string; // Text shown on success (Mind Palace)
+    passiveFailText?: string; // Text shown on failure (optional)
 }
 
 export interface VNChoice {
@@ -70,6 +72,9 @@ export interface VNScene {
     choices?: VNChoice[];
     nextSceneId?: string; // If no choices, auto-advance to this
     onEnter?: VNAction[];
+
+    // RPG: Passive Skill Checks resolved on entry
+    passiveChecks?: VNSkillCheck[];
 }
 
 export interface VNScenario {
@@ -103,6 +108,9 @@ export interface VNSceneLogic {
     }[];
 
     onEnter?: VNAction[];
+
+    // RPG: Passive Skill Checks resolved on entry
+    passiveChecks?: VNSkillCheck[];
 }
 
 export interface VNScenarioLogic {

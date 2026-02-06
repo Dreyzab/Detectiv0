@@ -6,6 +6,7 @@ import type { VNScene, VNChoice, VNCharacter, DialogueEntry } from '@/entities/v
 import { useGyroParallax } from '@/shared/lib/hooks/useGyroParallax';
 import { Smartphone, SmartphoneNfc, MapPin } from 'lucide-react';
 import ChoiceButton from './ChoiceButton';
+import { MindPalaceOverlay } from '@/features/detective/mind-palace/MindPalaceOverlay';
 
 
 interface MobileVNLayoutProps {
@@ -173,6 +174,11 @@ export function MobileVNLayout({
             style={{ height: '100dvh' }}
             onClick={handleTapAnywhere}
         >
+            {/* Mind Palace Overlay - z-[125] to sit between BG/Header (z-100) and Dialogue (z-150) */}
+            <div className="absolute inset-0 pointer-events-none z-[125]">
+                <MindPalaceOverlay />
+            </div>
+
             {/* === SCENE BACKGROUND (50%) === */}
             <AnimatePresence mode="wait">
                 <motion.div
@@ -203,7 +209,7 @@ export function MobileVNLayout({
                     {/* === GLOBAL ATMOSPHERE === */}
                     <div className="absolute inset-0 z-[10] pointer-events-none mix-blend-overlay opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIxIi8+PC9zdmc+')] brightness-100 contrast-150" />
                 </motion.div>
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* === GYRO TOGGLE (Top Right) === */}
             <button
@@ -218,14 +224,16 @@ export function MobileVNLayout({
             </button>
 
             {/* === CINEMATIC REVEAL TRIGGER (Full Screen) === */}
-            {isRevealMode && (
-                <div
-                    className="absolute inset-0 z-[300] cursor-pointer"
-                    onClick={() => setIsRevealMode(false)}
-                    role="button"
-                    aria-label="Tap to reveal interface"
-                />
-            )}
+            {
+                isRevealMode && (
+                    <div
+                        className="absolute inset-0 z-[300] cursor-pointer"
+                        onClick={() => setIsRevealMode(false)}
+                        role="button"
+                        aria-label="Tap to reveal interface"
+                    />
+                )
+            }
 
             {/* === CINEMATIC HEADER (Top) === */}
             <div className="absolute top-0 inset-x-0 p-6 pt-12 flex justify-between items-start z-[100] bg-gradient-to-b from-black/90 via-black/40 to-transparent pb-32 pointer-events-none">

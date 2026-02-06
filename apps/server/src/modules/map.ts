@@ -2,7 +2,7 @@
 import { Elysia, t } from 'elysia';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db';
-import { mapPoints, userMapPointStates } from '../db/schema';
+import { mapPoints, userMapPointStates, eventCodes } from '../db/schema';
 import { MapPointBinding, MapAction, PointStateEnum } from '@repo/shared/lib/detective_map_types';
 import { MapPointBindingSchema } from '@repo/shared/lib/map-validators';
 
@@ -49,55 +49,35 @@ export const mapModule = new Elysia({ prefix: '/map' })
         }
     })
 
-    .post('/activate-qr', async ({ body, set }) => {
-        const { code } = body as { code: string };
+    // .post('/activate-qr', async ({ body, set }) => { ... }) // Legacy endpoint REMOVED
+    .get('/resolve-code/:code', async ({ params, set }) => {
+        const { code } = params;
         const userId = "demo_user"; // TODO: Auth
 
-        // 1. Find point by QR code
+        // 1. Check Event Codes
+        const eventCode = await db.query.eventCodes.findFirst({
+            where: and(eq(eventCodes.code, code), eq(eventCodes.active, true))
+        });
+
+        if (eventCode) {
+            return {
+                success: true,
+                type: 'event' as const,
+                actions: eventCode.actions as MapAction[] // Cast JSONB to typed Action array
+            };
+        }
+
+        // 2. Check Map Points
         const point = await db.query.mapPoints.findFirst({
             where: eq(mapPoints.qrCode, code)
         });
 
         if (!point) {
             set.status = 404;
-            return "Invalid Core Code";
+            return { error: "Invalid Code", success: false };
         }
 
-        // 2. Check current state (Idempotency)
-        const currentState = await db.query.userMapPointStates.findFirst({
-            where: and(
-                eq(userMapPointStates.userId, userId),
-                eq(userMapPointStates.pointId, point.id)
-            )
-        });
-
-        if (currentState && ['discovered', 'visited', 'completed'].includes(currentState.state)) {
-            return {
-                success: true,
-                alreadyUnlocked: true,
-                message: "Location already discovered",
-                actions: []
-            };
-        }
-
-        // 3. Resolve Bindings for 'qr_scan'
-        // We parse bindings JSON
-        let bindings: MapPointBinding[] = [];
-        try {
-            if (typeof point.bindings === 'string') {
-                bindings = JSON.parse(point.bindings);
-            } else {
-                bindings = point.bindings as MapPointBinding[];
-            }
-            // Optional: validate with Zod if needed, but we trust DB for speed or warn
-        } catch (e) {
-            console.error("Failed to parse bindings for point", point.id);
-        }
-
-        const qrBinding = bindings.find(b => b.trigger === 'qr_scan');
-
-        // 4. Update State (Server Authority)
-        // Ensure we unlock the point at minimum
+        // 3. Resolve Map Point Binding
         await db.insert(userMapPointStates).values({
             userId,
             pointId: point.id,
@@ -105,15 +85,33 @@ export const mapModule = new Elysia({ prefix: '/map' })
             data: JSON.stringify({ unlockedAt: Date.now() })
         }).onConflictDoUpdate({
             target: [userMapPointStates.userId, userMapPointStates.pointId],
-            set: { state: 'discovered' } // Upgrade to discovered if it was locked
+            set: { state: 'discovered' }
         });
 
-        // 5. Return Actions
-        // If there are specific actions (like "Start VN"), return them.
-        // If no binding explicitly for QR, we imply "unlock_point" (which we just did state-wise).
+        // Parse bindings
+        let bindings: MapPointBinding[] = [];
+        try {
+            if (typeof point.bindings === 'string') {
+                bindings = JSON.parse(point.bindings);
+            } else {
+                bindings = point.bindings as MapPointBinding[];
+            }
+        } catch (e) { console.error("Binding parse error", e); }
+
+        const qrBinding = bindings.find(b => b.trigger === 'qr_scan');
+
         return {
             success: true,
-            actions: qrBinding ? qrBinding.actions : [{ type: 'unlock_point', pointId: point.id }],
-            pointId: point.id
+            type: 'map_point' as const,
+            pointId: point.id,
+            actions: (qrBinding ? qrBinding.actions : [{ type: 'unlock_point', pointId: point.id }]) as MapAction[]
         };
+    }, {
+        response: t.Object({
+            success: t.Boolean(),
+            type: t.Optional(t.Union([t.Literal('event'), t.Literal('map_point')])),
+            pointId: t.Optional(t.String()),
+            error: t.Optional(t.String()),
+            actions: t.Optional(t.Array(t.Object({ type: t.String() })))
+        })
     });
