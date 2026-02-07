@@ -6,7 +6,14 @@ import { EVIDENCE_REGISTRY } from '../registries';
 // import { useNavigate } from 'react-router-dom';
 
 export const useMapActionHandler = () => {
-    const { setPointState, addEvidence, setFlag } = useDossierStore();
+    const {
+        setPointState,
+        addEvidence,
+        setFlag,
+        addFlags,
+        unlockEntry,
+        setActiveCase
+    } = useDossierStore();
     const startScenario = useVNStore(state => state.startScenario);
     // const navigate = useNavigate();
 
@@ -36,6 +43,19 @@ export const useMapActionHandler = () => {
             }
             case 'set_flag': {
                 setFlag(action.flagId, action.value);
+                break;
+            }
+            case 'add_flags': {
+                const toEnable = Object.fromEntries(action.flags.map((flagId) => [flagId, true]));
+                addFlags(toEnable);
+                break;
+            }
+            case 'unlock_entry': {
+                unlockEntry(action.entryId);
+                break;
+            }
+            case 'set_active_case': {
+                setActiveCase(action.caseId);
                 break;
             }
             case 'start_battle': {

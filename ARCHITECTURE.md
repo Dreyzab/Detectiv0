@@ -72,7 +72,7 @@ Currently the project focuses on **Detective Mode** (Freiburg 1905).
 
 ## 🔄 State Management
 
-- **Global UI/Game State**: Zustand (5 persisted stores: `inventory`, `dossier`, `quest`, `vn`, `character`).
+- **Global UI/Game State**: Zustand (5 persisted stores: `inventory` (Slots + Money), `dossier`, `quest`, `vn`, `character`).
 - **Server Sync**: Eden Treaty client (`apps/web/src/shared/api/client.ts`) with typed API calls. Used in `useMapPoints` and `QRScannerPage`.
 - **Server State Cache**: React Query (`@tanstack/react-query`, staleTime 5min) wrapping Eden Treaty calls.
 - **Persistence**: LocalStorage keys: `gw4-inventory-storage`, `gw4-detective-dossier`, `gw4-quest-store`, `gw4-vn-store`, `character-storage`.
@@ -138,3 +138,68 @@ passiveFailText?: string;   // Optional, for future use
 - `bun test apps/server/test/simple.test.ts`
 - `bun test packages/shared/lib/map-resolver.test.ts`
 - `bun x tsc -p apps/server/tsconfig.json --noEmit`
+
+## 🧠 Knowledge Base & Narrative Source of Truth
+
+Проект использует гибридную документацию:
+1.  **Code (Implementation)**: `apps/` & `packages/` — истина в последней инстанции для механик и формул.
+2.  **Obsidian Vault (Narrative & Intent)**: `obsidian/Detectiv` — истина для Сюжета, Лoра, Персонажей и Геймдизайн-документации.
+    *   **Structure**: Neural Network style (Zettelkasten).
+    *   **Pillars**: Deduction, Contradiction, Investigation (см. `Manifesto_Detective_Philosophy.md`).
+    *   **Git Policy**: Папка `obsidian/` исключена из репозитория (Gitignored) для безопасности черновых наработок.
+    *   **Core control notes**:
+        - `obsidian/Detectiv/99_System/Creator_Framework.md`
+        - `obsidian/Detectiv/20_Game_Design/Systems/Sys_Investigation.md`
+        - `obsidian/Detectiv/20_Game_Design/Systems/Sys_FogOfWar.md`
+        - `obsidian/Detectiv/00_Map_Room/00_Start_Here.md`
+        - `obsidian/Detectiv/00_Map_Room/Sprint_Current.md`
+
+
+## Detective Engine v1 (2026-02-07)
+
+### New backend module: `engine.ts`
+- The backend now contains a dedicated world-simulation module: `apps/server/src/modules/engine.ts`.
+- Engine API surface:
+  - `GET /engine/world`
+  - `POST /engine/time/tick`
+  - `POST /engine/travel/start`
+  - `POST /engine/travel/complete/:sessionId`
+  - `POST /engine/case/advance`
+  - `POST /engine/progress/apply`
+  - `POST /engine/evidence/discover`
+
+### Engine storage model
+- Engine persistence is implemented in Postgres via Drizzle schema:
+  `world_clocks`, `city_routes`, `travel_sessions`, `cases`, `case_objectives`,
+  `user_case_progress`, `player_progression`, `voice_progression`, `factions`,
+  `user_faction_reputation`, `user_character_relations`, `evidence_catalog`,
+  `user_evidence`, `domain_event_log`.
+- This introduces event-log capable architecture for replay/debug/audit in later phases.
+
+### Runtime flow (current vertical slice)
+1. Web map requests world snapshot via `GET /engine/world`.
+2. On point interaction, frontend starts travel (`/engine/travel/start`) and completes travel (`/engine/travel/complete/:sessionId`).
+3. Engine advances time ticks and returns location availability.
+4. If location is blocked (night bank rule), UI presents alternative approaches.
+5. Alternative approach calls `/engine/case/advance` and updates faction reputation/world state.
+6. On success, scenario action (`start_vn`) continues as normal.
+
+### Frontend integration layer
+- `apps/web/src/shared/api/client.ts` now includes typed `engine` methods.
+- `apps/web/src/features/detective/engine/store.ts` is the new client-side world state adapter (Zustand).
+- `MapView` and `CaseCard` consume this store for phase/tick/travel/availability UX.
+
+### Known architectural constraints
+- Identity is resolved per request (`auth.userId` first, then `x-user-id`/`x-demo-user-id`, then `demo_user` fallback).
+- Objective routing is dynamic and location-driven (`case_objectives.location_id` + stable location id from map point data).
+- VN event stream -> engine progression/evidence sync is partially integrated and will be expanded.
+
+### Location identity model (stable world anchor)
+- `locationId` is a stable world anchor (bank, city hall, pharmacy) and should rarely change.
+- `map_point.id` is an interaction node and may evolve with content iteration.
+- Frontend uses `point.data.locationId` as canonical location key (fallback to `point.id`) so objective linkage survives point refactors.
+
+### Fog of war (design note)
+- Fog state should be owned by location progression, not by single scene completion.
+- A location can be visible but not explored, explored but not resolved, or fully resolved.
+- Reveal can happen via travel, intelligence beats, evidence, or faction contacts.

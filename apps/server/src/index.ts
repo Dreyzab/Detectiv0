@@ -6,6 +6,8 @@ import { healthModule } from "./modules/health";
 import { mapModule } from "./modules/map";
 import { adminModule } from "./modules/admin";
 import { detectiveModule } from "./modules/detective";
+import { engineModule } from "./modules/engine";
+import { authModule } from "./middleware/auth";
 
 
 const app = new Elysia()
@@ -26,10 +28,12 @@ const app = new Elysia()
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   }))
   .use(swagger())
+  .use(authModule)
   .use(healthModule)
   .use(mapModule)
   .use(adminModule)
   .use(detectiveModule)
+  .use(engineModule)
   .get("/", () => "Hello Elysia");
 
 if (import.meta.main) {

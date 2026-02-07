@@ -1,55 +1,72 @@
-
-import type { MapPoint } from '@repo/shared';
+import type { LocationAvailability, MapPoint, WorldClockState } from '@repo/shared';
 import { cn } from '@/shared/lib/utils';
 import { type ResolverOption, type MapPointBinding } from '@repo/shared';
 import { VOICES, VOICE_GROUPS, type VoiceId } from '../../../features/detective/lib/parliament';
 
+type AlternativeApproach = 'lockpick' | 'bribe' | 'warrant';
+
 interface CaseCardProps {
     point: MapPoint;
     actions: ResolverOption[];
-    onExecute: (binding: MapPointBinding) => void;
+    onExecute: (binding: MapPointBinding) => void | Promise<void>;
     onClose: () => void;
+    worldClock?: WorldClockState;
+    currentLocationId?: string | null;
+    locationAvailability?: LocationAvailability;
+    isBusy?: boolean;
+    onAlternativeApproach?: (approach: AlternativeApproach) => void | Promise<void>;
 }
 
-export const CaseCard = ({ point, actions, onExecute, onClose }: CaseCardProps) => {
-    // Determine main action (e.g. Enter) logic
-    const mainOption = actions.find(opt => {
-        // We receive ResolverOption { binding, enabled }
-        // We want an option that has actions
-        const binding = opt.binding;
-        return binding.actions && binding.actions.length > 0;
-    });
-
+export const CaseCard = ({
+    point,
+    actions,
+    onExecute,
+    onClose,
+    worldClock,
+    currentLocationId,
+    locationAvailability,
+    isBusy = false,
+    onAlternativeApproach
+}: CaseCardProps) => {
+    const mainOption = actions.find((opt) => opt.enabled && opt.binding.actions && opt.binding.actions.length > 0);
     const enterAction = mainOption ? mainOption.binding : null;
+    const isClosed = Boolean(locationAvailability && !locationAvailability.open);
+    const canExecute = Boolean(enterAction) && !isClosed && !isBusy;
 
-    // Parliament of Voices rendering
     const pointVoices = (point.data?.voices as Partial<Record<VoiceId, string>>) || {};
     const activeVoiceIds = Object.keys(pointVoices) as VoiceId[];
+    const availableApproaches = (locationAvailability?.alternatives ?? []).filter(
+        (approach): approach is AlternativeApproach =>
+            approach === 'lockpick' || approach === 'bribe' || approach === 'warrant'
+    );
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}>
             <div
                 className="relative max-w-md w-full bg-[#f3e9d2] text-[#2c1810] shadow-2xl p-1 rounded-sm overflow-hidden"
-                onClick={e => e.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
                 style={{
                     boxShadow: '0 0 50px rgba(0,0,0,0.5)',
                     backgroundImage: 'url("/images/paper-texture.png")'
                 }}
             >
-                {/* Vintage Border Frame */}
                 <div className="border-[3px] border-double border-[#4a3b2a] h-full p-4 flex flex-col gap-4">
-
-                    {/* Header */}
                     <div className="text-center border-b border-[#4a3b2a]/30 pb-2">
-                        <h2 className={cn(
-                            "text-3xl font-bold tracking-wide text-[#4a1a1a] font-serif"
-                        )} style={{ fontFamily: '"Arnold Böcklin", "UnifrakturMaguntia", serif' }}>
+                        <h2
+                            className={cn("text-3xl font-bold tracking-wide text-[#4a1a1a] font-serif")}
+                            style={{ fontFamily: '"Arnold Bocklin", "UnifrakturMaguntia", serif' }}
+                        >
                             {point.title}
                         </h2>
                         <div className="text-xs uppercase tracking-[0.2em] text-[#8c7b64] mt-1">{point.id}</div>
+                        {worldClock && (
+                            <div className="mt-2 text-[10px] uppercase tracking-[0.15em] text-[#6d5b48] font-mono">
+                                {worldClock.phase} / tick {worldClock.tick}
+                                {currentLocationId && ` / from ${currentLocationId}`}
+                            </div>
+                        )}
                     </div>
 
-                    {/* Image / Visual */}
                     <div className="relative w-full h-40 bg-zinc-900 overflow-hidden shadow-inner border border-[#4a3b2a]/50">
                         <img
                             src={point.image || "/images/detective/location_placeholder.png"}
@@ -59,44 +76,77 @@ export const CaseCard = ({ point, actions, onExecute, onClose }: CaseCardProps) 
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                     </div>
 
-                    {/* Parliament of Voices Section */}
                     <div className="flex flex-col gap-3 py-2">
-                        {activeVoiceIds.map(vId => {
-                            const voice = VOICES[vId];
+                        {activeVoiceIds.map((voiceId) => {
+                            const voice = VOICES[voiceId];
                             const group = VOICE_GROUPS[voice.group];
-                            const text = pointVoices[vId];
-
+                            const text = pointVoices[voiceId];
                             if (!text) return null;
 
                             return (
-                                <div key={vId} className="flex gap-3 text-sm border-l-2 pl-3 italic" style={{ borderColor: group.color + '66' }}>
+                                <div key={voiceId} className="flex gap-3 text-sm border-l-2 pl-3 italic" style={{ borderColor: `${group.color}66` }}>
                                     <span className="font-bold uppercase not-italic text-[10px] tracking-tighter opacity-70" style={{ color: group.color }}>
                                         {voice.name}:
                                     </span>
-                                    <span className="text-[#3d2b1f]">❝{text}❞</span>
+                                    <span className="text-[#3d2b1f]">"{text}"</span>
                                 </div>
                             );
                         })}
 
-                        {/* Fallback description if no voices */}
                         {activeVoiceIds.length === 0 && (
                             <p className="text-sm italic text-[#5c4d3c]">{point.description}</p>
                         )}
                     </div>
 
-                    {/* Actions */}
                     <div className="mt-auto grid grid-cols-1 gap-2 pt-4 border-t border-[#4a3b2a]/30">
                         {enterAction ? (
                             <button
-                                onClick={() => onExecute(enterAction)}
-                                className="w-full py-3 bg-[#4a1a1a] text-[#f3e9d2] font-serif font-bold text-lg uppercase tracking-wider hover:bg-[#6b2a2a] transition-colors relative overflow-hidden group shadow-md"
+                                onClick={() => void onExecute(enterAction)}
+                                disabled={!canExecute}
+                                className={cn(
+                                    "w-full py-3 font-serif font-bold text-lg uppercase tracking-wider transition-colors relative overflow-hidden group shadow-md",
+                                    canExecute
+                                        ? "bg-[#4a1a1a] text-[#f3e9d2] hover:bg-[#6b2a2a]"
+                                        : "bg-[#7d6d5f] text-[#f3e9d2]/70 cursor-not-allowed"
+                                )}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-2">
-                                    <span>♠</span> {enterAction.label || "Investigate"} <span>♠</span>
+                                    <span>*</span>
+                                    {isBusy ? 'Traveling...' : (isClosed ? 'Location Closed' : (enterAction.label || 'Investigate'))}
+                                    <span>*</span>
                                 </span>
                             </button>
                         ) : (
                             <div className="text-center text-xs text-amber-900/50 py-2">No interaction available</div>
+                        )}
+
+                        {isClosed && locationAvailability && (
+                            <div className="text-xs border border-[#8b2f2f]/40 bg-[#f6e3d8] text-[#6c1b1b] px-3 py-2 leading-relaxed">
+                                <div className="font-bold uppercase tracking-wider">Unavailable</div>
+                                <div>{locationAvailability.reason ?? 'This location is currently closed.'}</div>
+                                {availableApproaches.length > 0 && (
+                                    <div className="mt-2">
+                                        <div className="mb-1 uppercase tracking-wider">Alternative entry:</div>
+                                        <div className="grid grid-cols-3 gap-1">
+                                            {availableApproaches.map((approach) => (
+                                                <button
+                                                    key={approach}
+                                                    onClick={() => void onAlternativeApproach?.(approach)}
+                                                    disabled={!onAlternativeApproach || isBusy}
+                                                    className={cn(
+                                                        "px-2 py-1 border uppercase tracking-wide",
+                                                        onAlternativeApproach && !isBusy
+                                                            ? "border-[#6c1b1b]/40 bg-[#fbe9df] hover:bg-[#f7d8ca]"
+                                                            : "border-[#6c1b1b]/20 bg-[#f8eade] opacity-60 cursor-not-allowed"
+                                                    )}
+                                                >
+                                                    {approach}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         )}
 
                         <div className="flex gap-2">
@@ -110,7 +160,6 @@ export const CaseCard = ({ point, actions, onExecute, onClose }: CaseCardProps) 
                     </div>
                 </div>
 
-                {/* Close Button X */}
                 <button
                     onClick={onClose}
                     className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-[#4a3b2a] hover:text-red-700 text-xl leading-none"

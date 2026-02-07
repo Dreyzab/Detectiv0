@@ -4,8 +4,8 @@ import { db } from '../db';
 import { eventCodes, mapPoints, userMapPointStates } from '../db/schema';
 import type { MapAction, MapPointBinding, PointStateEnum } from '@repo/shared/lib/detective_map_types';
 import { MapPointBindingSchema, PointStateSchema } from '@repo/shared/lib/map-validators';
-
-const DEMO_USER_ID = 'demo_user';
+import { resolveUserId } from '../lib/user-id';
+import { ensureUserExists as ensureDbUserExists } from '../db/user-utils';
 
 type PointScope = 'global' | 'case' | 'progression';
 type PointRetentionPolicy = 'temporary' | 'persistent_on_unlock' | 'permanent';
@@ -55,6 +55,7 @@ export interface MapRepository {
     findActiveEventCode: (code: string) => Promise<EventCodeRow | null>;
     findPointByQrCode: (code: string) => Promise<MapPointRow | null>;
     upsertUserPointState: (input: UpsertUserPointStateInput) => Promise<void>;
+    ensureUserExists: (userId: string) => Promise<void>;
 }
 
 const normalizeScope = (scope: string | null | undefined): PointScope => {
@@ -188,16 +189,25 @@ export const createDrizzleMapRepository = (): MapRepository => ({
                 meta: input.meta
             }
         });
+    },
+
+    ensureUserExists: async (userId) => {
+        await ensureDbUserExists(userId);
     }
 });
 
 export const createMapModule = (repository: MapRepository = createDrizzleMapRepository()) =>
     new Elysia({ prefix: '/map' })
-        .get('/points', async ({ query, set }) => {
+        .get('/points', async (context) => {
+            const { query, set, request } = context;
             try {
                 const packId = typeof query.packId === 'string' ? query.packId : undefined;
                 const activeCaseId = typeof query.caseId === 'string' ? query.caseId : undefined;
-                const userId = DEMO_USER_ID; // TODO: replace with auth context
+                const userId = resolveUserId({
+                    request,
+                    auth: (context as { auth?: (options?: unknown) => { userId?: string | null } }).auth
+                });
+                await repository.ensureUserExists(userId);
 
                 const points = await repository.getPoints(packId);
                 const states = await repository.getUserStates(userId);
@@ -218,9 +228,14 @@ export const createMapModule = (repository: MapRepository = createDrizzleMapRepo
                 };
             }
         })
-        .get('/resolve-code/:code', async ({ params, set }) => {
+        .get('/resolve-code/:code', async (context) => {
+            const { params, set, request } = context;
             const { code } = params;
-            const userId = DEMO_USER_ID; // TODO: replace with auth context
+            const userId = resolveUserId({
+                request,
+                auth: (context as { auth?: (options?: unknown) => { userId?: string | null } }).auth
+            });
+            await repository.ensureUserExists(userId);
 
             const eventCode = await repository.findActiveEventCode(code);
             if (eventCode) {

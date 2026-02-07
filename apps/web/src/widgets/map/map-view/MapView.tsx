@@ -5,7 +5,7 @@ import { REGIONS } from '@/shared/hexmap/regions';
 import { DetectiveModeLayer } from './DetectiveModeLayer';
 import { cn } from '@/shared/lib/utils';
 import { useDossierStore } from '@/features/detective/dossier/store';
-import { resolveAvailableInteractions, type ResolverOption, type MapPointBinding, logger, type PointStateEnum } from '@repo/shared';
+import { resolveAvailableInteractions, type ResolverOption, type MapPoint, type MapPointBinding, logger, type PointStateEnum } from '@repo/shared';
 
 import { DetectiveMapPin } from './DetectiveMapPin';
 import { ThreadLayer } from './ThreadLayer';
@@ -15,17 +15,44 @@ import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { useMapPoints } from '@/features/detective/data/useMapPoints';
 import { useQuestStore } from '@/features/quests/store';
 import { useNavigate } from 'react-router-dom';
+import { useMapActionHandler } from '@/features/detective/lib/map-action-handler';
+import { useWorldEngineStore } from '@/features/detective/engine/store';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const INITIAL_REGION = REGIONS['FREIBURG_1905'];
+
+const getStableLocationId = (point: MapPoint): string => {
+    const rawLocationId = (point.data as Record<string, unknown> | undefined)?.locationId;
+    if (typeof rawLocationId === 'string' && rawLocationId.trim().length > 0) {
+        return rawLocationId.trim();
+    }
+    return point.id;
+};
 
 export const MapView = () => {
     const mapRef = useRef<MapRef>(null);
     const flags = useDossierStore((state) => state.flags);
     const activeCaseId = useDossierStore((state) => state.activeCaseId);
+    const worldCaseId = activeCaseId ?? 'case_01_bank';
+    const setPointState = useDossierStore((state) => state.setPointState);
+    const setFlag = useDossierStore((state) => state.setFlag);
     const startScenario = useVNStore(state => state.startScenario);
     const locale = useVNStore(state => state.locale);
     const navigate = useNavigate();
+    const { executeAction } = useMapActionHandler();
+
+    const worldClock = useWorldEngineStore((state) => state.worldClock);
+    const currentLocationId = useWorldEngineStore((state) => state.currentLocationId);
+    const locationAvailability = useWorldEngineStore((state) => state.locationAvailability);
+    const objectives = useWorldEngineStore((state) => state.objectives);
+    const activeCase = useWorldEngineStore((state) => state.activeCase);
+    const lastTravelBeat = useWorldEngineStore((state) => state.lastTravelBeat);
+    const isWorldHydrating = useWorldEngineStore((state) => state.isHydrating);
+    const isTraveling = useWorldEngineStore((state) => state.isTraveling);
+    const worldError = useWorldEngineStore((state) => state.error);
+    const hydrateWorld = useWorldEngineStore((state) => state.hydrateWorld);
+    const travelToLocation = useWorldEngineStore((state) => state.travelToLocation);
+    const advanceCase = useWorldEngineStore((state) => state.advanceCase);
 
     // Quest Logic
     const quests = useQuestStore(state => state.quests);
@@ -64,6 +91,12 @@ export const MapView = () => {
         logger.debug("Active Points Updated Effect", { count: activePointIds.size, ids: Array.from(activePointIds) });
     }, [activePointIds]);
 
+    useEffect(() => {
+        void hydrateWorld({
+            caseId: worldCaseId
+        });
+    }, [worldCaseId, hydrateWorld]);
+
     // Unified Map Hook
     const { points, pointStates } = useMapPoints({
         caseId: activeCaseId ?? undefined
@@ -90,11 +123,46 @@ export const MapView = () => {
         setAvailableActions(options);
     }, [points, flags, pointStates, inventory]);
 
-    const handleExecuteAction = useCallback((binding: MapPointBinding) => {
+    const handleExecuteAction = useCallback(async (binding: MapPointBinding) => {
         console.log('Execute Action:', binding);
+        if (!selectedPointId) return;
+
+        const targetPointId = selectedPointId;
+        const targetPoint = points.find((point) => point.id === targetPointId);
+        const targetLocationId = targetPoint ? getStableLocationId(targetPoint) : targetPointId;
+        const knownAvailability = locationAvailability[targetPointId] ?? locationAvailability[targetLocationId];
+        if (knownAvailability && !knownAvailability.open) {
+            logger.warn(`Location is closed: ${targetPointId}`, {
+                reason: knownAvailability.reason,
+                alternatives: knownAvailability.alternatives
+            });
+            return;
+        }
+
+        if (currentLocationId !== targetPointId) {
+            const travelResult = await travelToLocation({
+                toLocationId: targetPointId,
+                caseId: worldCaseId
+            });
+
+            if (!travelResult) {
+                return;
+            }
+
+            if (!travelResult.locationAvailability.open) {
+                logger.warn(`Location unavailable after travel: ${targetPointId}`, {
+                    reason: travelResult.locationAvailability.reason,
+                    alternatives: travelResult.locationAvailability.alternatives
+                });
+                return;
+            }
+        }
+
+        setPointState(targetPointId, 'visited');
+        setFlag(`VISITED_${targetPointId}`, true);
 
         if (binding.actions) {
-            binding.actions.forEach(action => {
+            binding.actions.forEach((action) => {
                 if (action.type === 'start_vn') {
                     const legacyPayload = (action as { payload?: unknown }).payload;
                     const id = typeof legacyPayload === 'string' ? legacyPayload : action.scenarioId;
@@ -103,13 +171,73 @@ export const MapView = () => {
                     if (scenario?.mode === 'fullscreen') {
                         navigate(`/vn/${scenario.id}`);
                     }
+                    return;
                 }
+
+                executeAction(action);
             });
         }
 
         setAvailableActions([]);
         setSelectedPointId(null);
-    }, [startScenario, locale, navigate]);
+    }, [
+        selectedPointId,
+        points,
+        locationAvailability,
+        currentLocationId,
+        travelToLocation,
+        worldCaseId,
+        setPointState,
+        setFlag,
+        startScenario,
+        locale,
+        navigate,
+        executeAction
+    ]);
+
+    const handleAlternativeApproach = useCallback(async (approach: 'lockpick' | 'bribe' | 'warrant') => {
+        if (!selectedPointId) {
+            return;
+        }
+
+        const selectedPoint = points.find((point) => point.id === selectedPointId);
+        if (!selectedPoint) {
+            return;
+        }
+
+        const caseId = worldCaseId;
+        const targetLocationId = getStableLocationId(selectedPoint);
+        const objectivesForLocation = objectives
+            .filter((objective) => objective.locationId === targetLocationId)
+            .sort((left, right) => left.sortOrder - right.sortOrder);
+
+        const nextObjectiveId = objectivesForLocation.length === 0
+            ? null
+            : (activeCase?.currentObjectiveId && objectivesForLocation.some((objective) => objective.id === activeCase.currentObjectiveId)
+                ? activeCase.currentObjectiveId
+                : objectivesForLocation[objectivesForLocation.length - 1]?.id ?? null);
+
+        if (!nextObjectiveId) {
+            logger.warn(`No objective found for location: ${caseId}:${targetLocationId}`);
+            return;
+        }
+
+        const result = await advanceCase({
+            caseId,
+            nextObjectiveId,
+            locationId: targetLocationId,
+            approach
+        });
+
+        if (!result || !result.success) {
+            return;
+        }
+
+        const mainBinding = availableActions.find((option) => option.enabled && option.binding.actions.length > 0)?.binding;
+        if (mainBinding) {
+            await handleExecuteAction(mainBinding);
+        }
+    }, [selectedPointId, points, worldCaseId, objectives, activeCase, advanceCase, availableActions, handleExecuteAction]);
 
     const mapContainerClasses = cn(
         "relative w-full h-full transition-all duration-700",
@@ -133,11 +261,30 @@ export const MapView = () => {
     }
 
     const selectedPoint = selectedPointId ? points.find(p => p.id === selectedPointId) : null;
+    const selectedPointLocationId = selectedPoint ? getStableLocationId(selectedPoint) : null;
+    const selectedAvailability = selectedPoint
+        ? (locationAvailability[selectedPoint.id] ?? (selectedPointLocationId ? locationAvailability[selectedPointLocationId] : undefined))
+        : undefined;
 
     return (
         <>
 
             <div className={mapContainerClasses}>
+                <div className="absolute top-4 left-4 z-40 bg-[#1b1510]/90 text-[#e7dac0] border border-[#4a3b2a] px-3 py-2 text-[11px] font-mono uppercase tracking-wide shadow-lg">
+                    <div>Phase: {worldClock.phase}</div>
+                    <div>Tick: {worldClock.tick}</div>
+                    <div>Location: {currentLocationId ?? 'unknown'}</div>
+                    {lastTravelBeat && lastTravelBeat.type !== 'none' && (
+                        <div>Travel Beat: {lastTravelBeat.type}</div>
+                    )}
+                    {(isWorldHydrating || isTraveling) && (
+                        <div className="text-amber-300">Syncing world...</div>
+                    )}
+                    {worldError && (
+                        <div className="text-red-300 normal-case">{worldError}</div>
+                    )}
+                </div>
+
                 <div
                     className="absolute inset-0 pointer-events-none z-[var(--z-map-texture)] mix-blend-multiply opacity-15 bg-[#d4c5a3]"
                     style={{
@@ -204,6 +351,11 @@ export const MapView = () => {
                     point={selectedPoint}
                     actions={availableActions}
                     onExecute={handleExecuteAction}
+                    worldClock={worldClock}
+                    currentLocationId={currentLocationId}
+                    locationAvailability={selectedAvailability}
+                    isBusy={isTraveling}
+                    onAlternativeApproach={handleAlternativeApproach}
                     onClose={() => {
                         setSelectedPointId(null);
                         setAvailableActions([]);

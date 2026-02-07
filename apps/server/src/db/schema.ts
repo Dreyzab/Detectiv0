@@ -95,3 +95,140 @@ export const eventCodes = pgTable("event_codes", {
     active: boolean("active").default(true),
     description: text("description"), // For admin/logging
 });
+
+// --- DETECTIVE ENGINE: GLOBAL PROGRESSION / WORLD SIMULATION ---
+
+export const worldClocks = pgTable("world_clocks", {
+    userId: text("user_id").references(() => users.id).notNull().primaryKey(),
+    tick: integer("tick").notNull().default(0),
+    phase: text("phase").notNull().default('morning'),
+    updatedAt: timestamp("updated_at").notNull()
+});
+
+export const cityRoutes = pgTable("city_routes", {
+    id: text("id").primaryKey(),
+    fromLocationId: text("from_location_id").notNull(),
+    toLocationId: text("to_location_id").notNull(),
+    mode: text("mode").notNull().default('walk'),
+    etaTicks: integer("eta_ticks").notNull().default(1),
+    riskLevel: integer("risk_level").notNull().default(0),
+    active: boolean("active").notNull().default(true),
+    data: jsonb("data")
+});
+
+export const travelSessions = pgTable("travel_sessions", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => users.id).notNull(),
+    fromLocationId: text("from_location_id").notNull(),
+    toLocationId: text("to_location_id").notNull(),
+    routeId: text("route_id"),
+    mode: text("mode").notNull().default('walk'),
+    status: text("status").notNull().default('in_progress'),
+    startedTick: integer("started_tick").notNull(),
+    etaTicks: integer("eta_ticks").notNull(),
+    arrivalTick: integer("arrival_tick"),
+    beatType: text("beat_type").default('none'),
+    beatPayload: jsonb("beat_payload"),
+    meta: jsonb("meta"),
+    createdAt: timestamp("created_at").notNull()
+});
+
+export const cases = pgTable("cases", {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    active: boolean("active").notNull().default(true),
+    data: jsonb("data")
+});
+
+export const caseObjectives = pgTable("case_objectives", {
+    id: text("id").primaryKey(),
+    caseId: text("case_id").references(() => cases.id).notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    locationId: text("location_id"),
+    data: jsonb("data")
+});
+
+export const userCaseProgress = pgTable("user_case_progress", {
+    userId: text("user_id").references(() => users.id).notNull(),
+    caseId: text("case_id").references(() => cases.id).notNull(),
+    currentObjectiveId: text("current_objective_id").notNull(),
+    status: text("status").notNull().default('active'),
+    updatedAt: timestamp("updated_at").notNull(),
+    lastAdvancedTick: integer("last_advanced_tick").notNull().default(0)
+}, (t) => [
+    primaryKey({ columns: [t.userId, t.caseId] })
+]);
+
+export const playerProgression = pgTable("player_progression", {
+    userId: text("user_id").references(() => users.id).notNull().primaryKey(),
+    xp: integer("xp").notNull().default(0),
+    level: integer("level").notNull().default(1),
+    traitPoints: integer("trait_points").notNull().default(0),
+    updatedAt: timestamp("updated_at").notNull()
+});
+
+export const voiceProgression = pgTable("voice_progression", {
+    userId: text("user_id").references(() => users.id).notNull(),
+    voiceId: text("voice_id").notNull(),
+    xp: integer("xp").notNull().default(0),
+    level: integer("level").notNull().default(1),
+    updatedAt: timestamp("updated_at").notNull()
+}, (t) => [
+    primaryKey({ columns: [t.userId, t.voiceId] })
+]);
+
+export const factions = pgTable("factions", {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    data: jsonb("data")
+});
+
+export const userFactionReputation = pgTable("user_faction_reputation", {
+    userId: text("user_id").references(() => users.id).notNull(),
+    factionId: text("faction_id").references(() => factions.id).notNull(),
+    reputation: integer("reputation").notNull().default(0),
+    updatedAt: timestamp("updated_at").notNull()
+}, (t) => [
+    primaryKey({ columns: [t.userId, t.factionId] })
+]);
+
+export const userCharacterRelations = pgTable("user_character_relations", {
+    userId: text("user_id").references(() => users.id).notNull(),
+    characterId: text("character_id").notNull(),
+    trust: integer("trust").notNull().default(0),
+    lastInteractionTick: integer("last_interaction_tick"),
+    updatedAt: timestamp("updated_at").notNull()
+}, (t) => [
+    primaryKey({ columns: [t.userId, t.characterId] })
+]);
+
+export const evidenceCatalog = pgTable("evidence_catalog", {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    contradictsId: text("contradicts_id"),
+    data: jsonb("data")
+});
+
+export const userEvidence = pgTable("user_evidence", {
+    userId: text("user_id").references(() => users.id).notNull(),
+    evidenceId: text("evidence_id").references(() => evidenceCatalog.id).notNull(),
+    sourceSceneId: text("source_scene_id"),
+    sourceEventId: text("source_event_id"),
+    discoveredTick: integer("discovered_tick").notNull().default(0)
+}, (t) => [
+    primaryKey({ columns: [t.userId, t.evidenceId] })
+]);
+
+export const domainEventLog = pgTable("domain_event_log", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => users.id).notNull(),
+    tick: integer("tick").notNull(),
+    type: text("type").notNull(),
+    payload: jsonb("payload").notNull(),
+    createdAt: timestamp("created_at").notNull()
+});

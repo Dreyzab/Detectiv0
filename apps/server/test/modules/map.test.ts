@@ -19,6 +19,7 @@ interface MockRepositoryContext {
     states: UserPointStateRow[];
     eventCodes: EventCodeRow[];
     upserts: UpsertUserPointStateInput[];
+    ensuredUsers: string[];
 }
 
 const createMockRepository = (): MockRepositoryContext => {
@@ -26,6 +27,7 @@ const createMockRepository = (): MockRepositoryContext => {
     const states: UserPointStateRow[] = [];
     const eventCodes: EventCodeRow[] = [];
     const upserts: UpsertUserPointStateInput[] = [];
+    const ensuredUsers: string[] = [];
 
     const repo: MapRepository = {
         getPoints: async (packId) => {
@@ -40,6 +42,9 @@ const createMockRepository = (): MockRepositoryContext => {
             eventCodes.find((eventCode) => eventCode.code === code && eventCode.active !== false) ?? null,
         findPointByQrCode: async (code) =>
             points.find((point) => point.qrCode === code) ?? null,
+        ensureUserExists: async (userId) => {
+            ensuredUsers.push(userId);
+        },
         upsertUserPointState: async (input) => {
             upserts.push(input);
             const idx = states.findIndex(
@@ -66,7 +71,7 @@ const createMockRepository = (): MockRepositoryContext => {
         }
     };
 
-    return { repo, points, states, eventCodes, upserts };
+    return { repo, points, states, eventCodes, upserts, ensuredUsers };
 };
 
 describe('Map Module (Controlled Integration)', () => {
@@ -165,6 +170,53 @@ describe('Map Module (Controlled Integration)', () => {
         const pointIds = data.points.map((point) => point.id).sort();
         expect(pointIds).toEqual(['p_case_01', 'p_global', 'p_progression']);
         expect(data.userStates.p_progression).toBe('visited');
+        expect(context.ensuredUsers.includes(DEMO_USER_ID)).toBe(true);
+    });
+
+    it('GET /map/points uses x-user-id header when provided', async () => {
+        context.points.push({
+            id: 'p_global',
+            packId: 'fbg1905',
+            title: 'Global Point',
+            lat: 0,
+            lng: 0,
+            category: 'INTEREST',
+            bindings: [],
+            scope: 'global',
+            retentionPolicy: 'permanent',
+            active: true
+        });
+
+        context.states.push(
+            {
+                userId: DEMO_USER_ID,
+                pointId: 'p_global',
+                state: 'locked',
+                persistentUnlock: false
+            },
+            {
+                userId: 'user_case_alt',
+                pointId: 'p_global',
+                state: 'visited',
+                persistentUnlock: true
+            }
+        );
+
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/points?packId=fbg1905`, {
+                headers: {
+                    'x-user-id': 'user_case_alt'
+                }
+            })
+        );
+
+        expect(response.status).toBe(200);
+        const data = await response.json() as {
+            userStates: Record<string, string>;
+        };
+
+        expect(data.userStates.p_global).toBe('visited');
+        expect(context.ensuredUsers.includes('user_case_alt')).toBe(true);
     });
 
     it('GET /map/resolve-code/:code returns event action without upsert', async () => {

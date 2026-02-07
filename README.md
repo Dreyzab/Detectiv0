@@ -177,3 +177,67 @@ Vite настроен на автоматическую загрузку пер�
   - `bun test apps/server/test/simple.test.ts`
   - `bun test packages/shared/lib/map-resolver.test.ts`
   - `bun x tsc -p apps/server/tsconfig.json --noEmit`
+
+## 📚 Knowledge Base (Obsidian)
+
+Сюжет, Лор и Геймдизайн-документация живут в локальном **Obsidian Vault** (`obsidian/Detectiv`).
+Это наш "второй мозг", построенный на принципах:
+*   **Deduction Style**: Визуальное повествование вместо текста.
+*   **Contradiction Style**: Реактивность мира на улики.
+*   **Investigation Style**: Структура данных вместо художественной литературы.
+
+Ключевые рабочие заметки:
+- `obsidian/Detectiv/99_System/Creator_Framework.md`
+- `obsidian/Detectiv/20_Game_Design/Systems/Sys_Investigation.md`
+- `obsidian/Detectiv/20_Game_Design/Systems/Sys_FogOfWar.md`
+- `obsidian/Detectiv/00_Map_Room/00_Start_Here.md`
+- `obsidian/Detectiv/00_Map_Room/Sprint_Current.md`
+
+> *Note: Папка `obsidian/` находится в `.gitignore` и не попадает в публичный репозиторий.*
+
+
+## Detective Engine Status (2026-02-07)
+
+### What is implemented now
+- **Global Detective Engine module** is online on server with endpoints:
+  - `GET /engine/world`
+  - `POST /engine/time/tick`
+  - `POST /engine/travel/start`
+  - `POST /engine/travel/complete/:sessionId`
+  - `POST /engine/case/advance`
+  - `POST /engine/progress/apply`
+  - `POST /engine/evidence/discover`
+- **World simulation foundation** is persisted in Postgres tables:
+  `world_clocks`, `city_routes`, `travel_sessions`, `cases`, `case_objectives`,
+  `user_case_progress`, `player_progression`, `voice_progression`,
+  `factions`, `user_faction_reputation`, `user_character_relations`,
+  `evidence_catalog`, `user_evidence`, `domain_event_log`.
+- **Action-step time model** is active:
+  important actions advance ticks and world phase (`morning/day/evening/night`).
+- **Night access gating** for bank is active:
+  standard approach can be blocked at night; alternatives: `lockpick`, `bribe`, `warrant`.
+- **Travel beats** are active:
+  travel can return contextual beat payloads (for example `intel_audio`).
+
+### Web integration status
+- `MapView` now syncs world snapshot from `/engine/world`.
+- Interaction with a map point now runs through travel flow before scene start.
+- `CaseCard` now displays world context (`phase`, `tick`, current location), busy state, and location availability.
+- Alternative entry buttons (`lockpick/bribe/warrant`) are wired to `/engine/case/advance` and then continue into the scene if successful.
+
+### Validation status
+- `bun x tsc -p apps/web/tsconfig.app.json --noEmit`
+- `bun x tsc -p apps/server/tsconfig.json --noEmit`
+- `bun x tsc -p packages/contracts/tsconfig.json --noEmit`
+- `bun test apps/server/test/modules/engine.test.ts`
+- `bun test apps/server/test/modules/map.test.ts`
+
+### Current constraints (known, accepted for Sprint 0)
+- User identity is resolved per request: `Clerk auth -> x-user-id/x-demo-user-id -> demo_user (fallback)`.
+- Objective routing in web is dynamic by stable location identity (`objective.locationId` matched with `point.data.locationId`, fallback to `point.id`).
+- Progression/evidence apply from VN events is partially integrated and will be expanded in next sprint.
+
+### Fog of war note (next implementation slice)
+- `Fog of war` should be tracked at `location` level, not at individual scene/action level.
+- Reveal channels: successful travel arrival, travel beats (`intel_audio` / rumors), evidence discovery, faction-driven unlocks.
+- `Explored location` and `completed map point` must remain separate states.

@@ -123,6 +123,48 @@ class SoundManager {
     }
 
     /**
+     * PROCEDURAL SFX: Distinct "advance" tone for VN overlay clicks.
+     * Intentionally different from typewriter clicks and clue chimes.
+     */
+    public playOverlayAdvance() {
+        if (!this.ctx || !this.masterGain) return;
+
+        const t = this.ctx.currentTime;
+
+        const toneGain = this.ctx.createGain();
+        toneGain.connect(this.masterGain);
+        toneGain.gain.setValueAtTime(this._sfxVolume * 0.7, t);
+        toneGain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+
+        const tone = this.ctx.createOscillator();
+        tone.type = 'sawtooth';
+        tone.frequency.setValueAtTime(520, t);
+        tone.frequency.exponentialRampToValueAtTime(150, t + 0.18);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1500, t);
+        filter.Q.value = 0.7;
+
+        tone.connect(filter);
+        filter.connect(toneGain);
+        tone.start(t);
+        tone.stop(t + 0.18);
+
+        const lowGain = this.ctx.createGain();
+        lowGain.connect(this.masterGain);
+        lowGain.gain.setValueAtTime(this._sfxVolume * 0.25, t);
+        lowGain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+
+        const low = this.ctx.createOscillator();
+        low.type = 'sine';
+        low.frequency.setValueAtTime(92, t);
+        low.connect(lowGain);
+        low.start(t);
+        low.stop(t + 0.12);
+    }
+
+    /**
      * Play ambient music/soundscape from URL.
      * Handles cross-fading if track changes.
      */

@@ -1,9 +1,28 @@
-# Grezwanderer 4 — Журнал обновлений (Changelog)
+﻿# Grezwanderer 4 — Журнал обновлений (Changelog)
 
 Все значимые изменения и этапы разработки проекта фиксируются здесь.
 
 ---
 
+## [07.02.2026] — Inventory & Merchant System (The Fence)
+
+### Добавлено
+- **Inventory System ("Detective's Archive")**: Полноценный интерфейс инвентаря (`/inventory`) в стиле архивного дела.
+    - **Visuals**: Предметы отображаются как "улики", прикрепленные скрепками к бумаге. Framer Motion анимации при наведении.
+    - **Item Detail Overlay**: Просмотр деталей предмета с визуализацией "полароидного снимка" и действиями (Use/Discard).
+    - **Store Update**: `useInventoryStore` теперь поддерживает полноценную структуру `InventorySlot` (предмет, кол-во, метаданные) и валюту (Reichsmarks).
+- **Merchant System ("The Fence")**: Механика торговли скупщика краденого.
+    - **Split-View Interface**: Двойная сетка (Склад торговца / Инвентарь игрока) в одном модальном окне.
+    - **Transaction Logic**: Покупка и продажа предметов с динамическим расчетом стоимости (продажа за 50% цены).
+    - **Atmosphere**: Темная тема "Backroom" с силуэтом информатора и диалоговым пузырём.
+- **Routing**: Добавлен маршрут `/inventory` в `App.tsx`.
+
+### Технические детали
+- **Zustand Persistence**: Версия хранилища `gw4-inventory-storage` поднята до v2 (авто-миграция).
+- **Components**: Реализованы переиспользуемые `ItemCard` и `InventoryGrid`, работающие в обоих контекстах (Inventory/Merchant).
+- **Design Tokens**: Использование палитры `stone-50`...`stone-900` и шрифтов `Abril Fatface` / `Courier Prime` для соответствия нуарной эстетике.
+
+---
 ## [05.02.2026] — Phase 2: Mind Palace (Parliament Overlay)
 
 ### Добавлено
@@ -521,3 +540,81 @@ apps/web/src/features/detective/mind-palace/
 
 ### Docs
 - Updated `README.md` and `ARCHITECTURE.md` to describe controlled map test contour and validation commands.
+
+## [07.02.2026] - Detective Engine Foundation + Web Integration
+
+### Added
+- New server module `apps/server/src/modules/engine.ts` with endpoints:
+  - `GET /engine/world`
+  - `POST /engine/time/tick`
+  - `POST /engine/travel/start`
+  - `POST /engine/travel/complete/:sessionId`
+  - `POST /engine/case/advance`
+  - `POST /engine/progress/apply`
+  - `POST /engine/evidence/discover`
+- New shared/contracts engine types:
+  - `packages/shared/lib/detective_engine_types.ts`
+  - `packages/contracts/engine.ts`
+- New DB schema/migration foundation for world simulation and progression:
+  - `world_clocks`, `city_routes`, `travel_sessions`, `cases`, `case_objectives`,
+    `user_case_progress`, `player_progression`, `voice_progression`, `factions`,
+    `user_faction_reputation`, `user_character_relations`, `evidence_catalog`,
+    `user_evidence`, `domain_event_log`.
+
+### Changed
+- `supabase_seed.sql` extended with Engine Foundation seed:
+  - case `case_01_bank`, objectives, factions, routes, contradiction-ready evidence.
+- Web API client upgraded to typed GET/POST engine calls:
+  - `apps/web/src/shared/api/client.ts`.
+- New world state store on frontend:
+  - `apps/web/src/features/detective/engine/store.ts`.
+- Server identity resolution moved from fixed user to auth-aware strategy:
+  - `apps/server/src/lib/user-id.ts` (`auth -> headers -> fallback`).
+- Engine, map, and detective modules now ensure db user existence before writes:
+  - `apps/server/src/db/user-utils.ts`.
+- `MapView` now runs real travel/time/location-availability loop before scene execution.
+- `MapView` objective selection is now dynamic by stable location identity (`locationId`) instead of hardcoded point mapping.
+- `CaseCard` now shows world phase/tick/location and alternative approaches (`lockpick`, `bribe`, `warrant`) when location is blocked.
+- `map-action-handler` extended for action types: `add_flags`, `unlock_entry`, `set_active_case`.
+
+### Fixed
+- Night bank flow now has playable branch from UI through `/engine/case/advance`.
+- Travel completion updates world clock and location context consistently in frontend store.
+
+### Validation
+- `bun x tsc -p apps/web/tsconfig.app.json --noEmit`
+- `bun x tsc -p apps/server/tsconfig.json --noEmit`
+- `bun x tsc -p packages/contracts/tsconfig.json --noEmit`
+- `bun test apps/server/test/modules/engine.test.ts`
+- `bun test apps/server/test/modules/map.test.ts`
+- Added checks:
+  - world snapshot objective serialization by case (`engine.test.ts`).
+  - header-based user context for map state resolution (`map.test.ts`).
+
+### Notes
+- `demo_user` remains only as a fallback identity for local/dev flows when auth/header context is absent.
+- `point -> objective` routing is now location-driven and no longer hardcoded.
+- Fog of war is tracked as a next layer on top of stable location progression (visibility/discovery/resolution states).
+
+## [07.02.2026] - Documentation + Obsidian Alignment
+
+### Updated docs
+- `README.md`:
+  - Synced Detective Engine status with auth-aware user context and location-driven objective routing.
+  - Added explicit Obsidian operational links (framework, sprint board, investigation/fog systems).
+- `ARCHITECTURE.md`:
+  - Synced known constraints with real runtime behavior.
+  - Added stable `locationId` model and fog-of-war design notes.
+  - Added direct links to core Obsidian control notes.
+- `update.md`:
+  - Added this alignment entry to lock current docs state.
+
+### Updated Obsidian vault (`obsidian/Detectiv`)
+- `99_System/Creator_Framework.md`:
+  - Added spatial identity rule (`loc_*` stable anchor, `map_point` as interaction layer).
+  - Added fog-of-war writing rule and link to dedicated system note.
+- `20_Game_Design/Systems/Sys_FogOfWar.md`:
+  - Added dedicated system note for reveal states (`unknown/visible/explored/resolved`) and reveal channels.
+- `20_Game_Design/READ_ME.md`:
+  - Added `Sys_FogOfWar` to current key systems list.
+- `00_Map_Room/` notes aligned with current sprint focus (engine progression, stable IDs, location-first linking).

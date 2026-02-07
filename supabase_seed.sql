@@ -61,3 +61,30 @@ INSERT INTO "event_codes" ("code", "actions", "active", "description") VALUES
 ('CASE01_WAREHOUSE_05', '[{"type":"start_vn","scenarioId":"detective_case1_warehouse_finale"}]', true, 'Finale event'),
 ('TEST_BATTLE_01', '[{"type":"start_battle","scenarioId":"detective_skirmish","deckType":"detective"}]', true, 'Debug battle trigger')
 ON CONFLICT (code) DO UPDATE SET actions = EXCLUDED.actions;
+
+-- ENGINE FOUNDATION SEED
+INSERT INTO "cases" ("id", "title", "description", "active", "data") VALUES
+('case_01_bank', 'Case 01: Shadows at the Bank', 'Core detective arc around the Freiburg bank robbery.', true, '{"entry_scenario":"scn_01_briefing"}')
+ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description, active = EXCLUDED.active, data = EXCLUDED.data;
+
+INSERT INTO "case_objectives" ("id", "case_id", "title", "description", "sort_order", "location_id", "data") VALUES
+('obj_find_clara', 'case_01_bank', 'Find Clara', 'Track Clara''s whereabouts before the bank closes.', 1, 'p_bank', '{"style":"investigation"}'),
+('obj_search_bank_cell', 'case_01_bank', 'Search Clara''s Cell', 'Access Clara''s private bank cell and inspect contents.', 2, 'p_bank', '{"style":"contradiction"}')
+ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description, sort_order = EXCLUDED.sort_order, location_id = EXCLUDED.location_id, data = EXCLUDED.data;
+
+INSERT INTO "factions" ("id", "title", "description", "data") VALUES
+('fct_police', 'Freiburg Police', 'Official city law enforcement.', '{"stance":"order"}'),
+('fct_underworld', 'Tunnel Syndicate', 'Shadow network controlling contraband routes.', '{"stance":"opportunist"}'),
+('fct_bankers', 'Banking Circle', 'Financial elite around Bankhaus Krebs.', '{"stance":"status_quo"}')
+ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description, data = EXCLUDED.data;
+
+INSERT INTO "city_routes" ("id", "from_location_id", "to_location_id", "mode", "eta_ticks", "risk_level", "active", "data") VALUES
+('route_hbf_bank_walk', 'p_hbf', 'p_bank', 'walk', 2, 3, true, '{"district":"old_town"}'),
+('route_hbf_bank_tram', 'p_hbf', 'p_bank', 'tram', 1, 1, true, '{"district":"old_town"}'),
+('route_bank_archive_walk', 'p_bank', 'p_rathaus', 'walk', 1, 1, true, '{"district":"old_town"}')
+ON CONFLICT (id) DO UPDATE SET from_location_id = EXCLUDED.from_location_id, to_location_id = EXCLUDED.to_location_id, mode = EXCLUDED.mode, eta_ticks = EXCLUDED.eta_ticks, risk_level = EXCLUDED.risk_level, active = EXCLUDED.active, data = EXCLUDED.data;
+
+INSERT INTO "evidence_catalog" ("id", "title", "description", "contradicts_id", "data") VALUES
+('evi_clara_statement', 'Clara Statement', 'Clara claims she was nowhere near the cell after sunset.', 'evi_guard_log', '{"type":"testimony"}'),
+('evi_guard_log', 'Guard Logbook', 'Entry shows Clara''s signature at late-night access desk.', NULL, '{"type":"document"}')
+ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description, contradicts_id = EXCLUDED.contradicts_id, data = EXCLUDED.data;

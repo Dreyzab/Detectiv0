@@ -34,6 +34,7 @@ const VisualNovelOverlayInner = () => {
     // Refs
     const typedTextRef = useRef<TypedTextHandle>(null);
     const pointerDownAtRef = useRef<number | null>(null);
+    const overlayCardRef = useRef<HTMLDivElement | null>(null);
 
     const FAST_FORWARD_SPEED = 5;
     const HOLD_TO_SKIP_THRESHOLD_MS = 180;
@@ -207,14 +208,24 @@ const VisualNovelOverlayInner = () => {
         );
     }, []);
 
+    const isOverlayCardTarget = useCallback((target: EventTarget | null) => {
+        if (!(target instanceof Node)) return false;
+        return Boolean(overlayCardRef.current?.contains(target));
+    }, []);
+
     const handleGlobalAdvance = (target: EventTarget | null) => {
         // Ignore clicks on buttons/interactive elements to avoid double-firing or conflicts
         if (shouldIgnoreGlobalPointer(target)) {
             return;
         }
 
+        const shouldPlayAdvanceSound = isOverlayCardTarget(target);
+
         // 1. If typing, finish effectively immediately
         if (typedTextRef.current?.isTyping) {
+            if (shouldPlayAdvanceSound) {
+                soundManager.playOverlayAdvance();
+            }
             typedTextRef.current.finish();
             return;
         }
@@ -226,6 +237,9 @@ const VisualNovelOverlayInner = () => {
         const hasExplicitChoices = sceneChoices && sceneChoices.length > 0;
 
         if (!hasExplicitChoices) {
+            if (shouldPlayAdvanceSound) {
+                soundManager.playOverlayAdvance();
+            }
             const continueChoice: VNChoice = {
                 id: 'continue',
                 text: 'Continue',
@@ -291,7 +305,10 @@ const VisualNovelOverlayInner = () => {
         >
             <div className="flex-1" />
             <div className="pointer-events-auto p-0 max-w-4xl mx-auto w-full z-10 mb-8 px-4 cursor-default">
-                <div className="relative bg-linear-to-b from-stone-950/30 to-black/60 border-l border-l-white/10 rounded-tr-[3rem] p-8 shadow-2xl backdrop-blur-xl min-h-[200px] flex flex-col gap-4">
+                <div
+                    ref={overlayCardRef}
+                    className="relative bg-linear-to-b from-stone-950/30 to-black/60 border-l border-l-white/10 rounded-tr-[3rem] p-8 shadow-2xl backdrop-blur-xl min-h-[200px] flex flex-col gap-4"
+                >
 
                     {/* Decorative Backgrounds */}
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent pointer-events-none rounded-tr-[3rem]" />
