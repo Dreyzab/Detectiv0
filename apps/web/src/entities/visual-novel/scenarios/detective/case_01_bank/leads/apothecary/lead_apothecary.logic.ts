@@ -61,7 +61,7 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                     nextSceneId: 'forensics_result',
                     skillCheck: {
                         id: 'chk_apothecary_forensics',
-                        voiceId: 'forensics',
+                        voiceId: 'senses',
                         difficulty: 11,
                         onSuccess: { nextSceneId: 'forensics_success' },
                         onFail: { nextSceneId: 'forensics_fail' }
@@ -137,3 +137,4 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
 };
 
 export default LEAD_APOTHECARY_LOGIC;
+

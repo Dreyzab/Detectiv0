@@ -4,6 +4,94 @@
 
 ---
 
+## [07.02.2026] — Gameplay + Story Authoring Method (Node-Based)
+
+### Added
+- **`Gameplay_Story_Board`**: unified board for combined gameplay and narrative flow design.
+  - File: `obsidian/Detectiv/00_Map_Room/Gameplay_Story_Board.md`
+- **`Template_Gameplay_Story_Node`**: template for dual-view flow nodes (designer + implementation).
+  - File: `obsidian/Detectiv/99_System/Templates/Template_Gameplay_Story_Node.md`
+- **Start-chain production nodes**:
+  - `node_start_game_new_investigation`
+  - `node_intro_char_creation`
+  - `node_telegram_gate_after_creation`
+  - `node_case1_alt_briefing_entry`
+  - `node_intro_journalist_origin`
+  - Files: `obsidian/Detectiv/10_Narrative/Scenes/node_*.md`
+  - Includes UI triggers, code anchors, state deltas, transition mapping, and branch conflict note for telegram handoff.
+
+### Changed
+- **Scenario navigation**:
+  - `Scenario_Board.md` now links to `Gameplay_Story_Board`.
+  - `00_Start_Here.md` now links to `Gameplay_Story_Board` in Narrative and Events.
+- **Character creation stat mapping**:
+  - `intro_char_creation.logic.ts` now uses canonical voice ids (`charisma`, `perception`, `empathy`) instead of legacy ids.
+- **Canonical onboarding continuation**:
+  - Removed duplicate Telegram continuation from `HomePage`.
+  - Canonical path after `intro_char_creation`: `VisualNovelPage` telegram gate -> `/vn/detective_case1_alt_briefing`.
+- **Map point id alignment for start chain**:
+  - `munsterplatz_bank` unified to `p_bank` in alt briefing unlock and thread/debug references.
+
+### Extended Node Chain
+- Added full production chain for `Case1 Alt Briefing -> Map -> First Lead`:
+  - `node_map_action_bank_crime_scene`
+  - `node_case1_bank_investigation`
+  - `node_case1_first_lead_selection`
+  - `node_case1_lead_tailor` (recommended first lead)
+- Updated `node_telegram_gate_after_creation` to mark `intro_journalist` as legacy optional flow.
+
+---
+
+## [07.02.2026] — Parliament Roster Rework (Canonical 18 Voices)
+
+### Изменено
+- **Parliament canonical roster** приведен к новому составу из 18 голосов:
+  - Brain: Logic, Perception, Encyclopedia
+  - Soul: Intuition, Empathy, Imagination
+  - Character: Authority, Charisma, Volition
+  - Body: Endurance, Agility, Senses
+  - Shadow: Stealth, Deception, Intrusion
+  - Spirit: Occultism, Tradition, Gambling
+- **`packages/shared/data/parliament.ts`** синхронизирован с новым roster (`volition/senses/gambling` вместо `composure/forensics/poetics`).
+- **VN skill checks и тексты** обновлены под новые `voiceId` в сценариях (tourist, student, apothecary, victoria_poetry, case1_finale).
+- **Store defaults** обновлены в `dossier` и `inventory`.
+- **Tooltip registry** и map-point voice hints обновлены (`forensics` -> `senses`).
+- **Battle data** обновлен `voiceScaling` для spirit-карты (`poetics` -> `gambling`).
+
+### Obsidian
+- `MOC_Parliament` переписан под утвержденный состав (6x3).
+- В `Voices/` оставлены только 18 активных `Voice_*.md`.
+- Вне канона переведены в архивный формат `.legacy.txt` (`Composure`, `Forensics`, `Poetics`, `Rhetoric`, `Suggestion`, `Shivers`).
+- `Victoria_Sterling.md` обновлен (`Voice: Senses`).
+
+### Governance
+- `AGENTS.md` обновлен: добавлен фиксированный канон 18 голосов и обязательные проверки консистентности Parliament перед/после правок.
+
+---
+
+## [07.02.2026] — Obsidian Game Design Structure (Hybrid A + C)
+
+### Добавлено
+- **Hybrid структура в `20_Game_Design`**:
+  - Тематические домены (Option C): `01_Mind`, `02_Investigation`, `03_Interaction`, `04_World`.
+  - Циклическая аналитика (Option A): `90_Game_Loops` с отдельными loop notes.
+- **Новые MOC-узлы**:
+  - `MOC_Game_Design` — центральный хаб геймдизайна.
+  - `MOC_Game_Loops` — доска для баланса по циклам.
+- **Skill Influence mapping**:
+  - Добавлена `01_Mind/Skill_Impact_Map.md` для отслеживания связей навыков с системами и циклами (пример: `Logic -> Investigation/Social/Conflict`).
+
+### Изменено
+- **`00_Map_Room/00_Start_Here.md`**: Добавлены ссылки на новую гибридную структуру.
+- **`00_Map_Room/System_Design_Board.md`**: Добавлены переходы на Hub/Loops/Skill Impact Map и правило привязки новых механик к домену + циклу.
+- **`20_Game_Design/READ_ME.md`**: Переписан как инструкция по Hybrid A+C организации.
+- **`00_Map_Room/00_Start_Here.md`**: Добавлена ссылка на `AI_Obsidian_Operating_Manual`.
+
+### Документация
+- **`99_System/AI_Obsidian_Operating_Manual.md`**: Новый регламент для ИИ-работы с Obsidian (разница Graph View vs файловая модель ИИ, правила уникальности basename, path-based wikilinks, протокол дедупликации и команды валидации).
+
+---
+
 ## [07.02.2026] — Inventory & Merchant System (The Fence)
 
 ### Добавлено

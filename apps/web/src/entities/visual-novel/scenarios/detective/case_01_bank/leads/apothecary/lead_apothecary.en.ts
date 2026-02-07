@@ -29,7 +29,7 @@ export const LEAD_APOTHECARY_EN: VNContentPack = {
         'apothecary_result': {
             text: '"This is [[ammonium nitrate]] mixed with [[charcoal]]. A crude explosive — less powerful than dynamite, but easier to make. And no licensed supplier would sell this mixture."',
             choices: {
-                'forensics_check': '[Forensics] Analyze the specific composition',
+                'forensics_check': '[Senses] Analyze the specific composition',
                 'ask_source': '"Where would someone obtain this?"',
                 'thank_leave': 'Thank him and leave'
             }
@@ -58,3 +58,4 @@ export const LEAD_APOTHECARY_EN: VNContentPack = {
 };
 
 export default LEAD_APOTHECARY_EN;
+

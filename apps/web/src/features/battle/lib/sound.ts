@@ -54,7 +54,7 @@ export const playSynthSound = (type: SoundType) => {
         osc.stop(now + 0.1);
 
     } else if (type === 'heal') {
-        // "Composure" - A warm, subtle swell. Calm and jazzy
+        // "Volition" - A warm, subtle swell. Calm and jazzy
         osc.type = 'sine';
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(600, now);
@@ -84,3 +84,4 @@ export const playSynthSound = (type: SoundType) => {
         osc.stop(now + 0.5);
     }
 };
+

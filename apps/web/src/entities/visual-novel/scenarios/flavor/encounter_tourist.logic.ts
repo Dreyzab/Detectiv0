@@ -25,7 +25,7 @@ export const encounterTouristLogic: VNScenarioLogic = {
                     id: 'pub',
                     skillCheck: {
                         id: 'chk_pub',
-                        voiceId: 'composure', // Keeping a straight face while misleading him or just being chill
+                        voiceId: 'volition', // Keeping a straight face while misleading him or just being chill
                         difficulty: 8,
                         onSuccess: { nextSceneId: 'pub_success' },
                         onFail: { nextSceneId: 'pub_fail' }
@@ -78,3 +78,4 @@ export const encounterTouristLogic: VNScenarioLogic = {
 };
 
 export default encounterTouristLogic;
+

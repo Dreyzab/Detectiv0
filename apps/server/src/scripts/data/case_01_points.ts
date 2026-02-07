@@ -295,7 +295,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
             }
         ],
         image: '/images/detective/loc_apothecary.png',
-        voices: { forensics: "The scent of herbs and chemicals. A careful inventory." }
+        voices: { senses: "The scent of herbs and chemicals. A careful inventory." }
     },
     'loc_pub': {
         id: 'loc_pub',
@@ -363,3 +363,4 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         image: '/images/detective/loc_rathaus_archiv.png'
     }
 };
+

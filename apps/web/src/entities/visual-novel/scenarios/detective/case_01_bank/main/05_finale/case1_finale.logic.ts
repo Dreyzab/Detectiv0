@@ -102,7 +102,7 @@ export const CASE1_FINALE_LOGIC: VNScenarioLogic = {
                     nextSceneId: 'criminal_victory',
                     skillCheck: {
                         id: 'chk_finale_composure',
-                        voiceId: 'composure',
+                        voiceId: 'volition',
                         difficulty: 10,
                         onSuccess: { nextSceneId: 'criminal_victory' },
                         onFail: { nextSceneId: 'criminal_chaos' }
@@ -136,3 +136,4 @@ export const CASE1_FINALE_LOGIC: VNScenarioLogic = {
 };
 
 export default CASE1_FINALE_LOGIC;
+

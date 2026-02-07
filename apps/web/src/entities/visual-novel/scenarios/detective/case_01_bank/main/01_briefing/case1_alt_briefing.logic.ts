@@ -220,7 +220,7 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
             backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
             nextSceneId: 'END',
             onEnter: [
-                { type: 'unlock_point', payload: 'munsterplatz_bank' },
+                { type: 'unlock_point', payload: 'p_bank' },
                 {
                     type: 'add_flag', payload: {
                         'case01_started': true,

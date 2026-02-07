@@ -21,10 +21,10 @@ export type BattleReturnAction =
 export type AttributeGroup =
     | 'intellect'   // 🔵 Analysis, logic, deduction
     | 'psyche'      // 🟣 Intuition, empathy, imagination
-    | 'social'      // 🔴 Authority, charisma, composure
-    | 'physical'    // 🟢 Endurance, agility, forensics
+    | 'social'      // 🔴 Authority, charisma, volition
+    | 'physical'    // 🟢 Endurance, agility, senses
     | 'shadow'      // ⚫ Stealth, deception, intrusion
-    | 'spirit';     // 🟠 Occultism, tradition, poetics
+    | 'spirit';     // 🟠 Occultism, tradition, gambling
 
 export const ATTRIBUTE_GROUP_COLORS: Record<AttributeGroup, string> = {
     intellect: '#3498db',
@@ -401,7 +401,7 @@ export const STARTER_CARDS: CardDefinition[] = [
         descriptionRu: 'Слова как оружие. Нанесите 7 урона.',
         cost: 2,
         group: 'spirit',
-        effects: [{ type: 'damage', value: 7, target: 'opponent', voiceScaling: 'poetics' }],
+        effects: [{ type: 'damage', value: 7, target: 'opponent', voiceScaling: 'gambling' }],
         rarity: 'uncommon'
     }
 ];

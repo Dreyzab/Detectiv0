@@ -45,8 +45,8 @@ export const INTRO_CHAR_CREATION_LOGIC: VNScenarioLogic = {
             characterId: 'inspector',
             nextSceneId: 'start_game_journalist',
             onEnter: [
-                { type: 'set_stat', payload: { id: 'rhetoric', value: 4 } },
-                { type: 'set_stat', payload: { id: 'shivers', value: 4 } },
+                { type: 'set_stat', payload: { id: 'charisma', value: 4 } },
+                { type: 'set_stat', payload: { id: 'perception', value: 4 } },
                 { type: 'set_stat', payload: { id: 'empathy', value: 2 } },
                 { type: 'add_flag', payload: { 'origin_journalist': true } }
             ]

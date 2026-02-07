@@ -22,10 +22,10 @@ export const encounterStudentLogic: VNScenarioLogic = {
                     }
                 },
                 {
-                    id: 'composure',
+                    id: 'volition',
                     skillCheck: {
                         id: 'chk_composure',
-                        voiceId: 'composure',
+                        voiceId: 'volition',
                         difficulty: 10,
                         onSuccess: { nextSceneId: 'comp_success' }, // Simply ignore him effectively
                         onFail: { nextSceneId: 'comp_fail' } // He provokes you
@@ -105,3 +105,4 @@ export const encounterStudentLogic: VNScenarioLogic = {
 };
 
 export default encounterStudentLogic;
+

@@ -8,7 +8,7 @@ export const encounterTouristEn: VNContentPack = {
             text: `A red-faced gentleman in a tweed suit is wrestling with a large map that seems to be fighting back against the wind. He spots you. "I say! Entschuldigen Sie! I seem to have... misplaced the mountains. Searching for the **Höllental**. Is it... up?" He points vaguely at the cathedral spire.`,
             choices: {
                 directions: `[Encyclopedia] Give him precise directions to the station for the Höllentalbahn.`,
-                pub: `[Composure] Suggest he sits down for a beer before trekking into 'Hell Valley'.`,
+                pub: `[Volition] Suggest he sits down for a beer before trekking into 'Hell Valley'.`,
                 ignore: `Pretend you don't speak English (or German).`
             }
         },
@@ -25,13 +25,13 @@ export const encounterTouristEn: VNContentPack = {
             }
         },
         pub_success: {
-            text: `[[composure|Composure Success]]: "Sir, look at the clouds. Storm coming. The valley isn't going anywhere. But the **Feierling** brewery is just around the corner." He looks at the sky, then at you. "By Jove, you're right. A pint first. Capital idea!" He tips his hat.`,
+            text: `[[volition|Volition Success]]: "Sir, look at the clouds. Storm coming. The valley isn't going anywhere. But the **Feierling** brewery is just around the corner." He looks at the sky, then at you. "By Jove, you're right. A pint first. Capital idea!" He tips his hat.`,
             choices: {
                 leave: `A life saved from rain.`
             }
         },
         pub_fail: {
-            text: `[[composure|Composure Failure]]: "Just go drink beer." You say it too bluntly. He draws himself up. "I am here for the sublimity of nature, sir, not for inebriation! Good day!" He marches off, offended by your assumption that all Englishmen are alcoholics.`,
+            text: `[[volition|Volition Failure]]: "Just go drink beer." You say it too bluntly. He draws himself up. "I am here for the sublimity of nature, sir, not for inebriation! Good day!" He marches off, offended by your assumption that all Englishmen are alcoholics.`,
             choices: {
                 leave: `Shrug.`
             }
@@ -48,3 +48,4 @@ export const encounterTouristEn: VNContentPack = {
 };
 
 export default encounterTouristEn;
+

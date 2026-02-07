@@ -31,22 +31,22 @@ const INITIAL_VOICE_STATS: Record<VoiceId, number> = {
     // Psyche
     intuition: 1, empathy: 1, imagination: 1,
     // Social
-    authority: 1, charisma: 1, composure: 1,
+    authority: 1, charisma: 1, volition: 1,
     // Physical
-    endurance: 1, agility: 1, forensics: 1,
+    endurance: 1, agility: 1, senses: 1,
     // Shadow
     stealth: 1, deception: 1, intrusion: 1,
     // Spirit
-    occultism: 1, tradition: 1, poetics: 1
+    occultism: 1, tradition: 1, gambling: 1
 };
 
 const INITIAL_VOICE_XP: Record<VoiceId, number> = {
     logic: 0, perception: 0, encyclopedia: 0,
     intuition: 0, empathy: 0, imagination: 0,
-    authority: 0, charisma: 0, composure: 0,
-    endurance: 0, agility: 0, forensics: 0,
+    authority: 0, charisma: 0, volition: 0,
+    endurance: 0, agility: 0, senses: 0,
     stealth: 0, deception: 0, intrusion: 0,
-    occultism: 0, tradition: 0, poetics: 0
+    occultism: 0, tradition: 0, gambling: 0
 };
 
 export interface DetectiveState {

@@ -39,7 +39,7 @@ export const CASE1_FINALE_EN: VNContentPack = {
         'criminal_confrontation': {
             text: 'A man in a velvet lined coat stands over a wounded smuggler. He aims a pistol. "Freiburg belongs to the Syndicate now!"',
             choices: {
-                'stop_violence': '[Composure] fire a warning shot and identify yourself as Police.'
+                'stop_violence': '[Volition] fire a warning shot and identify yourself as Police.'
             }
         },
         'criminal_victory': {
@@ -59,3 +59,4 @@ export const CASE1_FINALE_EN: VNContentPack = {
 };
 
 export default CASE1_FINALE_EN;
+

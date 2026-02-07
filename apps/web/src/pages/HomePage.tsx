@@ -1,11 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useInventoryStore } from '../entities/inventory/model/store';
 import { useDossierStore } from '../features/detective/dossier/store';
 import { useQuestStore } from '../features/quests/store';
 import { useVNStore } from '../entities/visual-novel/model/store';
 import { Button } from '../shared/ui/Button';
-import { OnboardingModal } from '../features/detective/onboarding/OnboardingModal';
 import { getScenarioById } from '../entities/visual-novel/scenarios/registry';
 import { preloadManager, extractScenarioAssets, toPreloadQueue } from '../shared/lib/preload';
 import { Archive, Play, RefreshCw, Terminal } from 'lucide-react';
@@ -14,8 +13,7 @@ import { motion } from 'framer-motion';
 export const HomePage = () => {
     const navigate = useNavigate();
     const setGameMode = useInventoryStore(state => state.setGameMode);
-    const setPlayerName = useInventoryStore(state => state.setPlayerName);
-    const [telegramDismissed, setTelegramDismissed] = useState(false);
+    const setPlayerName = useInventoryStore(state => state.setPlayerName); // Used by debug jump action.
     // const [showDevTools, setShowDevTools] = useState(false); // Removed as toggle is gone
     const showDevTools = false; // Hardcode to false for now or remove logic completely later. 
     // Actually, let's keep the logic but strictly false unless we add a trigger.
@@ -47,13 +45,6 @@ export const HomePage = () => {
         navigate('/map');
     };
 
-    const flags = useDossierStore(state => state.flags);
-    const showTelegram = Boolean(
-        flags['char_creation_complete'] &&
-        !flags['met_anna_intro'] &&
-        !telegramDismissed
-    );
-
     const handleNewGame = () => {
         if (confirm("Are you sure you want to start a new game? All progress will be lost.")) {
             useInventoryStore.getState().resetAll();
@@ -63,14 +54,6 @@ export const HomePage = () => {
             useVNStore.getState().startScenario('intro_char_creation');
             navigate('/vn/intro_char_creation');
         }
-    };
-
-    const handleTelegramComplete = (name: string) => {
-        setPlayerName(name);
-        useVNStore.getState().startScenario('intro_journalist');
-        setGameMode('detective');
-        setTelegramDismissed(true);
-        navigate('/vn/intro_journalist');
     };
 
     return (
@@ -83,13 +66,6 @@ export const HomePage = () => {
 
             {/* Main Content Container - centered vertically */}
             <main className="flex-1 flex flex-col items-center justify-center p-6 gap-10 pb-24 relative z-10">
-
-                {showTelegram && (
-                    <OnboardingModal
-                        onComplete={handleTelegramComplete}
-                        onCancel={() => setTelegramDismissed(true)}
-                    />
-                )}
 
                 {/* Header */}
                 <motion.div
@@ -189,7 +165,7 @@ export const HomePage = () => {
                                 setPlayerName("Schimanski");
                                 setGameMode('detective');
                                 useQuestStore.getState().startQuest('case01_act1');
-                                useDossierStore.getState().setPointState('munsterplatz_bank', 'discovered');
+                                useDossierStore.getState().setPointState('p_bank', 'discovered');
                                 navigate('/map');
                             }}
                             className="w-full h-10 bg-red-900/20 hover:bg-red-900/40 text-red-400 font-mono text-xs border border-red-900/40 flex items-center justify-center gap-2"

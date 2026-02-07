@@ -130,7 +130,7 @@ export const PARLIAMENT_TOOLTIP_REGISTRY: Record<string, KeywordTooltip> = {
         fact: 'Ein chemischer Geruch am Tatort kann auf spezielle Werkzeuge oder hinterlassene Substanzen hinweisen.',
         voices: [
             {
-                voiceId: 'forensics',
+                voiceId: 'senses',
                 threshold: 3,
                 text: 'Bittere Mandeln? Nicht Zyankali — etwas Industrielles. Äther? Chloroform? Nitroglyzerin-Rückstände?'
             },
@@ -191,3 +191,4 @@ export function getTooltipContent(key: string): KeywordTooltip | null {
     const entry = Object.entries(PARLIAMENT_TOOLTIP_REGISTRY).find(([k]) => k.toLowerCase() === lower);
     return entry ? entry[1] : null;
 }
+

@@ -89,8 +89,8 @@ export const QUEST_VICTORIA_POETRY_LOGIC: VNScenarioLogic = {
                 {
                     id: 'feel_rhythm',
                     skillCheck: {
-                        id: 'chk_poetry_1_poetics', // Mapped Shivers -> Poetics
-                        voiceId: 'poetics',
+                        id: 'chk_poetry_1_gambling', // Mapped Shivers -> Gambling
+                        voiceId: 'gambling',
                         difficulty: 10,
                         onSuccess: { nextSceneId: 'poetry_round_2', actions: [{ type: 'add_flag', payload: { 'poetry_insight_1': true } }] },
                         onFail: { nextSceneId: 'poetry_round_2' }
@@ -141,8 +141,8 @@ export const QUEST_VICTORIA_POETRY_LOGIC: VNScenarioLogic = {
                 {
                     id: 'absorb_impact',
                     skillCheck: {
-                        id: 'chk_poetry_3_composure', // Mapped Volition -> Composure
-                        voiceId: 'composure',
+                        id: 'chk_poetry_3_volition',
+                        voiceId: 'volition',
                         difficulty: 12,
                         onSuccess: { nextSceneId: 'victoria_moved', actions: [{ type: 'add_flag', payload: { 'poetry_insight_3': true } }] },
                         onFail: { nextSceneId: 'victoria_moved' }
@@ -199,3 +199,4 @@ export const QUEST_VICTORIA_POETRY_LOGIC: VNScenarioLogic = {
 };
 
 export default QUEST_VICTORIA_POETRY_LOGIC;
+

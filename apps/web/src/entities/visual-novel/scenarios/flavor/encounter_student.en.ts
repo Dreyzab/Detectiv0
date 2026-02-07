@@ -8,7 +8,7 @@ export const encounterStudentEn: VNContentPack = {
             text: `Near the University library, a young man stumbles out of a tavern, his face wrapped in fresh bandages. He reeks of cheap brandy and iodine. He bumps into you, then straightens up with exaggerated, wobbly dignity. "You! You're staring at my *Schmiss*, aren't you? Jealous of a badge of honor?"`,
             choices: {
                 authority: `[Authority] "Stand down, boy. You're drunk and bleeding. Go home before I arrest you for public disorder."`,
-                composure: `[Composure] Step aside calmly. He's just a child playing soldier.`,
+                volition: `[Volition] Step aside calmly. He's just a child playing soldier.`,
                 engage: `Ask him about the duel.`
             }
         },
@@ -26,13 +26,13 @@ export const encounterStudentEn: VNContentPack = {
             }
         },
         comp_success: {
-            text: `[[composure|Composure Success]]: You look through him as if he were made of glass. You step smoothly to the side, checking your pocket watch. The utter lack of reaction deflates him. "Bah. Philistine," he mutters, but lets you pass without incident.`,
+            text: `[[volition|Volition Success]]: You look through him as if he were made of glass. You step smoothly to the side, checking your pocket watch. The utter lack of reaction deflates him. "Bah. Philistine," he mutters, but lets you pass without incident.`,
             choices: {
                 leave: `Continue.`
             }
         },
         comp_fail: {
-            text: `[[composure|Composure Failure]]: You try to step aside, but he blocks your path, reading your silence as cowardice. "Running away? Insulting the honor of Rhenania?" He spits near your boot. Your hand twitches towards your baton.`,
+            text: `[[volition|Volition Failure]]: You try to step aside, but he blocks your path, reading your silence as cowardice. "Running away? Insulting the honor of Rhenania?" He spits near your boot. Your hand twitches towards your baton.`,
             choices: {
                 confront: `This demands a response.`,
                 leave_shame: `Swallow the insult and leave.`
@@ -70,3 +70,4 @@ export const encounterStudentEn: VNContentPack = {
 };
 
 export default encounterStudentEn;
+

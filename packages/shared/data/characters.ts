@@ -115,7 +115,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
             veteran: { endurance: 4, authority: 3, perception: 2 },
             journalist: { shivers: 4, rhetoric: 3, empathy: 2 },
             academic: { logic: 4, encyclopaedia: 3, volition: 2 },
-            noble: { suggestion: 4, composure: 3, drama: 2 }
+            noble: { suggestion: 4, volition: 3, drama: 2 }
         },
         age: 32,
         origin: 'Berlin',
@@ -134,8 +134,8 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         origin: 'University of Freiburg',
         description: '"The Woman in the Iron Lab Coat". A chemistry student driven by the mysterious death of her fiancé. Combines scientific genius with buried rage.',
         avatarUrl: '/images/characters/assistant.png',
-        tags: ['companion', 'forensics', 'chemistry', 'vengeful'],
-        voiceStats: { logic: 6, forensics: 8, authority: 4 },
+        tags: ['companion', 'senses', 'chemistry', 'vengeful'],
+        voiceStats: { logic: 6, senses: 8, authority: 4 },
         secrets: [
             'Fiancé was murdered over a Saccharin synthesis formula',
             'Has access to restricted University lab chemicals',
@@ -268,7 +268,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         origin: 'Prussia (War Veteran)',
         description: 'Former military surgeon obsessed with Bertillonage. Dismisses fingerprints as "French nonsense". Hates Victoria Sterling.',
         avatarUrl: '/images/characters/coroner.png',
-        tags: ['forensics', 'bertillonage', 'obstructionist'],
+        tags: ['senses', 'bertillonage', 'obstructionist'],
         serviceType: 'autopsy'
     },
     journalist: {
@@ -459,7 +459,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 55,
         origin: 'University of Freiburg',
         description: 'Medical chemist. Expert on poisons, sugars, and explosives. Can analyze nitroglycerin residue.',
-        tags: ['forensics', 'academic'],
+        tags: ['senses', 'academic'],
         serviceType: 'expert_analysis'
     },
 
@@ -579,3 +579,4 @@ export const getCharacter = (id: CharacterId): VNCharacter => CHARACTERS[id];
 export const getCharactersByTier = (tier: CharacterTier): VNCharacter[] => {
     return Object.values(CHARACTERS).filter(char => char.tier === tier);
 };
+

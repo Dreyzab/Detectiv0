@@ -27,7 +27,7 @@ export const QUEST_VICTORIA_POETRY_EN: VNContentPack = {
             text: '"The Iron Mother eats her young,\n  With teeth of steam and lungs of dung.\n  We feed her coal, we feed her bone,\n  And sleep upon her bed of stone."',
             choices: {
                 'analyze_structure': '[Logic] Analyze the industrial imagery.',
-                'feel_rhythm': '[Poetics] Feel the mechanical rhythm of the verse.'
+                'feel_rhythm': '[Gambling] Feel the mechanical rhythm of the verse.'
             }
         },
         'poetry_round_2': {
@@ -41,7 +41,7 @@ export const QUEST_VICTORIA_POETRY_EN: VNContentPack = {
             text: '"But gears will grind and bolts will shearing,\n  The time of silence is disappearing.\n  When the cog halts and the piston breaks,\n  The Iron Mother finally wakes!"',
             choices: {
                 'connect_politics': '[Authority] Deconstruct the call to strike action.',
-                'absorb_impact': '[Composure] Brace yourself against the revolutionary fervor.'
+                'absorb_impact': '[Volition] Brace yourself against the revolutionary fervor.'
             }
         },
         'victoria_moved': {
@@ -66,3 +66,4 @@ export const QUEST_VICTORIA_POETRY_EN: VNContentPack = {
 };
 
 export default QUEST_VICTORIA_POETRY_EN;
+

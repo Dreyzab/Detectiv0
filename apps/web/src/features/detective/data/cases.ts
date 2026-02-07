@@ -16,8 +16,8 @@ export const NARRATIVE_THREADS: NarrativeThread[] = [
     {
         id: 'thread_01_start',
         caseId: 'case_01',
-        sourcePointId: 'hauptbahnhof',
-        targetPointId: 'munsterplatz_bank',
+        sourcePointId: 'p_hbf',
+        targetPointId: 'p_bank',
         // style: 'solid', // TODO: Add to shared type
         condition: { type: 'flag_is', flagId: 'case01_started', value: true }
     },
@@ -25,8 +25,8 @@ export const NARRATIVE_THREADS: NarrativeThread[] = [
     {
         id: 'thread_02_archive',
         caseId: 'case_01',
-        sourcePointId: 'munsterplatz_bank',
-        targetPointId: 'rathaus_archiv',
+        sourcePointId: 'p_bank',
+        targetPointId: 'p_rathaus',
         // style: 'dashed',
         condition: { type: 'flag_is', flagId: 'knows_archive_lead', value: true }
     }
