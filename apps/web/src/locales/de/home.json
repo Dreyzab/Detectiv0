@@ -1,0 +1,18 @@
+{
+    "titleMain": "Grezwanderer 4",
+    "card": {
+        "title": "Archiv: Freiburg 1905",
+        "subtitle": "Untersuchen Sie die ungelösten Fälle der Vergangenheit."
+    },
+    "btn": {
+        "continue": "Ermittlung Fortsetzen",
+        "newGame": "Neues Spiel"
+    },
+    "modal": {
+        "resetTitle": "Neues Spiel starten?",
+        "resetConfirm": "Sind Sie sicher? Alle Fortschritte gehen verloren."
+    },
+    "debug": {
+        "jumpBank": "[DEBUG] Zum Bank-Fall springen"
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "header": {
+        "journal": "Журнал Расследования",
+        "objective": "Текущая Цель",
+        "subtitle": "Материалы дела и текущие задачи"
+    },
+    "tab": {
+        "active": "Активные Дела",
+        "solved": "Раскрытые Дела",
+        "failed": "Архив / Глухари"
+    },
+    "label": {
+        "inProgress": "В процессе",
+        "currentStage": "Текущий этап",
+        "noStage": "Этап не задан",
+        "stageTimeline": "Лента этапов",
+        "objectives": "Задачи",
+        "caseSolved": "Дело Раскрыто",
+        "journalUpdated": "Журнал Обновлен",
+        "newInvestigation": "Новое Расследование"
+    },
+    "nav": {
+        "investigation": "Расследование",
+        "journal": "Журнал",
+        "none": "Не выбрано",
+        "close": "Закрыть дело",
+        "available": "Доступные Дела"
+    },
+    "search": {
+        "placeholder": "Поиск по делу..."
+    },
+    "empty": {
+        "noEntries": "Записей не найдено",
+        "noActive": "В этой категории пока нет расследований."
+    },
+    "btn": {
+        "startQuest": "Начать Квест",
+        "forceComplete": "Завершить принудительно",
+        "reset": "Сбросить Все"
+    }
+}

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, type PersistOptions } from 'zustand/middleware';
 import type { DialogueEntry } from './types';
 import { logger } from '@repo/shared';
+import i18n from '@/shared/lib/i18n';
 
 const MAX_HISTORY_LENGTH = 200;
 const MAX_DIALOGUE_HISTORY = 50;
@@ -91,6 +92,7 @@ export const useVNStore = create<VNState>()(
 
             setLocale: (locale) => {
                 logger.vn(`Setting locale: ${locale}`);
+                i18n.changeLanguage(locale);
                 set({ locale });
             },
 

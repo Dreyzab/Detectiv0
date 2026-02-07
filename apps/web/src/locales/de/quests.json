@@ -1,0 +1,41 @@
+{
+    "header": {
+        "journal": "Ermittlungsakte",
+        "objective": "Aktuelles Ziel",
+        "subtitle": "Fallakten und aktuelle Ziele"
+    },
+    "tab": {
+        "active": "Aktive Ermittlungen",
+        "solved": "Gelöste Fälle",
+        "failed": "Ungelöste Fälle"
+    },
+    "label": {
+        "inProgress": "In Arbeit",
+        "currentStage": "Aktuelle Phase",
+        "noStage": "Phase nicht gesetzt",
+        "stageTimeline": "Phasenverlauf",
+        "objectives": "Ziele",
+        "caseSolved": "Fall Gelöst",
+        "journalUpdated": "Akte Aktualisiert",
+        "newInvestigation": "Neue Ermittlung"
+    },
+    "nav": {
+        "investigation": "Ermittlung",
+        "journal": "Akte",
+        "none": "Keine Auswahl",
+        "close": "Ermittlung schließen",
+        "available": "Verfügbare Fälle"
+    },
+    "search": {
+        "placeholder": "Fallakten durchsuchen..."
+    },
+    "empty": {
+        "noEntries": "Keine Einträge gefunden",
+        "noActive": "Derzeit keine Ermittlungen in dieser Kategorie."
+    },
+    "btn": {
+        "startQuest": "Quest Starten",
+        "forceComplete": "Abschließen erzwingen",
+        "reset": "Zurücksetzen"
+    }
+}

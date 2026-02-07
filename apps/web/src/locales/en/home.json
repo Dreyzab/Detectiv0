@@ -1,0 +1,18 @@
+{
+    "titleMain": "Grezwanderer 4",
+    "card": {
+        "title": "Archive: Freiburg 1905",
+        "subtitle": "Investigate the cold cases of the past. Logic is your weapon."
+    },
+    "btn": {
+        "continue": "Continue Investigation",
+        "newGame": "New Game"
+    },
+    "modal": {
+        "resetTitle": "Start New Game?",
+        "resetConfirm": "Are you sure? All progress will be lost."
+    },
+    "debug": {
+        "jumpBank": "[DEBUG] Jump to Bank Case"
+    }
+}

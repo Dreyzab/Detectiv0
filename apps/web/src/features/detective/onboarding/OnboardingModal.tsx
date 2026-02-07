@@ -1,9 +1,7 @@
 
 import React, { useState } from 'react'
 import { cn } from '@/shared/lib/utils'
-import { useVNStore } from '@/entities/visual-novel/model/store';
-import { DETECTIVE_UI } from '@/features/detective/locales';
-import { asLocale } from '@/features/quests/utils';
+import { useTranslation } from 'react-i18next';
 
 interface OnboardingModalProps {
     onComplete: (name: string) => void
@@ -13,8 +11,7 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, onCancel }) => {
     const [name, setName] = useState('')
     const [touched, setTouched] = useState(false)
-    const { locale } = useVNStore();
-    const ui = DETECTIVE_UI[asLocale(locale)];
+    const { t } = useTranslation('detective');
 
     const handleSubmit = () => {
         if (!name.trim()) {
@@ -64,7 +61,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, on
                     {/* Typewriter Body */}
                     <div className="font-mono text-[#2a2420] text-sm md:text-base leading-relaxed text-left w-full space-y-4 mb-8">
                         <p>
-                            <strong className="bg-[#2a2420] text-[#fdfaf5] px-1">STOP.</strong> {ui.onboarding_telegram_message}
+                            <strong className="bg-[#2a2420] text-[#fdfaf5] px-1">STOP.</strong> {t('onboarding.telegramMessage')}
                         </p>
                         <p className="pt-2 italic text-[#5c554f]">
                             IDENTIFY YOURSELF FOR CLEARANCE BELOW.
@@ -112,7 +109,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, on
                             onClick={handleSubmit}
                             className="flex-[2] py-5 bg-[#2a2420] text-[#fdfaf5] font-bold uppercase tracking-[0.15em] shadow-lg hover:bg-[#403630] active:translate-y-[1px] active:scale-[0.98] transition-all text-base flex items-center justify-center gap-2 group"
                         >
-                            <span>{ui.onboarding_ack}</span>
+                            <span>{t('onboarding.ack')}</span>
                             <span className="group-hover:translate-x-1 transition-transform">→</span>
                         </button>
                     </div>

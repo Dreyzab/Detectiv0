@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useDossierStore } from '@/features/detective/dossier/store';
 import { VOICES, VOICE_GROUPS, GROUP_ORDER } from '@/features/detective/lib/parliament';
-import { useVNStore } from '@/entities/visual-novel/model/store';
-import { DETECTIVE_UI } from '@/features/detective/locales';
-import { asLocale } from '@/features/quests/utils';
 import { useQuestStore } from '@/features/quests/store';
 import { useWorldEngineStore } from '@/features/detective/engine/store';
 import { useCharacterStore } from '@/entities/character/model/store';
@@ -13,6 +10,7 @@ import {
     Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer
 } from 'recharts';
 import { FileText, Brain, Briefcase, Fingerprint } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 
 // Tabs for the Dossier
@@ -20,11 +18,10 @@ type TabType = 'profile' | 'skills' | 'psyche' | 'equipment';
 
 export function CharacterPage() {
     const { voiceStats, devPoints, xp, level: charLevel, flags, checkStates, traits } = useDossierStore();
-    const { locale } = useVNStore();
     const factions = useWorldEngineStore((state) => state.factions);
     const userQuests = useQuestStore((state) => state.userQuests);
     const characters = useCharacterStore((state) => state.characters);
-    const ui = DETECTIVE_UI[asLocale(locale)];
+    const { t } = useTranslation('detective');
     const [activeTab, setActiveTab] = useState<TabType>('profile');
 
     // Prepare data for Radar Chart (aggregating by Group)
@@ -90,7 +87,7 @@ export function CharacterPage() {
             <header className="max-w-4xl mx-auto mb-8 flex items-center justify-between border-b border-amber-900/30 pb-4 relative z-10">
                 <div>
                     <h1 className="text-4xl font-heading text-amber-500 tracking-tight drop-shadow-md">
-                        {ui.char_title}
+                        {t('char.title')}
                     </h1>
                     <p className="text-stone-500 text-xs uppercase tracking-widest mt-1">
                         CONFIDENTIAL DOSSIER // REF-4922
@@ -140,7 +137,7 @@ export function CharacterPage() {
                     <div className="p-6 md:p-8 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-stone-700 scrollbar-track-transparent">
                         <AnimatePresence mode="wait">
                             {activeTab === 'profile' && (
-                                <ProfileView ui={ui} />
+                                <ProfileView />
                             )}
                             {activeTab === 'skills' && (
                                 <SkillsView radarData={radarData} />
@@ -183,54 +180,57 @@ const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
     </button>
 );
 
-const ProfileView = ({ ui }: any) => (
-    <motion.div
-        key="profile"
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 10 }}
-        className="h-full flex flex-col gap-6"
-    >
-        <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* Portrait */}
-            <div className="w-40 h-52 bg-stone-950 border-2 border-stone-800 flex items-center justify-center shrink-0 relative group self-center md:self-start rotate-1 shadow-lg transform transition-transform hover:rotate-0">
-                <div className="absolute inset-0 bg-stone-800 opacity-20 bg-[url('/noise.png')]" />
-                <span className="text-stone-700 font-display text-4xl opacity-50">?</span>
-                {/* Tape effect */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-[#d4d4d4] opacity-80 -rotate-2 mix-blend-overlay shadow-sm" />
-            </div>
+const ProfileView = () => {
+    const { t } = useTranslation('detective');
+    return (
+        <motion.div
+            key="profile"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            className="h-full flex flex-col gap-6"
+        >
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+                {/* Portrait */}
+                <div className="w-40 h-52 bg-stone-950 border-2 border-stone-800 flex items-center justify-center shrink-0 relative group self-center md:self-start rotate-1 shadow-lg transform transition-transform hover:rotate-0">
+                    <div className="absolute inset-0 bg-stone-800 opacity-20 bg-[url('/noise.png')]" />
+                    <span className="text-stone-700 font-display text-4xl opacity-50">?</span>
+                    {/* Tape effect */}
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-[#d4d4d4] opacity-80 -rotate-2 mix-blend-overlay shadow-sm" />
+                </div>
 
-            <div className="space-y-4">
-                <h2 className="text-2xl font-display text-stone-200 border-b border-stone-800 pb-2">
-                    Detective Profile
-                </h2>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                    <div>
-                        <span className="block text-amber-700/70 uppercase text-[10px] tracking-widest mb-1">Rank</span>
-                        <span className="font-mono text-stone-300">Lieutenant</span>
-                    </div>
-                    <div>
-                        <span className="block text-amber-700/70 uppercase text-[10px] tracking-widest mb-1">Affiliation</span>
-                        <span className="font-mono text-stone-300">RCM</span>
-                    </div>
-                    <div className="col-span-2">
-                        <span className="block text-amber-700/70 uppercase text-[10px] tracking-widest mb-1">Biometrics</span>
-                        <span className="font-mono text-stone-300">Male, 40s, Heavy Drinker</span>
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-display text-stone-200 border-b border-stone-800 pb-2">
+                        Detective Profile
+                    </h2>
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                        <div>
+                            <span className="block text-amber-700/70 uppercase text-[10px] tracking-widest mb-1">Rank</span>
+                            <span className="font-mono text-stone-300">Lieutenant</span>
+                        </div>
+                        <div>
+                            <span className="block text-amber-700/70 uppercase text-[10px] tracking-widest mb-1">Affiliation</span>
+                            <span className="font-mono text-stone-300">RCM</span>
+                        </div>
+                        <div className="col-span-2">
+                            <span className="block text-amber-700/70 uppercase text-[10px] tracking-widest mb-1">Biometrics</span>
+                            <span className="font-mono text-stone-300">Male, 40s, Heavy Drinker</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div className="mt-4">
-            <h3 className="text-amber-600/80 font-display uppercase tracking-widest text-sm mb-3 border-b border-stone-800 pb-1">
-                Background
-            </h3>
-            <p className="text-stone-400 leading-relaxed font-serif text-sm">
-                {ui.char_background_text || "No background information available. Subject is suffering from retrograde amnesia."}
-            </p>
-        </div>
-    </motion.div>
-);
+            <div className="mt-4">
+                <h3 className="text-amber-600/80 font-display uppercase tracking-widest text-sm mb-3 border-b border-stone-800 pb-1">
+                    Background
+                </h3>
+                <p className="text-stone-400 leading-relaxed font-serif text-sm">
+                    {t('char.backgroundText', { defaultValue: 'No background information available. Subject is suffering from retrograde amnesia.' })}
+                </p>
+            </div>
+        </motion.div>
+    );
+};
 
 const SkillsView = ({ radarData }: any) => {
     // We need to access store again inside this component for mapping

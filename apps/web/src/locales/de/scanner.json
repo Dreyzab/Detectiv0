@@ -1,0 +1,18 @@
+{
+    "title": "🕵️ Hardlink-Scanner (Sim)",
+    "cameraPlaceholder": "[ Kamera-Feed Platzhalter ]",
+    "inputPlaceholder": "Hardlink-ID eingeben (z.B. CASE01_BRIEFING_01)",
+    "btnScan": "Archiv scannen",
+    "result": {
+        "success": "✅ ERFOLG:",
+        "unknown": "❌ Unbekannter Hardlink:",
+        "evidence": "Beweis gefunden:",
+        "map": "Kartenpunkt aktualisiert:",
+        "flags": "Markierungen aktualisiert.",
+        "scenario": "Starte Szenario:"
+    },
+    "label": {
+        "lastResult": "Letztes Scan-Ergebnis:",
+        "quickTest": "Schnelltest:"
+    }
+}

@@ -4,15 +4,15 @@ import { ChevronRight, CheckCircle2, Circle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useVNStore } from '../../entities/visual-novel/model/store';
-import { QUEST_UI } from './locales';
 import { getLocalizedText, asLocale, getQuestStageLabel, getObjectivesForStage, getQuestTimelineWindow } from './utils';
 import { TimelineStageChip } from './TimelineStageChip';
+import { useTranslation } from 'react-i18next';
 
 export const QuestLog = () => {
     const { userQuests, quests } = useQuestStore();
     const { locale } = useVNStore();
     const currentLocale = asLocale(locale);
-    const ui = QUEST_UI[currentLocale];
+    const { t } = useTranslation('quests');
 
     const [isExpanded, setIsExpanded] = useState(true);
 
@@ -44,7 +44,7 @@ export const QuestLog = () => {
                 className="bg-[#1c1917]/90 border border-[#ca8a04]/40 p-3 rounded-t-lg shadow-xl cursor-pointer flex justify-between items-center backdrop-blur-md"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <span className="text-[#ca8a04] font-bold text-sm tracking-widest uppercase">{ui.header_objective}</span>
+                <span className="text-[#ca8a04] font-bold text-sm tracking-widest uppercase">{t('header.objective')}</span>
                 <ChevronRight className={cn('w-4 h-4 text-[#ca8a04] transition-transform', isExpanded ? 'rotate-90' : '')} />
             </div>
 
@@ -65,14 +65,14 @@ export const QuestLog = () => {
                                 <h3 className="text-[#e5e5e5] font-bold text-lg leading-tight">{title}</h3>
                                 <p className="text-[#a8a29e] text-xs italic">{description}</p>
                                 <div className="inline-flex items-center gap-2 rounded-full border border-[#ca8a04]/30 bg-[#0c0a09]/60 px-2.5 py-1 text-[11px]">
-                                    <span className="uppercase tracking-wider text-[#78716c]">{ui.label_current_stage}:</span>
-                                    <span className="font-semibold text-[#d4c5a3]">{stageLabel || ui.label_no_stage}</span>
+                                    <span className="uppercase tracking-wider text-[#78716c]">{t('label.currentStage')}:</span>
+                                    <span className="font-semibold text-[#d4c5a3]">{stageLabel || t('label.noStage')}</span>
                                 </div>
 
                                 {timeline.length > 0 && (
                                     <div className="rounded-md border border-[#ca8a04]/20 bg-[#0c0a09]/40 p-2">
                                         <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#78716c]">
-                                            {ui.label_stage_timeline}
+                                            {t('label.stageTimeline')}
                                         </div>
                                         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                                             {timeline.map((entry, index) => (

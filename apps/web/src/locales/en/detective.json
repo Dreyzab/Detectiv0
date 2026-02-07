@@ -1,0 +1,60 @@
+{
+    "tab": {
+        "facts": "Facts",
+        "evidence": "Evidence",
+        "board": "Board",
+        "map": "Map",
+        "voices": "Voices"
+    },
+    "header": {
+        "caseFile": "Case File #1",
+        "facts": "Facts & Notes",
+        "evidence": "Collected Evidence",
+        "knownLocations": "Known Locations",
+        "voiceParliament": "Voice Parliament"
+    },
+    "footer": {
+        "policeDept": "Freiburg Police Dept. • 1905"
+    },
+    "empty": {
+        "facts": "No facts recorded yet.",
+        "evidence": "No evidence collected.",
+        "flags": "No flags set"
+    },
+    "status": {
+        "locked": "LOCKED"
+    },
+    "state": {
+        "discovered": "Discovered",
+        "visited": "Visited",
+        "completed": "Completed"
+    },
+    "nav": {
+        "map": "Map",
+        "dossier": "Dossier",
+        "profile": "Profile"
+    },
+    "case01": {
+        "title": "Case 1: The Robbery",
+        "description": "Investigation of the Bankhaus Krebs robbery."
+    },
+    "char": {
+        "title": "The Detective",
+        "rankLabel": "Rank",
+        "levelLabel": "Level",
+        "xpLabel": "Experience",
+        "devPointsTitle": "Development Points Available",
+        "devPointsDesc": "Spend to improve skills instantly.",
+        "equipmentTitle": "Equipment",
+        "equipmentEmpty": "No items equipped",
+        "parliamentTitle": "Parliament of Voices",
+        "backgroundTitle": "Background",
+        "backgroundText": "Arrived in Freiburg via the night train from Berlin. The luggage was lighter than the memories left behind.",
+        "portraitUnavailable": "Portrait Unavailable"
+    },
+    "onboarding": {
+        "telegramTitle": "Telegram - Imperial Telegraph Office",
+        "telegramMessage": "STOP. REPORT TO FREIBURG IMMEDIATELY. STOP. LOCAL POLICE REQUIRES ASSISTANCE. STOP. BANKHAUS KREBS ROBBERY. STOP. DO NOT FAIL US. STOP.",
+        "ack": "Acknowledge"
+    }
+}

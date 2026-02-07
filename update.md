@@ -4,6 +4,19 @@
 
 ---
 
+## [07.02.2026] — UI Localization Refactoring (react-i18next)
+
+### Changed
+- **UI Localization migrated to `react-i18next`**:
+  - Installed core packages: `react-i18next`, `i18next`, `i18next-http-backend`, `i18next-browser-languagedetector`.
+  - Created JSON namespace files: `apps/web/public/locales/{en,de,ru}/{common,detective,quests}.json`.
+  - Configured i18n runtime: `apps/web/src/shared/lib/i18n.ts`.
+  - Migrated components: `Dossier`, `CharacterPage`, `QRScannerPage`, `OnboardingModal`, `QuestLog`, `ProfileView` — replaced all `ui.xxx` with `t('key')`.
+  - Added `LanguageSwitcher` with flag icons to Navbar for EN/DE/RU toggle.
+- **Validation**: TypeScript checks passed — `bun x tsc -p apps/web/tsconfig.app.json --noEmit`.
+
+---
+
 ## [07.02.2026] — Phase 2: Dossier Psyche Profile + Secrets/Evolution UX
 
 ### Added

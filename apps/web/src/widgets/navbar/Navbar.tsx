@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Map, QrCode, Settings, Terminal, User } from 'lucide-react';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 // Checking imports in HomePage: no 'cn' or 'clsx' used.
 // I will standard className strings for safety or check if standard/shared/lib/css exists.
@@ -47,6 +48,9 @@ export const Navbar = () => {
                     <NavItem to="/character" icon={User} label="Dossier" isActive={pathname === '/character'} />
                     <NavItem to="/scanner" icon={QrCode} label="Scan" isActive={pathname === '/scanner'} />
                     <NavItem to="/settings" icon={Settings} label="Config" isActive={pathname === '/settings'} />
+                </div>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <LanguageSwitcher />
                 </div>
             </nav>
 

@@ -17,7 +17,7 @@ Follows FSD (Feature-Sliced Design):
 - **widgets/**: Composition layer (MapView, Dossier, CombatHUD).
 - **features/**: User-facing capabilities (Detective Mode, Layer Toggles, Movement).
 - **entities/**: Business logic and stores (User, Inventory, VisualNovel, Quest).
-- **shared/**: Reusable UI components and pure logic (UI Kit, Mapbox Libs, i18n).
+- **shared/**: Reusable UI components and pure logic (UI Kit, Mapbox Libs, i18n, react-i18next).
 
 ### `apps/server` (Backend: ElysiaJS + Bun + Supabase/PostgreSQL)
 - **db/**: Drizzle schema (`schema.ts` — `map_points`, `event_codes`, `quests`, `detective_saves`, etc.) and migrations.
@@ -30,7 +30,8 @@ Follows FSD (Feature-Sliced Design):
 ### `packages/shared`
 - **data/**: Consolidated game data — `parliament.ts` (18 voices, single source of truth), `characters.ts`, `battle.ts`, `constants.ts`.
 - **lib/**: Shared logic — `map-validators.ts` (Zod schemas for MapAction, Bindings), `dice.ts` (D20 skill checks), `rpg-config.ts`, `detective_map_types.ts`.
-- **locales/**: i18n dictionaries (`en.ts`, `ru.ts`).
+- **locales/**: Legacy i18n dictionaries (`en.ts`, `ru.ts`).
+  > **Note**: UI локализация мигрирована на `react-i18next` с JSON namespace файлами в `apps/web/public/locales/{lang}/{namespace}.json`. Компоненты используют `useTranslation` хук. `LanguageSwitcher` в Navbar.
 
 ---
 

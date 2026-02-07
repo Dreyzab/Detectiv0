@@ -1,0 +1,23 @@
+{
+    "action": {
+        "back": "Back",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "save": "Save",
+        "close": "Close",
+        "reset": "Reset",
+        "continue": "Continue"
+    },
+    "state": {
+        "loading": "Loading...",
+        "error": "An error occurred"
+    },
+    "label": {
+        "settings": "Settings",
+        "qrScanner": "QR Scanner",
+        "devTools": "Dev Tools"
+    },
+    "nav": {
+        "home": "Home"
+    }
+}

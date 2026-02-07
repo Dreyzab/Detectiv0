@@ -1,0 +1,41 @@
+{
+    "header": {
+        "journal": "Investigation Journal",
+        "objective": "Current Objective",
+        "subtitle": "Case files and current objectives"
+    },
+    "tab": {
+        "active": "Active Investigations",
+        "solved": "Solved Cases",
+        "failed": "Cold Cases"
+    },
+    "label": {
+        "inProgress": "In Progress",
+        "currentStage": "Current Stage",
+        "noStage": "Stage not set",
+        "stageTimeline": "Stage Timeline",
+        "objectives": "Objectives",
+        "caseSolved": "Case Solved",
+        "journalUpdated": "Journal Updated",
+        "newInvestigation": "New Investigation"
+    },
+    "nav": {
+        "investigation": "Investigation",
+        "journal": "Journal",
+        "none": "None Selected",
+        "close": "Close investigation",
+        "available": "Available Cases"
+    },
+    "search": {
+        "placeholder": "Search case files..."
+    },
+    "empty": {
+        "noEntries": "No entries found",
+        "noActive": "There are no investigations in this category at this time."
+    },
+    "btn": {
+        "startQuest": "Start Quest",
+        "forceComplete": "Force Complete",
+        "reset": "Reset All"
+    }
+}

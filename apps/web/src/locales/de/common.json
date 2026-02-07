@@ -1,0 +1,23 @@
+{
+    "action": {
+        "back": "Zurück",
+        "cancel": "Abbrechen",
+        "confirm": "Bestätigen",
+        "save": "Speichern",
+        "close": "Schließen",
+        "reset": "Zurücksetzen",
+        "continue": "Weiter"
+    },
+    "state": {
+        "loading": "Laden...",
+        "error": "Ein Fehler ist aufgetreten"
+    },
+    "label": {
+        "settings": "Einstellungen",
+        "qrScanner": "QR-Scanner",
+        "devTools": "Entwickler"
+    },
+    "nav": {
+        "home": "Hauptmenü"
+    }
+}

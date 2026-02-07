@@ -1,0 +1,60 @@
+{
+    "tab": {
+        "facts": "Fakten",
+        "evidence": "Beweise",
+        "board": "Tafel",
+        "map": "Karte",
+        "voices": "Stimmen"
+    },
+    "header": {
+        "caseFile": "Akte #1",
+        "facts": "Fakten & Notizen",
+        "evidence": "Gesammelte Beweise",
+        "knownLocations": "Bekannte Orte",
+        "voiceParliament": "Stimmenparlament"
+    },
+    "footer": {
+        "policeDept": "Polizeipräsidium Freiburg • 1905"
+    },
+    "empty": {
+        "facts": "Noch keine Fakten aufgezeichnet.",
+        "evidence": "Keine Beweise gesammelt.",
+        "flags": "Keine Markierungen"
+    },
+    "status": {
+        "locked": "GESPERRT"
+    },
+    "state": {
+        "discovered": "Entdeckt",
+        "visited": "Besucht",
+        "completed": "Abgeschlossen"
+    },
+    "nav": {
+        "map": "Karte",
+        "dossier": "Akte",
+        "profile": "Profil"
+    },
+    "case01": {
+        "title": "Fall 1: Der Raubüberfall",
+        "description": "Untersuchung des Raubüberfalls auf das Bankhaus Krebs."
+    },
+    "char": {
+        "title": "Der Detektiv",
+        "rankLabel": "Rang",
+        "levelLabel": "Stufe",
+        "xpLabel": "Erfahrung",
+        "devPointsTitle": "Entwicklungspunkte verfügbar",
+        "devPointsDesc": "Ausgeben, um Fähigkeiten sofort zu verbessern.",
+        "equipmentTitle": "Ausrüstung",
+        "equipmentEmpty": "Keine Gegenstände ausgerüstet",
+        "parliamentTitle": "Parlament der Stimmen",
+        "backgroundTitle": "Hintergrund",
+        "backgroundText": "Ankunft in Freiburg mit dem Nachtzug aus Berlin. Das Gepäck war leichter als die Erinnerungen, die zurückgelassen wurden.",
+        "portraitUnavailable": "Porträt nicht verfügbar"
+    },
+    "onboarding": {
+        "telegramTitle": "Telegramm - Kaiserliches Telegraphenamt",
+        "telegramMessage": "STOPP. SOFORT IN FREIBURG MELDEN. STOPP. LOKALE POLIZEI BENÖTIGT UNTERSTÜTZUNG. STOPP. RAUB BANKHAUS KREBS. STOPP. ENTTÄUSCHEN SIE UNS NICHT. STOPP.",
+        "ack": "Bestätigen"
+    }
+}
