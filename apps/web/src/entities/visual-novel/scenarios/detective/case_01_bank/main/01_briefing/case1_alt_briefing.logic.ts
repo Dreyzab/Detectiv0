@@ -24,6 +24,9 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
             id: 'arrival_platform',
             backgroundUrl: '/images/scenarios/bahnhof_platform.png',
             nextSceneId: 'platform_atmosphere',
+            onEnter: [
+                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'briefing' } }
+            ],
             // [TEST] Passive Check: Logic (Easy) - Should pass
             passiveChecks: [
                 {
@@ -220,7 +223,8 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
             backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
             nextSceneId: 'END',
             onEnter: [
-                { type: 'unlock_point', payload: 'p_bank' },
+                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'bank_investigation' } },
+                { type: 'unlock_point', payload: 'loc_freiburg_bank' },
                 {
                     type: 'add_flag', payload: {
                         'case01_started': true,
@@ -234,3 +238,4 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
 };
 
 export default CASE1_ALT_BRIEFING_LOGIC;
+

@@ -68,7 +68,7 @@ export const encounterCleanerLogic: VNScenarioLogic = {
         end_ignore: {
             id: 'end_ignore',
             onEnter: [
-                { type: 'unlock_point', payload: 'p_street_event' }
+                { type: 'unlock_point', payload: 'loc_street_event' }
             ],
             nextSceneId: 'end'
         },
@@ -80,3 +80,4 @@ export const encounterCleanerLogic: VNScenarioLogic = {
 };
 
 export default encounterCleanerLogic;
+

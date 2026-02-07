@@ -16,18 +16,19 @@ export const NARRATIVE_THREADS: NarrativeThread[] = [
     {
         id: 'thread_01_start',
         caseId: 'case_01',
-        sourcePointId: 'p_hbf',
-        targetPointId: 'p_bank',
+        sourcePointId: 'loc_hbf',
+        targetPointId: 'loc_freiburg_bank',
         // style: 'solid', // TODO: Add to shared type
-        condition: { type: 'flag_is', flagId: 'case01_started', value: true }
+        condition: { type: 'quest_past_stage', questId: 'case01', stage: 'briefing' }
     },
     // Thread 2: Bank -> Archive
     {
         id: 'thread_02_archive',
         caseId: 'case_01',
-        sourcePointId: 'p_bank',
-        targetPointId: 'p_rathaus',
+        sourcePointId: 'loc_freiburg_bank',
+        targetPointId: 'loc_freiburg_archive',
         // style: 'dashed',
         condition: { type: 'flag_is', flagId: 'knows_archive_lead', value: true }
     }
 ];
+

@@ -12,5 +12,7 @@ export * from "./lib/detective_engine_types";
 export * from "./lib/map-validators";
 export * from "./data/parliament";
 export * from "./data/battle";
+export * from "./data/items";
+export * from "./data/quests";
 // export * from "./data/points"; // DELETED: Migrated to DB
 

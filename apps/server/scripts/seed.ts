@@ -34,7 +34,7 @@ async function main() {
                 title: 'Find Clara',
                 description: null,
                 sortOrder: 1,
-                locationId: 'p_bank',
+                locationId: 'loc_freiburg_bank',
                 data: { style: 'investigation' }
             },
             {
@@ -43,7 +43,7 @@ async function main() {
                 title: 'Search Clara Cell',
                 description: null,
                 sortOrder: 2,
-                locationId: 'p_bank',
+                locationId: 'loc_freiburg_bank',
                 data: { style: 'contradiction' }
             }
         ];
@@ -63,3 +63,4 @@ async function main() {
 }
 
 main();
+

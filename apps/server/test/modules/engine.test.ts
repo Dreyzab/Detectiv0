@@ -235,7 +235,7 @@ describe('Engine Module (Controlled Integration)', () => {
                 title: 'Find Clara',
                 description: null,
                 sortOrder: 1,
-                locationId: 'p_bank',
+                locationId: 'loc_freiburg_bank',
                 data: { style: 'investigation' }
             },
             {
@@ -244,7 +244,7 @@ describe('Engine Module (Controlled Integration)', () => {
                 title: 'Search Clara Cell',
                 description: null,
                 sortOrder: 2,
-                locationId: 'p_bank',
+                locationId: 'loc_freiburg_bank',
                 data: { style: 'contradiction' }
             }
         );
@@ -262,7 +262,7 @@ describe('Engine Module (Controlled Integration)', () => {
             'obj_find_clara',
             'obj_search_bank_cell'
         ]);
-        expect(payload.objectives?.every((entry) => entry.locationId === 'p_bank')).toBe(true);
+        expect(payload.objectives?.every((entry) => entry.locationId === 'loc_freiburg_bank')).toBe(true);
     });
 
     it('travel flow advances world tick and returns travel beat', async () => {
@@ -312,6 +312,55 @@ describe('Engine Module (Controlled Integration)', () => {
         expect(completed.worldClock.phase).toBe('morning');
         expect(completed.locationAvailability.open).toBe(true);
         expect(context.eventLog.some((event) => event.type === 'travel_completed')).toBe(true);
+    });
+
+    it('marks industrial district as closed at night after travel', async () => {
+        await context.repo.upsertWorldClock({
+            userId: DEMO_USER_ID,
+            tick: 9,
+            phase: 'night'
+        });
+
+        context.routes.push({
+            id: 'route_bank_warehouse_night',
+            fromLocationId: 'loc_freiburg_bank',
+            toLocationId: 'loc_freiburg_warehouse',
+            mode: 'carriage',
+            etaTicks: 1,
+            riskLevel: 3,
+            active: true
+        });
+
+        const startResponse = await app.handle(new Request(`${BASE_URL}/engine/travel/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fromLocationId: 'loc_freiburg_bank',
+                toLocationId: 'loc_freiburg_warehouse',
+                mode: 'carriage',
+                caseId: 'case_01_bank'
+            })
+        }));
+        expect(startResponse.status).toBe(200);
+        const started = await startResponse.json() as {
+            success: boolean;
+            session: { id: string };
+        };
+        expect(started.success).toBe(true);
+
+        const completeResponse = await app.handle(new Request(`${BASE_URL}/engine/travel/complete/${started.session.id}`, {
+            method: 'POST'
+        }));
+        expect(completeResponse.status).toBe(200);
+
+        const completed = await completeResponse.json() as {
+            success: boolean;
+            locationAvailability: { open: boolean; reason?: string; alternatives?: string[] };
+        };
+        expect(completed.success).toBe(true);
+        expect(completed.locationAvailability.open).toBe(false);
+        expect(completed.locationAvailability.reason).toContain('district');
+        expect(completed.locationAvailability.alternatives).toEqual(['district_pass', 'wait_until_day']);
     });
 
     it('blocks bank case objective at night without alternative approach', async () => {
@@ -422,3 +471,4 @@ describe('Engine Module (Controlled Integration)', () => {
         expect(progression.relations.find((entry) => entry.characterId === 'char_clara')?.trust).toBe(3);
     });
 });
+

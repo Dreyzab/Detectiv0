@@ -29,73 +29,73 @@ export const GROUP_ORDER: VoiceGroup[] = ['intellect', 'psyche', 'social', 'phys
 export const VOICE_GROUPS: Record<VoiceGroup, VoiceGroupMetadata> = {
     intellect: {
         id: 'intellect',
-        label: 'Мозг (Аналитика)',
-        description: 'Способность анализировать факты и делать выводы.',
-        color: '#2563eb',
+        label: 'Brain (Analytics)',
+        description: 'Logical reasoning and sensory processing.',
+        color: '#2563eb', // Blue 🔵
         voices: ['logic', 'perception', 'encyclopedia']
     },
     psyche: {
         id: 'psyche',
-        label: 'Душа (Интуиция)',
-        description: 'Внутреннее чутье и понимание человеческой природы.',
-        color: '#9333ea',
+        label: 'Soul (Intuition)',
+        description: 'Emotional connection and subconscious understanding.',
+        color: '#9333ea', // Purple 🟣
         voices: ['intuition', 'empathy', 'imagination']
     },
     social: {
         id: 'social',
-        label: 'Характер (Социум)',
-        description: 'Умение взаимодействовать с людьми и доминировать.',
-        color: '#dc2626',
+        label: 'Character (Society)',
+        description: 'Social maneuvering and force of personality.',
+        color: '#f97316', // Orange 🟠
         voices: ['authority', 'charisma', 'volition']
     },
     physical: {
         id: 'physical',
-        label: 'Тело (Действие)',
-        description: 'Физическая подготовка и практические навыки.',
-        color: '#16a34a',
+        label: 'Body (Action)',
+        description: 'Physical capability and direct intervention.',
+        color: '#ef4444', // Red 🔴
         voices: ['endurance', 'agility', 'senses']
     },
     shadow: {
         id: 'shadow',
-        label: 'Тень (Скрытность)',
-        description: 'Искусство обмана и незаметных действий.',
-        color: '#4b5563',
+        label: 'Shadow (Stealth)',
+        description: 'Subterfuge and underworld skills.',
+        color: '#1f2937', // Black/Dark Grey ⚫
         voices: ['stealth', 'deception', 'intrusion']
     },
     spirit: {
         id: 'spirit',
-        label: 'Дух (Лор)',
-        description: 'Связь с историей, традициями и мистическим.',
-        color: '#d97706',
+        label: 'Spirit (Lore)',
+        description: 'Esoteric knowledge and connection to the past.',
+        color: '#10b981', // Green 🟢
         voices: ['occultism', 'tradition', 'gambling']
     }
 };
 
 export const VOICES: Record<VoiceId, VoiceMetadata> = {
     // Intellect
-    logic: { id: 'logic', name: 'Logic (Логика)', group: 'intellect', description: 'Выстраивание фактов.' },
-    perception: { id: 'perception', name: 'Perception (Внимание)', group: 'intellect', description: 'Поиск улик.' },
-    encyclopedia: { id: 'encyclopedia', name: 'Encyclopedia (Знание)', group: 'intellect', description: 'История и лор.' },
+    logic: { id: 'logic', name: 'Logic (Логика)', group: 'intellect', description: 'Deductive reasoning.' },
+    perception: { id: 'perception', name: 'Perception (Внимание)', group: 'intellect', description: 'Noticing details.' },
+    encyclopedia: { id: 'encyclopedia', name: 'Encyclopedia (Знание)', group: 'intellect', description: 'Trivia and facts.' },
     // Psyche
-    intuition: { id: 'intuition', name: 'Intuition (Чутье)', group: 'psyche', description: 'Шестое чувство.' },
-    empathy: { id: 'empathy', name: 'Empathy (Эмпатия)', group: 'psyche', description: 'Чтение эмоций.' },
-    imagination: { id: 'imagination', name: 'Imagination (Образ)', group: 'psyche', description: 'Реконструкция.' },
+    intuition: { id: 'intuition', name: 'Intuition (Чутье)', group: 'psyche', description: 'Gut feelings and warnings.' },
+    empathy: { id: 'empathy', name: 'Empathy (Эмпатия)', group: 'psyche', description: 'Reading emotions.' },
+    imagination: { id: 'imagination', name: 'Imagination (Образ)', group: 'psyche', description: 'Reconstructing events.' },
     // Social
-    authority: { id: 'authority', name: 'Authority (Власть)', group: 'social', description: 'Доминирование.' },
-    charisma: { id: 'charisma', name: 'Charisma (Шарм)', group: 'social', description: 'Обаяние и лесть.' },
-    volition: { id: 'volition', name: 'Volition (Воля)', group: 'social', description: 'Самоконтроль и устойчивость.' },
+    authority: { id: 'authority', name: 'Authority (Власть)', group: 'social', description: 'Commanding respect.' },
+    charisma: { id: 'charisma', name: 'Charisma (Шарм)', group: 'social', description: 'Charm and persuasion.' },
+    volition: { id: 'volition', name: 'Volition (Воля)', group: 'social', description: 'Morale and sanity.' },
     // Physical
-    endurance: { id: 'endurance', name: 'Endurance (Стойкость)', group: 'physical', description: 'Боль и усталость.' },
-    agility: { id: 'agility', name: 'Agility (Ловкость)', group: 'physical', description: 'Реакция.' },
-    senses: { id: 'senses', name: 'Senses (Чувства)', group: 'physical', description: 'Тактильный и обонятельный анализ.' },
+    endurance: { id: 'endurance', name: 'Endurance (Стойкость)', group: 'physical', description: 'Pain tolerance.' },
+    agility: { id: 'agility', name: 'Agility (Ловкость)', group: 'physical', description: 'Reflexes and movement.' },
+    senses: { id: 'senses', name: 'Senses (Чувства)', group: 'physical', description: 'Smell, touch, and physical analysis.' },
     // Shadow
-    stealth: { id: 'stealth', name: 'Stealth (Скрытность)', group: 'shadow', description: 'Незаметность.' },
-    deception: { id: 'deception', name: 'Deception (Обман)', group: 'shadow', description: 'Актерство.' },
-    intrusion: { id: 'intrusion', name: 'Intrusion (Взлом)', group: 'shadow', description: 'Замки и двери.' },
+    stealth: { id: 'stealth', name: 'Stealth (Скрытность)', group: 'shadow', description: 'Moving unseen.' },
+    deception: { id: 'deception', name: 'Deception (Обман)', group: 'shadow', description: 'Lying and acting.' },
+    intrusion: { id: 'intrusion', name: 'Intrusion (Взлом)', group: 'shadow', description: 'Picking locks and breaking in.' },
     // Spirit
-    occultism: { id: 'occultism', name: 'Occultism (Мистика)', group: 'spirit', description: 'Тайные знания.' },
-    tradition: { id: 'tradition', name: 'Tradition (Традиция)', group: 'spirit', description: 'Устои общества.' },
-    gambling: { id: 'gambling', name: 'Gambling (Азарт)', group: 'spirit', description: 'Риск и удача.' }
+    occultism: { id: 'occultism', name: 'Occultism (Мистика)', group: 'spirit', description: 'Supernatural lore.' },
+    tradition: { id: 'tradition', name: 'Tradition (Традиция)', group: 'spirit', description: 'History and customs.' },
+    gambling: { id: 'gambling', name: 'Gambling (Азарт)', group: 'spirit', description: 'Risk and luck.' }
 };
 
 export const VOICE_ORDER: VoiceId[] = (Object.keys(VOICES) as VoiceId[]);

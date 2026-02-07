@@ -2,6 +2,7 @@ import { useState } from 'react';
 // import { resolveHardlink } from '../features/detective/hardlinks'; // REMOVED
 import { api } from '@/shared/api/client';
 import { useDossierStore } from '../features/detective/dossier/store';
+import { useQuestStore } from '../features/quests/store';
 import { Button } from '../shared/ui/Button';
 import { useVNStore } from '../entities/visual-novel/model/store';
 import { getScenarioById } from '../entities/visual-novel/scenarios/registry';
@@ -16,6 +17,7 @@ import type { MapAction } from '@repo/shared/lib/detective_map_types';
 
 export const QRScannerPage = () => {
     const { setPointState, addEvidence, setFlag } = useDossierStore();
+    const setQuestStage = useQuestStore((state) => state.setQuestStage);
 
     const [manualInput, setManualInput] = useState('');
     const [lastResult, setLastResult] = useState<string>('');
@@ -62,6 +64,10 @@ export const QRScannerPage = () => {
                 case 'add_flags':
                     action.flags.forEach(f => setFlag(f, true));
                     summary += `${ui.result_flags}\n`;
+                    break;
+                case 'set_quest_stage':
+                    setQuestStage(action.questId, action.stage);
+                    summary += `Quest stage: ${action.questId} -> ${action.stage}\n`;
                     break;
             }
         });

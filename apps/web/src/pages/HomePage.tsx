@@ -164,8 +164,8 @@ export const HomePage = () => {
                                 useVNStore.getState().endScenario();
                                 setPlayerName("Schimanski");
                                 setGameMode('detective');
-                                useQuestStore.getState().startQuest('case01_act1');
-                                useDossierStore.getState().setPointState('p_bank', 'discovered');
+                                useQuestStore.getState().startQuest('case01');
+                                useDossierStore.getState().setPointState('loc_freiburg_bank', 'discovered');
                                 navigate('/map');
                             }}
                             className="w-full h-10 bg-red-900/20 hover:bg-red-900/40 text-red-400 font-mono text-xs border border-red-900/40 flex items-center justify-center gap-2"
@@ -180,3 +180,4 @@ export const HomePage = () => {
         </div>
     );
 };
+

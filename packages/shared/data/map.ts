@@ -18,6 +18,8 @@ export type MapCondition =
     | { type: 'flag_is'; flagId: string; value: boolean }
     | { type: 'item_count'; itemId: string; min: number }
     | { type: 'point_state'; pointId: string; state: PointStateEnum }
+    | { type: 'quest_stage'; questId: string; stage: string }
+    | { type: 'quest_past_stage'; questId: string; stage: string }
     | { type: 'logic_and'; conditions: MapCondition[] }
     | { type: 'logic_or'; conditions: MapCondition[] }
     | { type: 'logic_not'; condition: MapCondition };
@@ -30,6 +32,7 @@ export type MapAction =
     | { type: 'grant_evidence'; evidenceId: string }
     | { type: 'add_fact'; factId: string } // Generic fact/flag
     | { type: 'set_flag'; flagId: string; value: boolean }
+    | { type: 'set_quest_stage'; questId: string; stage: string }
     | { type: 'start_battle'; scenarioId: string; deckType?: string }
     | { type: 'open_trade'; shopId: string }
     | { type: 'teleport'; targetPointId: string }

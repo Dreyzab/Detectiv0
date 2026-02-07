@@ -48,7 +48,43 @@ import { resolveUserId } from '../lib/user-id';
 import { ensureUserExists as ensureDbUserExists } from '../db/user-utils';
 const TICKS_PER_PHASE = 3;
 const NIGHT_ACCESS_APPROACHES = new Set(['lockpick', 'bribe', 'warrant']);
-const BANK_LOCATION_IDS = new Set(['p_bank', 'loc_freiburg_bank']);
+const BANK_LOCATION_IDS = new Set(['loc_freiburg_bank']);
+type DistrictId = 'rail_hub' | 'altstadt' | 'schneckenvorstadt' | 'wiehre' | 'stuhlinger';
+
+interface DistrictAccessRule {
+    blockedPhases: TimePhase[];
+    reason: string;
+    alternatives: string[];
+}
+
+const LOCATION_DISTRICTS: Record<string, DistrictId> = {
+    loc_hbf: 'rail_hub',
+    loc_freiburg_bank: 'altstadt',
+    loc_freiburg_archive: 'altstadt',
+    loc_munster: 'altstadt',
+    loc_tailor: 'altstadt',
+    loc_apothecary: 'altstadt',
+    loc_pub: 'schneckenvorstadt',
+    loc_pub_deutsche: 'schneckenvorstadt',
+    loc_red_light: 'schneckenvorstadt',
+    loc_martinstor: 'schneckenvorstadt',
+    loc_schwabentor: 'wiehre',
+    loc_uni_chem: 'wiehre',
+    loc_uni_med: 'wiehre',
+    loc_student_house: 'wiehre',
+    loc_freiburg_warehouse: 'stuhlinger',
+    loc_workers_pub: 'stuhlinger',
+    loc_street_event: 'altstadt',
+    loc_telephone: 'altstadt'
+};
+
+const DISTRICT_ACCESS_RULES: Partial<Record<DistrictId, DistrictAccessRule>> = {
+    stuhlinger: {
+        blockedPhases: ['night'],
+        reason: 'Stuhlinger industrial district is restricted at night without district pass',
+        alternatives: ['district_pass', 'wait_until_day']
+    }
+};
 
 type TravelSessionStatus = 'in_progress' | 'completed' | 'cancelled';
 
@@ -287,15 +323,41 @@ const travelBeatFor = (riskLevel: number, toLocationId: string, caseId?: string)
     return { type: 'none' };
 };
 
-const getLocationAvailability = (locationId: string, phase: TimePhase): LocationAvailability =>
-    (BANK_LOCATION_IDS.has(locationId) && phase === 'night')
-        ? {
+const getDistrictAvailability = (locationId: string, phase: TimePhase): LocationAvailability | null => {
+    const district = LOCATION_DISTRICTS[locationId];
+    if (!district) {
+        return null;
+    }
+    const rule = DISTRICT_ACCESS_RULES[district];
+    if (!rule || !rule.blockedPhases.includes(phase)) {
+        return null;
+    }
+
+    return {
+        locationId,
+        open: false,
+        reason: rule.reason,
+        alternatives: rule.alternatives
+    };
+};
+
+const getLocationAvailability = (locationId: string, phase: TimePhase): LocationAvailability => {
+    if (BANK_LOCATION_IDS.has(locationId) && phase === 'night') {
+        return {
             locationId,
             open: false,
             reason: 'Bank is closed at night',
             alternatives: ['lockpick', 'bribe', 'warrant']
-        }
-        : { locationId, open: true };
+        };
+    }
+
+    const districtAvailability = getDistrictAvailability(locationId, phase);
+    if (districtAvailability) {
+        return districtAvailability;
+    }
+
+    return { locationId, open: true };
+};
 
 const toClockState = (row: WorldClockRow | null): WorldClockState => row
     ? { tick: row.tick, phase: normalizePhase(row.phase) }

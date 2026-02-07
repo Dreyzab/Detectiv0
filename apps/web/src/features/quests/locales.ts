@@ -14,6 +14,9 @@ export interface QuestUIStrings {
 
     // Labels
     label_in_progress: string;
+    label_current_stage: string;
+    label_no_stage: string;
+    label_stage_timeline: string;
     label_objectives: string;
     label_case_solved: string;
     label_journal_updated: string;
@@ -48,6 +51,9 @@ export const QUEST_UI: Record<Locale, QuestUIStrings> = {
         tab_failed: "Cold Cases",
 
         label_in_progress: "In Progress",
+        label_current_stage: "Current Stage",
+        label_no_stage: "Stage not set",
+        label_stage_timeline: "Stage Timeline",
         label_objectives: "Objectives",
         label_case_solved: "Case Solved",
         label_journal_updated: "Journal Updated",
@@ -77,6 +83,9 @@ export const QUEST_UI: Record<Locale, QuestUIStrings> = {
         tab_failed: "Ungelöste Fälle",
 
         label_in_progress: "In Arbeit",
+        label_current_stage: "Aktuelle Phase",
+        label_no_stage: "Phase nicht gesetzt",
+        label_stage_timeline: "Phasenverlauf",
         label_objectives: "Ziele",
         label_case_solved: "Fall Gelöst",
         label_journal_updated: "Akte Aktualisiert",
@@ -106,6 +115,9 @@ export const QUEST_UI: Record<Locale, QuestUIStrings> = {
         tab_failed: "Архив / Глухари",
 
         label_in_progress: "В процессе",
+        label_current_stage: "Текущий этап",
+        label_no_stage: "Этап не задан",
+        label_stage_timeline: "Лента этапов",
         label_objectives: "Задачи",
         label_case_solved: "Дело Раскрыто",
         label_journal_updated: "Журнал Обновлен",

@@ -49,6 +49,15 @@ export const usePassiveChecks = (currentScene?: VNScene) => {
                 // Found one, stop checking others to avoid overlap
                 break;
             }
+
+            if (!result.success && check.passiveFailText) {
+                foundIntervention = {
+                    voiceId: check.voiceId,
+                    text: check.passiveFailText
+                };
+
+                break;
+            }
         }
 
         setActivePassive(foundIntervention);

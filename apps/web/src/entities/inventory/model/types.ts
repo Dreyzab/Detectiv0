@@ -9,7 +9,8 @@ export interface InventoryItem {
     value: number; // For merchant interactions
     stackable?: boolean;
     maxStack?: number;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
+    effects?: import('@repo/shared/data/items').ItemEffect[];
 }
 
 export interface InventorySlot {
@@ -22,4 +23,19 @@ export interface InventorySlot {
 export const createItem = (data: Omit<InventoryItem, 'maxStack'>): InventoryItem => ({
     maxStack: data.stackable ? 99 : 1,
     ...data
+});
+
+export const fromSharedItem = (
+    definition: import('@repo/shared/data/items').ItemDefinition
+): InventoryItem => ({
+    id: definition.id,
+    name: definition.name,
+    description: definition.description,
+    type: definition.type,
+    icon: definition.icon,
+    value: definition.value,
+    stackable: definition.stackable,
+    maxStack: definition.maxStack ?? (definition.stackable ? 99 : 1),
+    effects: definition.effects,
+    metadata: undefined
 });

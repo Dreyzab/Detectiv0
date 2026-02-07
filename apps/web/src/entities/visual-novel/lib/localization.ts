@@ -67,6 +67,8 @@ export const mergeScenario = (
             backgroundUrl: sceneLogic.backgroundUrl,
             nextSceneId: sceneLogic.nextSceneId,
             onEnter: sceneLogic.onEnter,
+            preconditions: sceneLogic.preconditions,
+            passiveChecks: sceneLogic.passiveChecks,
             text: bodyText,
             choices: mergedChoices.length > 0 ? mergedChoices : undefined
         };

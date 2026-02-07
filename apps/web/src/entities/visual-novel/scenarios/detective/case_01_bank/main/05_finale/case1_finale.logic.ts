@@ -2,7 +2,7 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 /**
  * Case 1 Finale: The Warehouse Setup
- * Trigger: When all 3 leads are complete and leads to p_goods_station.
+ * Trigger: When all 3 leads are complete and leads to loc_freiburg_warehouse.
  * 
  * Skeleton:
  * 1. Deduction Mode: Player chooses interpretation (Political vs Criminal).
@@ -136,4 +136,5 @@ export const CASE1_FINALE_LOGIC: VNScenarioLogic = {
 };
 
 export default CASE1_FINALE_LOGIC;
+
 

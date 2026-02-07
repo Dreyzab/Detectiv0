@@ -24,11 +24,25 @@ export type VNAction =
     | { type: 'grant_evidence'; payload: Evidence }
     | { type: 'unlock_point'; payload: string }
     | { type: 'add_flag'; payload: Record<string, boolean> }
+    | { type: 'set_quest_stage'; payload: { questId: string; stage: string } }
     | { type: 'add_heat'; payload: number }
     | { type: 'modify_relationship'; payload: { characterId: CharacterId; amount: number } }
     | { type: 'set_character_status'; payload: { characterId: CharacterId; status: string } }
     | { type: 'set_stat'; payload: { id: string; value: number } }
     | { type: 'start_battle'; payload: { scenarioId: string; deckType: string } };
+
+export interface VNConditionContext {
+    evidenceIds: Set<string>;
+    hasEvidence: (evidenceId: string) => boolean;
+    questStages: Record<string, string>;
+    isQuestAtStage: (questId: string, stage: string) => boolean;
+    isQuestPastStage: (questId: string, stage: string) => boolean;
+}
+
+export type VNConditionPredicate = (
+    flags: Record<string, boolean>,
+    context?: VNConditionContext
+) => boolean;
 
 export interface VNSkillCheck {
     id: string; // Unique Check ID (e.g., 'chk_bank_logic_safe')
@@ -58,7 +72,7 @@ export interface VNChoice {
     // Actions to trigger when selected
     actions?: VNAction[];
     // Conditions to show this choice
-    condition?: (flags: Record<string, boolean>) => boolean;
+    condition?: VNConditionPredicate;
 
     // RPG Skill Check
     skillCheck?: VNSkillCheck;
@@ -72,6 +86,7 @@ export interface VNScene {
     choices?: VNChoice[];
     nextSceneId?: string; // If no choices, auto-advance to this
     onEnter?: VNAction[];
+    preconditions?: VNConditionPredicate[];
 
     // RPG: Passive Skill Checks resolved on entry
     passiveChecks?: VNSkillCheck[];
@@ -97,13 +112,14 @@ export interface VNSceneLogic {
     characterId?: CharacterId;
     backgroundUrl?: string; // Overrides default
     nextSceneId?: string; // Auto-advance
+    preconditions?: VNConditionPredicate[];
 
     choices?: {
         id: ChoiceId;
         nextSceneId?: string;
         type?: 'action' | 'inquiry' | 'flavor'; // Added here too
         actions?: VNAction[];
-        condition?: (flags: Record<string, boolean>) => boolean;
+        condition?: VNConditionPredicate;
         skillCheck?: VNSkillCheck;
     }[];
 

@@ -450,6 +450,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
             characterId: 'assistant',
             nextSceneId: 'END',
             onEnter: [
+                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'leads_open' } },
                 // Unlock the 3 investigation leads
                 { type: 'unlock_point', payload: 'loc_tailor' },
                 { type: 'unlock_point', payload: 'loc_apothecary' },

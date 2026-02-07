@@ -1,95 +1,178 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { InventoryGrid } from '../../../entities/inventory/ui/InventoryGrid';
 import type { InventorySlot } from '../../../entities/inventory/model/types';
 import { useInventoryStore } from '../../../entities/inventory/model/store';
-import { createItem } from '../../../entities/inventory/model/types';
+import { fromSharedItem } from '../../../entities/inventory/model/types';
+import {
+    ITEM_REGISTRY,
+    getMerchantAccessResult,
+    getMerchantBuyPrice,
+    getMerchantDefinition,
+    getMerchantSellPrice,
+    getMerchantStock
+} from '@repo/shared/data/items';
+import { useDossierStore } from '@/features/detective/dossier/store';
+import { useWorldEngineStore } from '@/features/detective/engine/store';
+import { useQuestStore } from '@/features/quests/store';
+import { UserRound, X } from 'lucide-react';
 
 interface MerchantModalProps {
     isOpen: boolean;
     onClose: () => void;
+    merchantId?: string;
     merchantName?: string;
 }
 
-// Mock Merchant Data (in real app, this would come from props or a store)
-const MERCHANT_ITEMS: InventorySlot[] = [
-    { itemId: 'lockpick', quantity: 5, item: createItem({ id: 'lockpick', name: 'Lockpick Set', description: 'Essential for quiet entry.', type: 'resource', icon: '🗝️', value: 80 }) },
-    { itemId: 'map_fragment', quantity: 1, item: createItem({ id: 'map_fragment', name: 'Torn Map Fragment', description: 'Shows a hidden tunnel.', type: 'clue', icon: '🗺️', value: 200 }) },
-    { itemId: 'whiskey', quantity: 2, item: createItem({ id: 'whiskey', name: 'Cheap Whiskey', description: 'Good for bribes.', type: 'consumable', icon: '🥃', value: 30 }) },
-];
+const buildMerchantStock = (merchantId: string, questStages: Record<string, string>): InventorySlot[] => {
+    const merchant = getMerchantDefinition(merchantId);
+    const stock = getMerchantStock(merchant, questStages);
 
-export const MerchantModal = ({ isOpen, onClose, merchantName = "The Fence" }: MerchantModalProps) => {
+    return stock
+        .map((entry) => {
+            const itemDef = ITEM_REGISTRY[entry.itemId];
+            if (!itemDef) return null;
+
+            return {
+                itemId: entry.itemId,
+                quantity: entry.quantity,
+                item: fromSharedItem(itemDef)
+            };
+        })
+        .filter((slot): slot is InventorySlot => slot !== null);
+};
+
+const computeStockSessionKey = (merchantId: string, questStages: Record<string, string>): string => {
+    const stageSignature = Object.entries(questStages)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([questId, stage]) => `${questId}:${stage}`)
+        .join('|');
+    return `${merchantId}|${stageSignature}`;
+};
+
+const applyPurchasedStock = (
+    baseStock: InventorySlot[],
+    purchasedByItemId: Record<string, number>
+): InventorySlot[] =>
+    baseStock
+        .map((slot) => ({
+            ...slot,
+            quantity: slot.quantity - (purchasedByItemId[slot.itemId] ?? 0)
+        }))
+        .filter((slot) => slot.quantity > 0);
+
+export const MerchantModal = ({ isOpen, onClose, merchantId = 'the_fence', merchantName }: MerchantModalProps) => {
     const { items: playerItems, money, addItem, removeItem, addMoney, removeMoney } = useInventoryStore();
+    const flags = useDossierStore((state) => state.flags);
+    const factions = useWorldEngineStore((state) => state.factions);
+    const userQuests = useQuestStore((state) => state.userQuests);
 
-    // State for transaction
-    const [merchantStock, setMerchantStock] = useState<InventorySlot[]>(MERCHANT_ITEMS);
-    const [selectedPlayerSlot, setSelectedPlayerSlot] = useState<InventorySlot | null>(null);
-    const [selectedMerchantSlot, setSelectedMerchantSlot] = useState<InventorySlot | null>(null);
+    const merchant = useMemo(() => getMerchantDefinition(merchantId), [merchantId]);
+    const displayName = merchantName ?? merchant.name;
+    const questStages = useMemo(() => {
+        const stages: Record<string, string> = {};
+        Object.entries(userQuests).forEach(([questId, quest]) => {
+            if (quest.stage) {
+                stages[questId] = quest.stage;
+            }
+        });
+        return stages;
+    }, [userQuests]);
+
+    const factionReputation = useMemo<Record<string, number>>(
+        () => Object.fromEntries(factions.map((entry) => [entry.factionId, entry.reputation])),
+        [factions]
+    );
+
+    const accessResult = useMemo(
+        () => getMerchantAccessResult(merchant, { flags, factionReputation }),
+        [merchant, flags, factionReputation]
+    );
+    const isTradeLocked = !accessResult.unlocked;
+
+    const baseMerchantStock = useMemo(
+        () => buildMerchantStock(merchant.id, questStages),
+        [merchant.id, questStages]
+    );
+    const stockSessionKey = useMemo(
+        () => computeStockSessionKey(merchant.id, questStages),
+        [merchant.id, questStages]
+    );
+    const [purchasesBySession, setPurchasesBySession] = useState<Record<string, Record<string, number>>>({});
+    const purchasedForSession = useMemo(
+        () => purchasesBySession[stockSessionKey] ?? {},
+        [purchasesBySession, stockSessionKey]
+    );
+    const merchantStock = useMemo(
+        () => applyPurchasedStock(baseMerchantStock, purchasedForSession),
+        [baseMerchantStock, purchasedForSession]
+    );
+
+    const [selectedPlayerItemId, setSelectedPlayerItemId] = useState<string | null>(null);
+    const [selectedMerchantItemId, setSelectedMerchantItemId] = useState<string | null>(null);
+
+    const selectedPlayerSlot = playerItems.find((slot) => slot.itemId === selectedPlayerItemId) ?? null;
+    const selectedMerchantSlot = merchantStock.find((slot) => slot.itemId === selectedMerchantItemId) ?? null;
 
     if (!isOpen) return null;
 
+    const buyCost = selectedMerchantSlot ? getMerchantBuyPrice(merchant, selectedMerchantSlot.item.value) : 0;
+    const sellValue = selectedPlayerSlot ? getMerchantSellPrice(merchant, selectedPlayerSlot.item.value) : 0;
+
     const handleBuy = () => {
-        if (!selectedMerchantSlot) return;
-        const cost = selectedMerchantSlot.item.value;
-        if (money >= cost) {
-            // Deduct money
-            if (removeMoney(cost)) {
-                // Add to player
+        if (!selectedMerchantSlot || isTradeLocked) return;
+        if (money >= buyCost) {
+            if (removeMoney(buyCost)) {
                 addItem(selectedMerchantSlot.item);
-                // Remove from merchant (mock logic)
-                setMerchantStock(prev => {
-                    const idx = prev.findIndex(s => s.itemId === selectedMerchantSlot.itemId);
-                    if (idx === -1) return prev;
-                    const newStock = [...prev];
-                    if (newStock[idx].quantity > 1) {
-                        newStock[idx].quantity--;
-                    } else {
-                        newStock.splice(idx, 1);
-                    }
-                    return newStock;
+                setPurchasesBySession((prev) => {
+                    const session = prev[stockSessionKey] ?? {};
+                    const nextSession = {
+                        ...session,
+                        [selectedMerchantSlot.itemId]: (session[selectedMerchantSlot.itemId] ?? 0) + 1
+                    };
+                    return {
+                        ...prev,
+                        [stockSessionKey]: nextSession
+                    };
                 });
-                setSelectedMerchantSlot(null);
+                setSelectedMerchantItemId(null);
             }
         }
     };
 
     const handleSell = () => {
-        if (!selectedPlayerSlot) return;
-        const value = Math.floor(selectedPlayerSlot.item.value * 0.5); // Sell for 50% value
-
-        // Remove from player
+        if (!selectedPlayerSlot || isTradeLocked) return;
         removeItem(selectedPlayerSlot.itemId);
-        // Add money
-        addMoney(value);
-        // Add to merchant (optional, maybe they don't keep what you sell)
-        setSelectedPlayerSlot(null);
+        addMoney(sellValue);
+        setSelectedPlayerItemId(null);
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
             <div className="bg-[#1c1917] w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-stone-800 relative">
-
-                {/* Vignette Overlay */}
                 <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] z-10" />
 
-                {/* Header */}
                 <div className="flex justify-between items-center p-6 bg-[#2a2420] border-b border-[#3f3832] z-20">
                     <div className="flex items-center gap-4">
                         <div className="w-16 h-16 bg-stone-800 rounded-full border-2 border-amber-700/50 flex items-center justify-center text-3xl shadow-inner">
-                            👥
+                            <UserRound size={28} className="text-amber-500/80" />
                         </div>
                         <div>
-                            <h2 className="font-heading text-3xl text-[#d4c5a3]">{merchantName}</h2>
-                            <p className="font-mono text-xs text-amber-700/80 italic">"I've not seen one of these in years..."</p>
+                            <h2 className="font-heading text-3xl text-[#d4c5a3]">{displayName}</h2>
+                            <p className="font-mono text-xs text-amber-700/80 italic">
+                                {merchant.roleNote ?? '"I have what you need, for the right price."'}
+                            </p>
+                            <p className="font-mono text-[10px] text-stone-400 mt-1">
+                                Buy x{merchant.economy.buyMultiplier.toFixed(2)} / Sell x{merchant.economy.sellMultiplier.toFixed(2)}
+                            </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-stone-500 hover:text-stone-300 text-xl font-bold px-4">✕</button>
+                    <button onClick={onClose} className="text-stone-500 hover:text-stone-300 text-xl font-bold px-4">
+                        <X size={22} />
+                    </button>
                 </div>
 
-                {/* Main Content - Split View */}
                 <div className="flex-1 flex overflow-hidden relative z-20">
-
-                    {/* Left: Merchant Stock (BUY) */}
                     <div className="flex-1 bg-[#151210] flex flex-col border-r border-stone-800">
                         <div className="p-4 bg-[#2a2018] border-b border-amber-900/30 flex justify-between items-center">
                             <h3 className="font-serif text-amber-600 font-bold uppercase tracking-widest">Stock</h3>
@@ -98,16 +181,15 @@ export const MerchantModal = ({ isOpen, onClose, merchantName = "The Fence" }: M
                             <InventoryGrid
                                 items={merchantStock}
                                 onItemClick={(slot) => {
-                                    setSelectedMerchantSlot(slot);
-                                    setSelectedPlayerSlot(null); // Deselect other side
+                                    setSelectedMerchantItemId(slot.itemId);
+                                    setSelectedPlayerItemId(null);
                                 }}
-                                selectedItemId={selectedMerchantSlot?.itemId}
+                                selectedItemId={selectedMerchantItemId ?? undefined}
                                 className="grid-cols-2 md:grid-cols-3 lg:grid-cols-3"
                             />
                         </div>
                     </div>
 
-                    {/* Right: Player Inventory (SELL) */}
                     <div className="flex-1 bg-[#24201d] flex flex-col">
                         <div className="p-4 bg-[#322d29] border-b border-stone-700/30 flex justify-between items-center">
                             <h3 className="font-serif text-stone-400 font-bold uppercase tracking-widest">My Evidence</h3>
@@ -117,30 +199,37 @@ export const MerchantModal = ({ isOpen, onClose, merchantName = "The Fence" }: M
                             <InventoryGrid
                                 items={playerItems}
                                 onItemClick={(slot) => {
-                                    setSelectedPlayerSlot(slot);
-                                    setSelectedMerchantSlot(null); // Deselect other side
+                                    setSelectedPlayerItemId(slot.itemId);
+                                    setSelectedMerchantItemId(null);
                                 }}
-                                selectedItemId={selectedPlayerSlot?.itemId}
+                                selectedItemId={selectedPlayerItemId ?? undefined}
                                 className="grid-cols-2 md:grid-cols-3 lg:grid-cols-3"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Transaction Footer / Action Bar */}
-                <div className="p-6 bg-[#161412] border-t border-stone-800 z-30 flex items-center justify-center min-h-[100px]">
+                <div className="p-6 bg-[#161412] border-t border-stone-800 z-30 flex flex-col items-center justify-center min-h-[100px] gap-3">
+                    {isTradeLocked && (
+                        <div className="w-full max-w-3xl rounded border border-red-700/40 bg-red-950/40 text-red-200 px-4 py-3 font-mono text-xs uppercase tracking-wide text-center">
+                            {accessResult.reason ?? 'This merchant does not trust you yet.'}
+                        </div>
+                    )}
+
                     {selectedMerchantSlot && (
                         <div className="flex items-center gap-6 animate-in slide-in-from-bottom duration-300">
                             <div className="text-right">
                                 <div className="text-stone-400 text-sm font-mono">Buying: {selectedMerchantSlot.item.name}</div>
-                                <div className="text-amber-600 font-heading text-2xl">-{selectedMerchantSlot.item.value} RM</div>
+                                <div className="text-amber-600 font-heading text-2xl">-{buyCost} RM</div>
                             </div>
                             <button
                                 onClick={handleBuy}
-                                disabled={money < selectedMerchantSlot.item.value}
+                                disabled={isTradeLocked || money < buyCost}
                                 className={cn(
-                                    "px-8 py-3 bg-amber-700 text-amber-50 font-heading text-xl uppercase tracking-widest shadow-lg transition-all",
-                                    money < selectedMerchantSlot.item.value ? "opacity-50 cursor-not-allowed grayscale" : "hover:bg-amber-600 hover:scale-105 active:scale-95"
+                                    'px-8 py-3 bg-amber-700 text-amber-50 font-heading text-xl uppercase tracking-widest shadow-lg transition-all',
+                                    isTradeLocked || money < buyCost
+                                        ? 'opacity-50 cursor-not-allowed grayscale'
+                                        : 'hover:bg-amber-600 hover:scale-105 active:scale-95'
                                 )}
                             >
                                 Purchase
@@ -152,13 +241,19 @@ export const MerchantModal = ({ isOpen, onClose, merchantName = "The Fence" }: M
                         <div className="flex items-center gap-6 animate-in slide-in-from-bottom duration-300">
                             <button
                                 onClick={handleSell}
-                                className="px-8 py-3 bg-stone-700 text-stone-100 font-heading text-xl uppercase tracking-widest shadow-lg hover:bg-stone-600 hover:scale-105 active:scale-95 transition-all"
+                                disabled={isTradeLocked}
+                                className={cn(
+                                    'px-8 py-3 bg-stone-700 text-stone-100 font-heading text-xl uppercase tracking-widest shadow-lg transition-all',
+                                    isTradeLocked
+                                        ? 'opacity-50 cursor-not-allowed grayscale'
+                                        : 'hover:bg-stone-600 hover:scale-105 active:scale-95'
+                                )}
                             >
                                 Sell
                             </button>
                             <div className="text-left">
                                 <div className="text-stone-400 text-sm font-mono">Selling: {selectedPlayerSlot.item.name}</div>
-                                <div className="text-green-700 font-heading text-2xl">+{Math.floor(selectedPlayerSlot.item.value * 0.5)} RM</div>
+                                <div className="text-green-700 font-heading text-2xl">+{sellValue} RM</div>
                             </div>
                         </div>
                     )}
@@ -167,7 +262,6 @@ export const MerchantModal = ({ isOpen, onClose, merchantName = "The Fence" }: M
                         <div className="text-stone-600 font-mono italic">Select an item to trade...</div>
                     )}
                 </div>
-
             </div>
         </div>
     );

@@ -16,7 +16,7 @@ export const useQuestEngine = () => {
         });
 
         // Auto-start Case 01 for prototype
-        startQuest('case01_act1');
+        startQuest('case01');
     }, [registerQuest, startQuest]);
 
     // 2. React to Flags

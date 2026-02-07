@@ -1,10 +1,12 @@
 
 import type { MapPointBinding, MapCondition, TriggerType, PointStateEnum } from './detective_map_types';
+import { isQuestAtStage, isQuestPastStage } from '../data/quests';
 
 export interface ResolutionContext {
     flags: Record<string, boolean>;
     inventory: Record<string, number>;
     pointStates: Record<string, PointStateEnum>;
+    questStages: Record<string, string>;
 }
 
 // --- Condition Resolver ---
@@ -18,6 +20,10 @@ export const checkCondition = (condition: MapCondition, ctx: ResolutionContext):
         case 'point_state':
             // Provide default 'locked' if state is missing
             return (ctx.pointStates[condition.pointId] ?? 'locked') === condition.state;
+        case 'quest_stage':
+            return isQuestAtStage(condition.questId, ctx.questStages[condition.questId], condition.stage);
+        case 'quest_past_stage':
+            return isQuestPastStage(condition.questId, ctx.questStages[condition.questId], condition.stage);
         case 'logic_and':
             return condition.conditions.every((c: MapCondition) => checkCondition(c, ctx));
         case 'logic_or':
@@ -25,15 +31,12 @@ export const checkCondition = (condition: MapCondition, ctx: ResolutionContext):
         case 'not':
             return !checkCondition(condition.condition, ctx); // Standard 'not'
         case 'logic_not':
-            // Handling legacy 'logic_not' if it sneaks in.
-            // If schema defined logic_not as array, we might need a change.
-            // But strict schema says 'not' with singular 'condition'.
-            // Keeping fall-through or error if types don't match.
-            // For now, let's assume valid data passes schema.
-            // If the schema allowed 'logic_not' with 'conditions' array (as mistakenly written in previous step comment but fixed in actual schema union?),
-            // let's stick to the cleanest implementation.
-            // My Zod schema has: z.object({ type: z.literal('not'), condition: MapConditionSchema })
-            // So we implement 'not'.
+            if ('condition' in condition && condition.condition) {
+                return !checkCondition(condition.condition as MapCondition, ctx);
+            }
+            if ('conditions' in condition && Array.isArray(condition.conditions) && condition.conditions.length > 0) {
+                return !checkCondition(condition.conditions[0] as MapCondition, ctx);
+            }
             return false;
         default:
             console.warn(`Unknown condition type: ${(condition as any).type}`);

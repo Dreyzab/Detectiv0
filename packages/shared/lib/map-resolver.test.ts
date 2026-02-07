@@ -1,14 +1,15 @@
 
 import { describe, it, expect } from 'bun:test';
 import { checkCondition, resolveAvailableInteractions, type ResolutionContext } from './map-resolver'; // Relative path
-import type { MapPointBinding } from '../data/map'; // Relative path
+import type { MapPointBinding } from './detective_map_types';
 
 describe('Map Resolver Logic', () => {
 
     const mockCtx: ResolutionContext = {
         flags: { 'case_started': true, 'has_talked': false },
         inventory: { 'key_card': 1 },
-        pointStates: { 'p1': 'discovered' }
+        pointStates: { 'p1': 'discovered' },
+        questStages: { case01: 'bank_investigation' }
     };
 
     it('resolves simple flag conditions', () => {
@@ -45,6 +46,7 @@ describe('Map Resolver Logic', () => {
             {
                 id: 'b1',
                 trigger: 'marker_click',
+                priority: 0,
                 conditions: [{ type: 'flag_is', flagId: 'missing_flag', value: true }],
                 actions: []
             },
@@ -52,5 +54,15 @@ describe('Map Resolver Logic', () => {
 
         const result = resolveAvailableInteractions(bindings, 'marker_click', mockCtx);
         expect(result[0]?.enabled).toBe(false);
+    });
+
+    it('resolves quest_stage condition', () => {
+        expect(checkCondition({ type: 'quest_stage', questId: 'case01', stage: 'bank_investigation' }, mockCtx)).toBe(true);
+        expect(checkCondition({ type: 'quest_stage', questId: 'case01', stage: 'briefing' }, mockCtx)).toBe(false);
+    });
+
+    it('resolves quest_past_stage condition', () => {
+        expect(checkCondition({ type: 'quest_past_stage', questId: 'case01', stage: 'briefing' }, mockCtx)).toBe(true);
+        expect(checkCondition({ type: 'quest_past_stage', questId: 'case01', stage: 'finale' }, mockCtx)).toBe(false);
     });
 });

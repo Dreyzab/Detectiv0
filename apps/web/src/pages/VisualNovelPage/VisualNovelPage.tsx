@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useVNStore } from '@/entities/visual-novel/model/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
@@ -14,6 +14,11 @@ import { PARLIAMENT_TOOLTIP_REGISTRY, getTooltipContent } from '@/features/detec
 import { preloadManager } from '@/shared/lib/preload';
 import { OnboardingModal } from '@/features/detective/onboarding/OnboardingModal';
 import { useInventoryStore } from '@/entities/inventory/model/store';
+import { useCharacterStore } from '@/entities/character/model/store';
+import { useQuestStore } from '@/features/quests/store';
+import { choiceIsAvailable, filterAvailableChoices, resolveAccessibleSceneId } from '@/entities/visual-novel/lib/runtime';
+import type { VoiceId } from '@/features/detective/lib/parliament';
+import { isQuestAtStage as checkQuestAtStage, isQuestPastStage as checkQuestPastStage } from '@repo/shared/data/quests';
 
 /**
  * Fullscreen Visual Novel Page
@@ -23,6 +28,7 @@ export const VisualNovelPage = () => {
     const { scenarioId } = useParams<{ scenarioId: string }>();
     const navigate = useNavigate();
     const [activeTooltip, setActiveTooltip] = useState<{ keyword: string; rect: DOMRect } | null>(null);
+    const processedOnEnterRef = useRef<Set<string>>(new Set());
 
     const {
         activeScenarioId,
@@ -42,8 +48,14 @@ export const VisualNovelPage = () => {
         addEntry,
         recordCheckResult,
         voiceStats,
-        gainVoiceXp
+        gainVoiceXp,
+        flags,
+        evidence,
+        setVoiceLevel
     } = useDossierStore();
+    const { modifyRelationship, setCharacterStatus } = useCharacterStore();
+    const userQuests = useQuestStore((state) => state.userQuests);
+    const setQuestStage = useQuestStore((state) => state.setQuestStage);
 
     // Start scenario from URL param if not already active
     useEffect(() => {
@@ -54,9 +66,45 @@ export const VisualNovelPage = () => {
 
     // Resolve Scenario dynamically from ID + Locale
     const activeScenario = activeScenarioId ? getScenarioById(activeScenarioId, locale) : null;
+    const evidenceIds = useMemo(() => new Set(evidence.map((item) => item.id)), [evidence]);
+    const questStages = useMemo(() => {
+        const stages: Record<string, string> = {};
+        for (const [questId, questState] of Object.entries(userQuests)) {
+            if (questState.stage) {
+                stages[questId] = questState.stage;
+            }
+        }
+        return stages;
+    }, [userQuests]);
+    const conditionContext = useMemo(
+        () => ({
+            evidenceIds,
+            hasEvidence: (evidenceId: string) => evidenceIds.has(evidenceId),
+            questStages,
+            isQuestAtStage: (questId: string, stage: string) =>
+                checkQuestAtStage(questId, questStages[questId], stage),
+            isQuestPastStage: (questId: string, stage: string) =>
+                checkQuestPastStage(questId, questStages[questId], stage)
+        }),
+        [evidenceIds, questStages]
+    );
 
     // Pick up initial scene if store doesn't have one yet
-    let effectiveSceneId = currentSceneId || activeScenario?.initialSceneId || null;
+    const requestedSceneId = currentSceneId || activeScenario?.initialSceneId || null;
+    let effectiveSceneId = requestedSceneId;
+
+    if (activeScenario && requestedSceneId) {
+        const resolvedSceneId = resolveAccessibleSceneId(activeScenario, requestedSceneId, flags, conditionContext);
+        if (!resolvedSceneId) {
+            console.warn(`[VN Recovery] No accessible scene found in scenario '${activeScenario.id}'.`);
+            effectiveSceneId = null;
+        } else {
+            if (resolvedSceneId !== requestedSceneId) {
+                console.warn(`[VN Recovery] Scene '${requestedSceneId}' blocked by preconditions in scenario '${activeScenario.id}'. Using '${resolvedSceneId}'.`);
+            }
+            effectiveSceneId = resolvedSceneId;
+        }
+    }
 
     // Safety: fallback to initial if scene doesn't exist
     if (activeScenario && effectiveSceneId && !activeScenario.scenes[effectiveSceneId]) {
@@ -65,23 +113,31 @@ export const VisualNovelPage = () => {
     }
 
     const scene = activeScenario?.scenes[effectiveSceneId || ''];
+    const availableChoices = useMemo(
+        () => filterAvailableChoices(scene?.choices, flags, conditionContext),
+        [scene?.choices, flags, conditionContext]
+    );
+    const runtimeScene = useMemo(
+        () => (scene ? { ...scene, choices: availableChoices } : undefined),
+        [scene, availableChoices]
+    );
     const character = scene?.characterId ? CHARACTERS[scene.characterId] : null;
-    const background = scene?.backgroundUrl || activeScenario?.defaultBackgroundUrl;
+    const background = runtimeScene?.backgroundUrl || activeScenario?.defaultBackgroundUrl;
 
     // Preload next scene backgrounds
     useEffect(() => {
-        if (!activeScenario || !scene || !activeScenarioId) return;
+        if (!activeScenario || !runtimeScene || !activeScenarioId) return;
 
         // Collect all possible next scene IDs
         const nextSceneIds = new Set<string>();
 
         // Auto-advance
-        if (scene.nextSceneId && scene.nextSceneId !== 'END') {
-            nextSceneIds.add(scene.nextSceneId);
+        if (runtimeScene.nextSceneId && runtimeScene.nextSceneId !== 'END') {
+            nextSceneIds.add(runtimeScene.nextSceneId);
         }
 
         // Choice destinations (including skill check outcomes)
-        scene.choices?.forEach(choice => {
+        runtimeScene.choices?.forEach(choice => {
             if (choice.nextSceneId && choice.nextSceneId !== 'END') {
                 nextSceneIds.add(choice.nextSceneId);
             }
@@ -114,7 +170,7 @@ export const VisualNovelPage = () => {
                 { priority: 0 } // Urgent for next scene
             );
         }
-    }, [activeScenario, scene, activeScenarioId, effectiveSceneId]);
+    }, [activeScenario, runtimeScene, activeScenarioId, effectiveSceneId]);
 
     // Handle end scenario - navigate back
     const [showTelegram, setShowTelegram] = useState(false);
@@ -194,21 +250,63 @@ export const VisualNovelPage = () => {
                 case 'add_flag':
                     Object.entries(action.payload).forEach(([k, v]) => setFlag(k, v));
                     break;
+                case 'set_quest_stage':
+                    setQuestStage(action.payload.questId, action.payload.stage);
+                    break;
                 case 'start_battle':
                     handleEndScenario();
                     navigate(`/battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
+                    break;
+                case 'modify_relationship':
+                    modifyRelationship(action.payload.characterId, action.payload.amount);
+                    break;
+                case 'set_character_status':
+                    setCharacterStatus(action.payload.characterId, action.payload.status as import('@/entities/character/model/store').CharacterStatus);
+                    break;
+                case 'set_stat':
+                    if (action.payload.id in voiceStats) {
+                        setVoiceLevel(action.payload.id as VoiceId, action.payload.value);
+                    } else {
+                        console.warn(`[VN Action] Unknown stat id '${action.payload.id}'`);
+                    }
+                    break;
+                case 'add_heat':
+                    console.warn('[VN Action] add_heat is not wired into progression yet', action.payload);
                     break;
             }
         });
     };
 
+    useEffect(() => {
+        processedOnEnterRef.current.clear();
+    }, [activeScenarioId]);
+
+    useEffect(() => {
+        if (!activeScenarioId || !effectiveSceneId || !runtimeScene?.onEnter || runtimeScene.onEnter.length === 0) {
+            return;
+        }
+
+        const sceneKey = `${activeScenarioId}:${effectiveSceneId}`;
+        if (processedOnEnterRef.current.has(sceneKey)) {
+            return;
+        }
+
+        processedOnEnterRef.current.add(sceneKey);
+        executeActions(runtimeScene.onEnter);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeScenarioId, effectiveSceneId, runtimeScene?.id]);
+
     // Choice selection
     const handleChoice = (choice: VNChoice) => {
+        if (!choiceIsAvailable(choice, flags, conditionContext)) {
+            return;
+        }
+
         // Add to history before processing
         addDialogueEntry({
-            characterId: scene?.characterId,
+            characterId: runtimeScene?.characterId,
             characterName: character?.name,
-            text: scene?.text || '',
+            text: runtimeScene?.text || '',
             choiceMade: choice.text
         });
 
@@ -242,23 +340,23 @@ export const VisualNovelPage = () => {
 
     // Tap to advance (no choices)
     const handleTapAdvance = () => {
-        if (!scene?.choices && scene?.nextSceneId) {
+        if ((!availableChoices || availableChoices.length === 0) && runtimeScene?.nextSceneId) {
             addDialogueEntry({
-                characterId: scene.characterId,
+                characterId: runtimeScene.characterId,
                 characterName: character?.name,
-                text: scene.text
+                text: runtimeScene.text
             });
 
-            if (scene.nextSceneId === 'END') {
+            if (runtimeScene.nextSceneId === 'END') {
                 handleEndScenario();
             } else {
-                advanceScene(scene.nextSceneId);
+                advanceScene(runtimeScene.nextSceneId);
             }
         }
     };
 
     // Loading / Error state
-    if (!activeScenario || !effectiveSceneId || !scene) {
+    if (!activeScenario || !effectiveSceneId || !runtimeScene) {
         return (
             <div className="fixed inset-0 bg-stone-950 flex items-center justify-center">
                 <div className="text-stone-400 text-center">
@@ -280,7 +378,7 @@ export const VisualNovelPage = () => {
                 />
             )}
             <MobileVNLayout
-                scene={scene}
+                scene={runtimeScene}
                 character={character}
                 background={background}
                 dialogueHistory={dialogueHistory}

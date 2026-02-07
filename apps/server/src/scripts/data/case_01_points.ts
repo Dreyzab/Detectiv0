@@ -19,8 +19,8 @@ const vn = (scenarioId: string, label: string) => ({
 
 export const CASE_01_POINTS: Record<string, DetectivePoint> = {
     // --- CENTRAL DISTRICT ---
-    'p_hbf': {
-        id: 'p_hbf',
+    'loc_hbf': {
+        id: 'loc_hbf',
         title: 'Hauptbahnhof',
         description: 'The steam and steel gateway to Freiburg. Travelers from Basel and Strasbourg arrive here.',
         lat: 47.997791,
@@ -31,8 +31,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         image: '/images/detective/loc_hauptbahnhof.png',
         voices: { logic: "Trains arriving on time. A system in motion." }
     },
-    'p_bank': {
-        id: 'p_bank',
+    'loc_freiburg_bank': {
+        id: 'loc_freiburg_bank',
         title: 'Bankhaus J.A. Krebs',
         description: 'The prestigious bank on Münsterplatz. Currently undergoing renovation by Architect Billing.',
         lat: 47.995574,
@@ -58,8 +58,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         image: '/images/detective/loc_bankhaus.png',
         voices: { empathy: "The panic of the clerk still lingers in the air." }
     },
-    'p_munster': {
-        id: 'p_munster',
+    'loc_munster': {
+        id: 'loc_munster',
         title: 'Freiburg Münster',
         description: 'The towering gothic cathedral. Its spire dominates the skyline.',
         lat: 47.995500,
@@ -69,8 +69,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         bindings: [],
         image: '/images/detective/loc_munster.png'
     },
-    'p_rathaus': {
-        id: 'p_rathaus',
+    'loc_freiburg_archive': {
+        id: 'loc_freiburg_archive',
         title: 'New Town Hall',
         description: 'Administrative center containing the City Archives.',
         lat: 47.996090,
@@ -92,8 +92,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
     },
 
     // --- UNIVERSITY QUARTER ---
-    'p_uni_chem': {
-        id: 'p_uni_chem',
+    'loc_uni_chem': {
+        id: 'loc_uni_chem',
         title: 'Kiliani Laboratory',
         description: 'Prof. Kiliani\'s chemistry lab. Smells of sulfur and almonds.',
         lat: 47.994000,
@@ -112,8 +112,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         ],
         image: '/images/detective/loc_uni.png'
     },
-    'p_uni_med': {
-        id: 'p_uni_med',
+    'loc_uni_med': {
+        id: 'loc_uni_med',
         title: 'Institute of Hygiene',
         description: 'Dr. Uhlenhuth\'s domain. Cutting edge forensic serology.',
         lat: 47.993500,
@@ -132,8 +132,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         ],
         image: '/images/detective/loc_uni.png'
     },
-    'p_student_house': {
-        id: 'p_student_house',
+    'loc_student_house': {
+        id: 'loc_student_house',
         title: 'Corps Suevia House',
         description: 'Fraternity house. Making noise even at this hour.',
         lat: 47.990000,
@@ -153,8 +153,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
     },
 
     // --- SCHNECKENVORSTADT ---
-    'p_pub_deutsche': {
-        id: 'p_pub_deutsche',
+    'loc_pub_deutsche': {
+        id: 'loc_pub_deutsche',
         title: 'Zum Deutschen Haus',
         description: 'A labyrinthine inn popular with locals and travelers.',
         lat: 47.992000,
@@ -172,8 +172,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         ],
         image: '/images/detective/loc_ganter_brauerei.png'
     },
-    'p_red_light': {
-        id: 'p_red_light',
+    'loc_red_light': {
+        id: 'loc_red_light',
         title: 'Gerberau Canal',
         description: 'The tanners\' quarter. Shadows run deep here.',
         lat: 47.993000,
@@ -185,8 +185,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
     },
 
     // --- STÜHLINGER ---
-    'p_goods_station': {
-        id: 'p_goods_station',
+    'loc_freiburg_warehouse': {
+        id: 'loc_freiburg_warehouse',
         title: 'Old Warehouse',
         description: 'Güterbahnhof storage. Dark, quiet, and smelling of coal.',
         lat: 48.001000,
@@ -206,8 +206,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         ],
         image: '/images/detective/loc_stuhlinger_warehouse.png'
     },
-    'p_workers_pub': {
-        id: 'p_workers_pub',
+    'loc_workers_pub': {
+        id: 'loc_workers_pub',
         title: 'Tavern "The Red Cog"',
         description: 'Meeting place for editors of the Volkswacht.',
         lat: 47.999000,
@@ -229,22 +229,29 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 label: 'Talk to Workers',
                 priority: 10,
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_socialist_talk' }]
+            },
+            {
+                id: 'workers_fence_trade',
+                trigger: 'marker_click',
+                label: 'Trade with The Fence',
+                priority: 9,
+                actions: [{ type: 'open_trade', shopId: 'the_fence' }]
             }
         ],
         image: '/images/detective/loc_ganter_brauerei.png'
     },
 
     // --- FILLERS ---
-    'p_martinstor': {
-        id: 'p_martinstor',
+    'loc_martinstor': {
+        id: 'loc_martinstor',
         title: 'Martinstor',
         lat: 47.993600, lng: 7.849000,
         type: 'interest', packId: 'fbg1905', bindings: [],
         description: 'Ancient city gate.',
         image: '/images/detective/loc_munster.png'
     },
-    'p_schwabentor': {
-        id: 'p_schwabentor',
+    'loc_schwabentor': {
+        id: 'loc_schwabentor',
         title: 'Schwabentor',
         lat: 47.992800, lng: 7.854500,
         type: 'interest', packId: 'fbg1905', bindings: [],
@@ -271,6 +278,13 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 label: 'Enter Workshop',
                 priority: 10,
                 actions: [{ type: 'start_vn', scenarioId: 'lead_tailor' }]
+            },
+            {
+                id: 'tailor_trade',
+                trigger: 'marker_click',
+                label: 'Order Tailoring',
+                priority: 9,
+                actions: [{ type: 'open_trade', shopId: 'tailor_shop' }]
             }
         ],
         image: '/images/detective/loc_tailor.png',
@@ -292,6 +306,13 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 label: 'Enter Apotheke',
                 priority: 10,
                 actions: [{ type: 'start_vn', scenarioId: 'lead_apothecary' }]
+            },
+            {
+                id: 'apothecary_trade',
+                trigger: 'marker_click',
+                label: 'Buy Remedies',
+                priority: 9,
+                actions: [{ type: 'open_trade', shopId: 'apothecary_shop' }]
             }
         ],
         image: '/images/detective/loc_apothecary.png',
@@ -313,6 +334,13 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 label: 'Enter Tavern',
                 priority: 10,
                 actions: [{ type: 'start_vn', scenarioId: 'lead_pub' }]
+            },
+            {
+                id: 'pub_trade',
+                trigger: 'marker_click',
+                label: 'Order Food and Rumors',
+                priority: 9,
+                actions: [{ type: 'open_trade', shopId: 'pub_keeper' }]
             }
         ],
         image: '/images/detective/loc_ganter_brauerei.png',
@@ -322,8 +350,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
     // ─────────────────────────────────────────────────────────────
     // INTERLUDES (Unlocked sequentially)
     // ─────────────────────────────────────────────────────────────
-    'p_street_event': {
-        id: 'p_street_event',
+    'loc_street_event': {
+        id: 'loc_street_event',
         title: 'Street Encounter',
         description: 'A commotion on the street.',
         lat: 47.9945,
@@ -342,8 +370,8 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         ],
         image: '/images/detective/loc_streets.png'
     },
-    'p_telephone': {
-        id: 'p_telephone',
+    'loc_telephone': {
+        id: 'loc_telephone',
         title: 'Telegraph Office',
         description: 'A message is waiting for you.',
         lat: 47.9965,
@@ -363,4 +391,5 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         image: '/images/detective/loc_rathaus_archiv.png'
     }
 };
+
 

@@ -1,24 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, X } from 'lucide-react';
 import { useInventoryStore } from '../../entities/inventory/model/store';
 import { InventoryGrid } from '../../entities/inventory/ui/InventoryGrid';
 import type { InventorySlot } from '../../entities/inventory/model/types';
-import { createItem } from '../../entities/inventory/model/types';
+import { fromSharedItem } from '../../entities/inventory/model/types';
 import { MerchantModal } from '../../features/merchant/ui/MerchantModal';
+import { useMerchantUiStore } from '../../features/merchant/model/store';
+import { ITEM_REGISTRY, STARTER_ITEM_STACKS } from '@repo/shared/data/items';
 
 export const InventoryPage = () => {
-    const { items, money, addItem, removeItem } = useInventoryStore();
+    const { items, money, addItem, removeItem, useItem: consumeItem } = useInventoryStore();
     const [selectedSlot, setSelectedSlot] = useState<InventorySlot | null>(null);
-    const [showMerchant, setShowMerchant] = useState(false);
+    const isMerchantOpen = useMerchantUiStore((state) => state.isOpen);
+    const activeMerchantId = useMerchantUiStore((state) => state.merchantId);
+    const openMerchant = useMerchantUiStore((state) => state.openMerchant);
+    const closeMerchant = useMerchantUiStore((state) => state.closeMerchant);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     // Initial mock data for testing if empty
     React.useEffect(() => {
         if (items.length === 0) {
-            addItem(createItem({ id: 'key', name: 'Rusty Key', description: 'Opens the old basement door.', type: 'key_item', icon: '🔑', value: 0 }));
-            addItem(createItem({ id: 'coin', name: 'Strange Coin', description: 'An old coin with unknown symbols.', type: 'clue', icon: '🪙', value: 50 }));
-            addItem(createItem({ id: 'cig', name: 'Half-smoked Cigarette', description: 'Found at the scene. Brand: "Gitanes".', type: 'clue', icon: '🚬', value: 0 }));
-            addItem(createItem({ id: 'bread', name: 'Stale Bread', description: 'Better than nothing.', type: 'consumable', icon: '🥖', value: 2, stackable: true }), 3);
+            STARTER_ITEM_STACKS.forEach((stack) => {
+                const itemDef = ITEM_REGISTRY[stack.itemId];
+                if (!itemDef) return;
+                addItem(fromSharedItem(itemDef), stack.quantity);
+            });
         }
-    }, []);
+    }, [items.length, addItem]);
 
     const handleItemClick = (slot: InventorySlot) => {
         setSelectedSlot(slot);
@@ -27,6 +36,25 @@ export const InventoryPage = () => {
     const handleCloseDetail = () => {
         setSelectedSlot(null);
     };
+
+    const handleUse = async () => {
+        if (!selectedSlot) return;
+        const result = await consumeItem(selectedSlot.itemId);
+        setToast({ message: result.message, type: result.success ? 'success' : 'error' });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    // Keep selectedSlot in sync if quantity changes or item is removed
+    useEffect(() => {
+        if (selectedSlot) {
+            const freshSlot = items.find(slot => slot.itemId === selectedSlot.itemId);
+            if (!freshSlot) {
+                setSelectedSlot(null);
+            } else if (freshSlot.quantity !== selectedSlot.quantity) {
+                setSelectedSlot(freshSlot);
+            }
+        }
+    }, [items, selectedSlot]);
 
     return (
         <div className="min-h-screen bg-stone-100 relative overflow-hidden flex flex-col pt-16 font-body">
@@ -42,7 +70,7 @@ export const InventoryPage = () => {
                     </h1>
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => setShowMerchant(true)}
+                            onClick={() => openMerchant('the_fence')}
                             className="font-mono text-sm uppercase bg-stone-800 text-amber-500 px-3 py-1 hover:bg-stone-900 transition-colors"
                         >
                             Open Fence
@@ -83,7 +111,10 @@ export const InventoryPage = () => {
                                 </p>
 
                                 <div className="flex flex-col gap-3">
-                                    <button className="w-full py-2 bg-stone-800 text-stone-100 font-bold uppercase tracking-widest hover:bg-stone-700 transition-colors shadow-lg active:translate-y-0.5">
+                                    <button
+                                        onClick={handleUse}
+                                        className="w-full py-2 bg-stone-800 text-stone-100 font-bold uppercase tracking-widest hover:bg-stone-700 transition-colors shadow-lg active:translate-y-0.5"
+                                    >
                                         Use / Inspect
                                     </button>
                                     <button
@@ -109,7 +140,27 @@ export const InventoryPage = () => {
                 </div>
             </div>
 
-            <MerchantModal isOpen={showMerchant} onClose={() => setShowMerchant(false)} />
+            <MerchantModal
+                isOpen={isMerchantOpen}
+                merchantId={activeMerchantId}
+                onClose={closeMerchant}
+            />
+
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-md shadow-xl flex items-center gap-3 z-50 ${toast.type === 'success' ? 'bg-stone-800 text-amber-500 border border-amber-500/30' : 'bg-red-900 text-red-100 border border-red-500/30'
+                            }`}
+                    >
+                        {toast.type === 'success' ? <Check size={18} /> : <X size={18} />}
+                        <span className="font-mono text-sm uppercase tracking-wide">{toast.message}</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

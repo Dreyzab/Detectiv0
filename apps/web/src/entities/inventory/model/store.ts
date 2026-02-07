@@ -37,6 +37,7 @@ interface InventoryState {
     hasItem: (itemId: string, quantity?: number) => boolean;
     addMoney: (amount: number) => void;
     removeMoney: (amount: number) => boolean;
+    useItem: (itemId: string) => Promise<{ success: boolean; message: string }>;
 
     // Legacy/Detective specific (can be refactored into items[])
     detectiveInventory: Record<string, number>;
@@ -132,6 +133,48 @@ export const useInventoryStore = create<InventoryState>()(
                     return true;
                 }
                 return false;
+            },
+
+            useItem: async (itemId) => {
+                const state = get();
+                const slot = state.items.find((s) => s.itemId === itemId);
+                if (!slot || slot.quantity <= 0) return { success: false, message: 'Item not found' };
+
+                const item = slot.item;
+
+                try {
+                    // Dynamic import to avoid circular dependency
+                    const { useDossierStore } = await import('../../../features/detective/dossier/store');
+                    const dossier = useDossierStore.getState();
+
+                    if (item.effects) {
+                        item.effects.forEach((effect) => {
+                            switch (effect.type) {
+                                case 'grant_xp':
+                                    dossier.grantXp(effect.amount);
+                                    break;
+                                case 'add_flag':
+                                    dossier.setFlag(effect.flagId, effect.value ?? true);
+                                    break;
+                                case 'add_voice_level':
+                                    get().addVoiceLevels({
+                                        [effect.voiceId]: effect.amount
+                                    });
+                                    break;
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load dossier store', error);
+                }
+
+                // Consume logic
+                if (item.type === 'consumable') {
+                    get().removeItem(itemId, 1);
+                    return { success: true, message: `Used ${item.name}` };
+                }
+
+                return { success: true, message: `Inspected ${item.name}` };
             },
 
             resetAll: () => set({

@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useDossierStore } from '../detective/dossier/store';
+import { getQuestStageSequence } from '@repo/shared/data/quests';
 
 import type { Quest, QuestCondition } from './types';
 import { getLocalizedText } from './utils';
@@ -9,6 +10,7 @@ import { getLocalizedText } from './utils';
 export interface UserQuestState {
     questId: string;
     status: 'active' | 'completed' | 'failed';
+    stage: string;
     completedObjectiveIds: string[];
     completedAt?: number;
 }
@@ -20,6 +22,8 @@ interface QuestStoreState {
     // Actions
     registerQuest: (quest: Quest) => void;
     startQuest: (questId: string) => void;
+    setQuestStage: (questId: string, stage: string) => void;
+    getQuestStage: (questId: string) => string | null;
 
     // Evaluation (Called by Engine)
     evaluateQuests: (flags: Record<string, boolean>) => void;
@@ -46,7 +50,7 @@ const checkCondition = (condition: QuestCondition, flags: Record<string, boolean
 
 export const useQuestStore = create<QuestStoreState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             quests: {},
             userQuests: {},
 
@@ -56,17 +60,52 @@ export const useQuestStore = create<QuestStoreState>()(
 
             startQuest: (questId) => set(state => {
                 if (state.userQuests[questId]) return state; // Already active
+                const initialStage = state.quests[questId]?.initialStage ?? 'not_started';
                 return {
                     userQuests: {
                         ...state.userQuests,
                         [questId]: {
                             questId,
                             status: 'active',
+                            stage: initialStage,
                             completedObjectiveIds: []
                         }
                     }
                 };
             }),
+
+            setQuestStage: (questId, stage) => set(state => {
+                const sequence = getQuestStageSequence(questId);
+                if (sequence && !sequence.includes(stage)) {
+                    console.warn(`[Quest] Invalid stage '${stage}' for quest '${questId}'. Allowed: ${sequence.join(', ')}`);
+                    return state;
+                }
+
+                const existing = state.userQuests[questId];
+                if (existing?.stage === stage) {
+                    return state;
+                }
+
+                const nextState: UserQuestState = existing
+                    ? { ...existing, stage }
+                    : {
+                        questId,
+                        status: 'active',
+                        stage,
+                        completedObjectiveIds: []
+                    };
+
+                console.log(`[Quest] Stage set: ${questId} -> ${stage}`);
+
+                return {
+                    userQuests: {
+                        ...state.userQuests,
+                        [questId]: nextState
+                    }
+                };
+            }),
+
+            getQuestStage: (questId) => get().userQuests[questId]?.stage ?? null,
 
             evaluateQuests: (flags) => set(state => {
                 const updates: Record<string, UserQuestState> = {};
@@ -140,6 +179,7 @@ export const useQuestStore = create<QuestStoreState>()(
                     [questId]: {
                         questId,
                         status: 'completed',
+                        stage: state.userQuests[questId]?.stage ?? state.quests[questId]?.initialStage ?? 'resolved',
                         completedObjectiveIds: state.quests[questId]?.objectives.map(o => o.id) || [],
                         completedAt: Date.now()
                     }
@@ -150,6 +190,28 @@ export const useQuestStore = create<QuestStoreState>()(
         }),
         {
             name: 'gw4-quest-store',
+            version: 2,
+            migrate: (persistedState) => {
+                const cast = persistedState as QuestStoreState | undefined;
+                if (!cast?.userQuests) {
+                    return persistedState;
+                }
+
+                const normalized = Object.fromEntries(
+                    Object.entries(cast.userQuests).map(([questId, quest]) => [
+                        questId,
+                        {
+                            ...quest,
+                            stage: quest.stage ?? 'not_started'
+                        }
+                    ])
+                );
+
+                return {
+                    ...cast,
+                    userQuests: normalized
+                };
+            }
         }
     )
 );

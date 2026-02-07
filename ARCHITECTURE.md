@@ -77,6 +77,20 @@ Currently the project focuses on **Detective Mode** (Freiburg 1905).
 - **Server State Cache**: React Query (`@tanstack/react-query`, staleTime 5min) wrapping Eden Treaty calls.
 - **Persistence**: LocalStorage keys: `gw4-inventory-storage`, `gw4-detective-dossier`, `gw4-quest-store`, `gw4-vn-store`, `character-storage`.
 
+## Dossier Psyche Profile Architecture
+
+- `CharacterPage` now derives a dedicated psyche layer from multiple stores:
+  - `useDossierStore`: flags, check history, traits.
+  - `useWorldEngineStore`: faction reputation vectors.
+  - `useQuestStore`: quest stage positions.
+  - `useCharacterStore`: relationship pressure values.
+- Derivation logic is isolated in `apps/web/src/pages/CharacterPage/psycheProfile.ts` (`buildPsycheProfile`) for deterministic rendering and testability.
+- Player-facing outputs:
+  - alignment + faction signals,
+  - unlocked/locked knowledge entries (secrets),
+  - evolution tracks (case + companion arcs),
+  - field-check reliability summary.
+
 ## 🧠 Mind Palace Architecture
 
 The Mind Palace is a passive skill check system integrated into the VN engine.
@@ -180,7 +194,7 @@ passiveFailText?: string;   // Optional, for future use
 1. Web map requests world snapshot via `GET /engine/world`.
 2. On point interaction, frontend starts travel (`/engine/travel/start`) and completes travel (`/engine/travel/complete/:sessionId`).
 3. Engine advances time ticks and returns location availability.
-4. If location is blocked (night bank rule), UI presents alternative approaches.
+4. If location is blocked (night bank rule or district rule), UI presents alternative approaches.
 5. Alternative approach calls `/engine/case/advance` and updates faction reputation/world state.
 6. On success, scenario action (`start_vn`) continues as normal.
 
@@ -203,3 +217,19 @@ passiveFailText?: string;   // Optional, for future use
 - Fog state should be owned by location progression, not by single scene completion.
 - A location can be visible but not explored, explored but not resolved, or fully resolved.
 - Reveal can happen via travel, intelligence beats, evidence, or faction contacts.
+
+## Mirror Protocol Delivery Status (2026-02-07)
+
+### Phase 1 complete (Foundation hardening)
+- VN runtime contract is enforced end-to-end: scene preconditions, passive checks, and `onEnter` execution are preserved and applied.
+- Localization/runtime merge now retains logic-only fields required by gameplay execution.
+- Canonical Parliament voice identifiers are normalized in shared/runtime data.
+- Shared item registry is introduced as the canonical item source for inventory/merchant systems.
+- Location identity conventions are normalized to prevent map unlock and binding drift.
+
+### Phase 2 complete (Content and systems expansion, current scope)
+- ✅ Consumable effect execution in inventory flow.
+- ✅ Quest-stage gates in narrative progression (VN + map runtime contexts).
+- Expand travel route graph and district-level world rules. ✅ Implemented for Case 01 base network and district soft gate.
+- ✅ Merchant variants connected to character system roles and location trade actions.
+- ✅ Secrets/evolution progression surfaced in dossier-facing UX (`CharacterPage` -> `Psyche Profile`).

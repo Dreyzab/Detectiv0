@@ -17,6 +17,8 @@ import { useQuestStore } from '@/features/quests/store';
 import { useNavigate } from 'react-router-dom';
 import { useMapActionHandler } from '@/features/detective/lib/map-action-handler';
 import { useWorldEngineStore } from '@/features/detective/engine/store';
+import { MerchantModal } from '@/features/merchant/ui/MerchantModal';
+import { useMerchantUiStore } from '@/features/merchant/model/store';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const INITIAL_REGION = REGIONS['FREIBURG_1905'];
@@ -40,6 +42,9 @@ export const MapView = () => {
     const locale = useVNStore(state => state.locale);
     const navigate = useNavigate();
     const { executeAction } = useMapActionHandler();
+    const isMerchantOpen = useMerchantUiStore((state) => state.isOpen);
+    const activeMerchantId = useMerchantUiStore((state) => state.merchantId);
+    const closeMerchant = useMerchantUiStore((state) => state.closeMerchant);
 
     const worldClock = useWorldEngineStore((state) => state.worldClock);
     const currentLocationId = useWorldEngineStore((state) => state.currentLocationId);
@@ -57,6 +62,15 @@ export const MapView = () => {
     // Quest Logic
     const quests = useQuestStore(state => state.quests);
     const userQuests = useQuestStore(state => state.userQuests);
+    const questStages = useMemo(() => {
+        const stages: Record<string, string> = {};
+        Object.entries(userQuests).forEach(([questId, quest]) => {
+            if (quest.stage) {
+                stages[questId] = quest.stage;
+            }
+        });
+        return stages;
+    }, [userQuests]);
 
     const activePointIds = useMemo(() => {
         const ids = new Set<string>();
@@ -77,7 +91,8 @@ export const MapView = () => {
 
             quest.objectives.forEach(obj => {
                 // Check if objective is NOT completed and has a target point
-                if (!uq.completedObjectiveIds.includes(obj.id) && obj.targetPointId) {
+                const objectiveVisibleInStage = !obj.stage || obj.stage === uq.stage;
+                if (!uq.completedObjectiveIds.includes(obj.id) && obj.targetPointId && objectiveVisibleInStage) {
                     logger.debug(`Found active target: ${obj.targetPointId} (Quest: ${uq.questId}, Obj: ${obj.id})`);
                     ids.add(obj.targetPointId);
                 }
@@ -116,12 +131,12 @@ export const MapView = () => {
         const options = resolveAvailableInteractions(
             point.bindings || [],
             'marker_click',
-            { flags, pointStates, inventory }
+            { flags, pointStates, inventory, questStages }
         );
 
         setSelectedPointId(pointId);
         setAvailableActions(options);
-    }, [points, flags, pointStates, inventory]);
+    }, [points, flags, pointStates, inventory, questStages]);
 
     const handleExecuteAction = useCallback(async (binding: MapPointBinding) => {
         console.log('Execute Action:', binding);
@@ -362,6 +377,12 @@ export const MapView = () => {
                     }}
                 />
             )}
+
+            <MerchantModal
+                isOpen={isMerchantOpen}
+                merchantId={activeMerchantId}
+                onClose={closeMerchant}
+            />
         </>
     );
 };

@@ -12,11 +12,15 @@ export const MapConditionSchema: z.ZodType<any> = z.lazy(() =>
         z.object({ type: z.literal('flag_is'), flagId: z.string(), value: z.boolean() }),
         z.object({ type: z.literal('item_count'), itemId: z.string(), min: z.number() }),
         z.object({ type: z.literal('point_state'), pointId: z.string(), state: PointStateSchema }),
+        z.object({ type: z.literal('quest_stage'), questId: z.string(), stage: z.string() }),
+        z.object({ type: z.literal('quest_past_stage'), questId: z.string(), stage: z.string() }),
         z.object({ type: z.literal('logic_and'), conditions: z.array(MapConditionSchema) }),
         z.object({ type: z.literal('logic_or'), conditions: z.array(MapConditionSchema) }),
-        z.object({ type: z.literal('logic_not'), conditions: z.array(MapConditionSchema) }), // Keeping logic_not array for consistency with logic_and/or, though single condition is often better. Let's stick to array or update type. Wait, previous type had `condition: MapCondition`. Let's support both or fix.
-        // Fixing to match previous logic_not structure:
-        z.object({ type: z.literal('not'), condition: MapConditionSchema })
+        // Primary unary negation form
+        z.object({ type: z.literal('logic_not'), condition: MapConditionSchema }),
+        // Legacy alias and shape support
+        z.object({ type: z.literal('not'), condition: MapConditionSchema }),
+        z.object({ type: z.literal('logic_not'), conditions: z.array(MapConditionSchema).min(1).max(1) })
     ])
 );
 
@@ -30,6 +34,7 @@ export const MapActionSchema = z.union([
     z.object({ type: z.literal('start_battle'), scenarioId: z.string(), deckType: z.string().optional() }),
     z.object({ type: z.literal('unlock_entry'), entryId: z.string() }),
     z.object({ type: z.literal('set_active_case'), caseId: z.string() }),
+    z.object({ type: z.literal('set_quest_stage'), questId: z.string(), stage: z.string() }),
     z.object({ type: z.literal('show_toast'), message: z.string(), variant: z.enum(['info', 'success', 'warning']).optional() }),
     // Legacy support
     // Legacy / Extra

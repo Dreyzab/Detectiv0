@@ -4,7 +4,7 @@ import { quests } from "../db/schema";
 
 // --- Case 01 Configuration ---
 const CASE01_QUEST = {
-    id: "case01_act1",
+    id: "case01",
     title: "Case 01: Shadows at the Bank - Act 1",
     description: "A mysterious robbery at Bankhaus J.A. Krebs. No witnesses, strange traces. Investigate the crime scene.",
     objectives: [

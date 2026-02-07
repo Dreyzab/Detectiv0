@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Source, Layer } from 'react-map-gl/mapbox';
 import { useDossierStore } from '@/features/detective/dossier/store';
+import { useQuestStore } from '@/features/quests/store';
 import { NARRATIVE_THREADS } from '@/features/detective/data/cases';
 import { checkCondition } from '@repo/shared';
 import type { FeatureCollection } from 'geojson';
@@ -12,6 +13,16 @@ interface ThreadLayerProps {
 
 export const ThreadLayer = ({ points }: ThreadLayerProps) => {
     const { activeCaseId, flags, pointStates } = useDossierStore();
+    const userQuests = useQuestStore((state) => state.userQuests);
+    const questStages = useMemo(() => {
+        const stages: Record<string, string> = {};
+        Object.entries(userQuests).forEach(([questId, quest]) => {
+            if (quest.stage) {
+                stages[questId] = quest.stage;
+            }
+        });
+        return stages;
+    }, [userQuests]);
 
     const threadData = useMemo<FeatureCollection>(() => {
         if (!activeCaseId) return { type: 'FeatureCollection', features: [] };
@@ -25,7 +36,7 @@ export const ThreadLayer = ({ points }: ThreadLayerProps) => {
 
         const features = relevantThreads.filter(thread => {
             // 1. Check condition (visibility)
-            if (thread.condition && !checkCondition(thread.condition, { flags, pointStates, inventory })) {
+            if (thread.condition && !checkCondition(thread.condition, { flags, pointStates, inventory, questStages })) {
                 return false;
             }
             // 2. Check endpoints exist
@@ -56,7 +67,7 @@ export const ThreadLayer = ({ points }: ThreadLayerProps) => {
             type: 'FeatureCollection',
             features: features as import('geojson').Feature[]
         };
-    }, [activeCaseId, flags, pointStates, points]);
+    }, [activeCaseId, flags, pointStates, points, questStages]);
 
     return (
         <Source id="narrative-threads" type="geojson" data={threadData}>

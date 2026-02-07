@@ -1,22 +1,29 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDossierStore } from '@/features/detective/dossier/store';
 import { VOICES, VOICE_GROUPS, GROUP_ORDER } from '@/features/detective/lib/parliament';
 import { useVNStore } from '@/entities/visual-novel/model/store';
 import { DETECTIVE_UI } from '@/features/detective/locales';
 import { asLocale } from '@/features/quests/utils';
+import { useQuestStore } from '@/features/quests/store';
+import { useWorldEngineStore } from '@/features/detective/engine/store';
+import { useCharacterStore } from '@/entities/character/model/store';
+import { buildPsycheProfile, type PsycheFactionSignal, type PsycheProfileData } from './psycheProfile';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer
 } from 'recharts';
-import { FileText, Brain, Briefcase } from 'lucide-react';
+import { FileText, Brain, Briefcase, Fingerprint } from 'lucide-react';
 
 
 // Tabs for the Dossier
-type TabType = 'profile' | 'skills' | 'equipment';
+type TabType = 'profile' | 'skills' | 'psyche' | 'equipment';
 
 export function CharacterPage() {
-    const { voiceStats, devPoints, xp, level: charLevel } = useDossierStore();
+    const { voiceStats, devPoints, xp, level: charLevel, flags, checkStates, traits } = useDossierStore();
     const { locale } = useVNStore();
+    const factions = useWorldEngineStore((state) => state.factions);
+    const userQuests = useQuestStore((state) => state.userQuests);
+    const characters = useCharacterStore((state) => state.characters);
     const ui = DETECTIVE_UI[asLocale(locale)];
     const [activeTab, setActiveTab] = useState<TabType>('profile');
 
@@ -36,11 +43,48 @@ export function CharacterPage() {
         };
     });
 
+    const questStages = useMemo(() => {
+        const stages: Record<string, string> = {};
+        Object.entries(userQuests).forEach(([questId, quest]) => {
+            if (quest.stage) {
+                stages[questId] = quest.stage;
+            }
+        });
+        return stages;
+    }, [userQuests]);
+
+    const relationships = useMemo(() => {
+        const values: Record<string, number> = {};
+        Object.entries(characters).forEach(([characterId, character]) => {
+            values[characterId] = character.relationship;
+        });
+        return values;
+    }, [characters]);
+
+    const psycheProfile = useMemo(() => buildPsycheProfile({
+        flags,
+        factions,
+        checkStates,
+        traits,
+        questStages,
+        relationships
+    }), [flags, factions, checkStates, traits, questStages, relationships]);
+
+    const alignmentTheme = psycheProfile.alignment.theme;
+
     return (
         <div className="min-h-screen bg-[#0c0a09] text-stone-200 font-serif pt-16 px-4 md:px-8 pb-20 overflow-hidden relative">
             {/* Background Texture - Manila Folder feel */}
             <div className="fixed inset-0 bg-[url('/images/paper-texture.png')] opacity-[0.08] pointer-events-none mix-blend-overlay" />
-            <div className="fixed inset-0 bg-gradient-to-br from-stone-900 via-[#1c1917] to-[#0c0a09] -z-10" />
+            <div
+                className="fixed inset-0 -z-10 transition-colors duration-700"
+                style={{
+                    background: `
+                        radial-gradient(circle at 20% 15%, ${alignmentTheme.glow} 0%, rgba(0, 0, 0, 0) 35%),
+                        linear-gradient(140deg, ${alignmentTheme.from}, ${alignmentTheme.via}, ${alignmentTheme.to})
+                    `
+                }}
+            />
 
             {/* Header / Top Bar */}
             <header className="max-w-4xl mx-auto mb-8 flex items-center justify-between border-b border-amber-900/30 pb-4 relative z-10">
@@ -75,6 +119,12 @@ export function CharacterPage() {
                         label="Mind"
                     />
                     <TabButton
+                        active={activeTab === 'psyche'}
+                        onClick={() => setActiveTab('psyche')}
+                        icon={Fingerprint}
+                        label="Psyche"
+                    />
+                    <TabButton
                         active={activeTab === 'equipment'}
                         onClick={() => setActiveTab('equipment')}
                         icon={Briefcase}
@@ -94,6 +144,9 @@ export function CharacterPage() {
                             )}
                             {activeTab === 'skills' && (
                                 <SkillsView radarData={radarData} />
+                            )}
+                            {activeTab === 'psyche' && (
+                                <PsycheProfileView profile={psycheProfile} />
                             )}
                             {activeTab === 'equipment' && (
                                 <EquipmentView />
@@ -277,6 +330,126 @@ const SkillsView = ({ radarData }: any) => {
     );
 
 }
+
+const formatReputation = (value: number): string => (value >= 0 ? `+${value}` : `${value}`);
+
+const FactionSignalRow = ({ signal }: { signal: PsycheFactionSignal }) => {
+    const width = Math.round(signal.intensity * 100);
+    const markerPosition = Math.max(0, Math.min(100, Math.round(((signal.reputation + 5) / 10) * 100)));
+
+    return (
+        <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+                <span className="text-stone-300">{signal.label}</span>
+                <span style={{ color: signal.color }}>{formatReputation(signal.reputation)}</span>
+            </div>
+            <div className="relative h-2 rounded bg-stone-900 overflow-hidden border border-stone-800">
+                <div
+                    className="absolute inset-y-0 left-0 rounded transition-all duration-500"
+                    style={{ width: `${width}%`, backgroundColor: `${signal.color}88` }}
+                />
+                <div
+                    className="absolute top-[-2px] h-3 w-[2px] bg-stone-100/70"
+                    style={{ left: `${markerPosition}%` }}
+                />
+            </div>
+        </div>
+    );
+};
+
+const PsycheProfileView = ({ profile }: { profile: PsycheProfileData }) => (
+    <motion.div
+        key="psyche"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        className="space-y-6"
+    >
+        <section className="rounded-md border border-stone-800 bg-stone-900/40 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h3 className="text-xs uppercase tracking-[0.18em] text-stone-400 font-mono">Thought Cabinet</h3>
+                <span className="rounded border border-amber-800/40 bg-amber-900/20 px-2 py-1 text-[10px] uppercase tracking-wider text-amber-300">
+                    {profile.alignment.label}
+                </span>
+            </div>
+            <p className="text-sm text-stone-300 leading-relaxed mb-4">{profile.alignment.description}</p>
+            <div className="space-y-3">
+                {profile.factionSignals.map((signal) => (
+                    <FactionSignalRow key={signal.factionId} signal={signal} />
+                ))}
+            </div>
+        </section>
+
+        <section className="rounded-md border border-stone-800 bg-stone-900/40 p-4">
+            <h3 className="text-xs uppercase tracking-[0.18em] text-stone-400 font-mono mb-3">Knowledge Registry</h3>
+            <div className="space-y-2">
+                {profile.secrets.map((secret) => (
+                    <div
+                        key={secret.id}
+                        className={`rounded border px-3 py-2 ${secret.unlocked
+                            ? 'border-emerald-800/40 bg-emerald-950/20'
+                            : 'border-stone-800 bg-stone-950/40'}`}
+                    >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className={`text-sm ${secret.unlocked ? 'text-emerald-200' : 'text-stone-500'}`}>
+                                {secret.unlocked ? secret.title : 'Classified Entry'}
+                            </span>
+                            <span className={`text-[10px] uppercase font-mono tracking-wider ${secret.unlocked ? 'text-emerald-300/80' : 'text-stone-600'}`}>
+                                {secret.unlocked ? secret.category : 'locked'}
+                            </span>
+                        </div>
+                        <p className="text-xs leading-relaxed text-stone-400">
+                            {secret.unlocked ? secret.description : secret.hint}
+                        </p>
+                    </div>
+                ))}
+            </div>
+        </section>
+
+        <section className="rounded-md border border-stone-800 bg-stone-900/40 p-4">
+            <h3 className="text-xs uppercase tracking-[0.18em] text-stone-400 font-mono mb-3">Evolution Tracks</h3>
+            <div className="space-y-3">
+                {profile.evolutionTracks.map((track) => (
+                    <div key={track.id} className="rounded border border-stone-800 bg-stone-950/40 p-3">
+                        <div className="flex items-center justify-between gap-2 text-xs mb-1">
+                            <span className="text-stone-300">{track.title}</span>
+                            <span className="text-amber-300 font-mono uppercase tracking-wider">{track.stage}</span>
+                        </div>
+                        <div className="h-2 rounded bg-stone-900 border border-stone-800 overflow-hidden mb-1.5">
+                            <div
+                                className="h-full bg-gradient-to-r from-amber-700 to-amber-400 transition-all duration-500"
+                                style={{ width: `${track.progressPercent}%` }}
+                            />
+                        </div>
+                        <p className="text-[11px] text-stone-500 leading-relaxed">{track.notes}</p>
+                    </div>
+                ))}
+            </div>
+        </section>
+
+        <section className="rounded-md border border-stone-800 bg-stone-900/40 p-4">
+            <h3 className="text-xs uppercase tracking-[0.18em] text-stone-400 font-mono mb-2">Field Check Reliability</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <div className="rounded border border-emerald-900/50 bg-emerald-950/25 px-2 py-1.5">
+                    <div className="text-emerald-300 font-mono">{profile.checks.passed}</div>
+                    <div className="text-stone-500 uppercase tracking-wide">Passed</div>
+                </div>
+                <div className="rounded border border-rose-900/50 bg-rose-950/25 px-2 py-1.5">
+                    <div className="text-rose-300 font-mono">{profile.checks.failed}</div>
+                    <div className="text-stone-500 uppercase tracking-wide">Failed</div>
+                </div>
+                <div className="rounded border border-stone-800 bg-stone-950/40 px-2 py-1.5">
+                    <div className="text-stone-300 font-mono">{profile.checks.locked}</div>
+                    <div className="text-stone-500 uppercase tracking-wide">Locked</div>
+                </div>
+                <div className="rounded border border-amber-900/50 bg-amber-950/25 px-2 py-1.5">
+                    <div className="text-amber-300 font-mono">{profile.checks.confidencePercent}%</div>
+                    <div className="text-stone-500 uppercase tracking-wide">Confidence</div>
+                </div>
+            </div>
+        </section>
+    </motion.div>
+);
 
 
 const EquipmentView = () => (

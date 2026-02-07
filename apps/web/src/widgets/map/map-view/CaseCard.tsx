@@ -2,6 +2,10 @@ import type { LocationAvailability, MapPoint, WorldClockState } from '@repo/shar
 import { cn } from '@/shared/lib/utils';
 import { type ResolverOption, type MapPointBinding } from '@repo/shared';
 import { VOICES, VOICE_GROUPS, type VoiceId } from '../../../features/detective/lib/parliament';
+import { getMerchantAccessResult, getMerchantDefinition } from '@repo/shared/data/items';
+import { useDossierStore } from '@/features/detective/dossier/store';
+import { useWorldEngineStore } from '@/features/detective/engine/store';
+import { useMemo } from 'react';
 
 type AlternativeApproach = 'lockpick' | 'bribe' | 'warrant';
 
@@ -28,10 +32,57 @@ export const CaseCard = ({
     isBusy = false,
     onAlternativeApproach
 }: CaseCardProps) => {
-    const mainOption = actions.find((opt) => opt.enabled && opt.binding.actions && opt.binding.actions.length > 0);
+    const flags = useDossierStore((state) => state.flags);
+    const factions = useWorldEngineStore((state) => state.factions);
+    const factionReputation = useMemo<Record<string, number>>(
+        () => Object.fromEntries(factions.map((entry) => [entry.factionId, entry.reputation])),
+        [factions]
+    );
+
+    const mainOption = actions.find((opt) =>
+        opt.enabled &&
+        opt.binding.actions &&
+        opt.binding.actions.length > 0 &&
+        opt.binding.actions.some((action) => action.type !== 'open_trade')
+    );
     const enterAction = mainOption ? mainOption.binding : null;
     const isClosed = Boolean(locationAvailability && !locationAvailability.open);
     const canExecute = Boolean(enterAction) && !isClosed && !isBusy;
+    const tradeOptions = actions
+        .map((option) => {
+            const onlyTradeActions = option.binding.actions.every((action) => action.type === 'open_trade');
+            if (!onlyTradeActions) {
+                return null;
+            }
+
+            const tradeAction = option.binding.actions.find((action) => action.type === 'open_trade');
+            if (!tradeAction || tradeAction.type !== 'open_trade') {
+                return null;
+            }
+
+            const merchant = getMerchantDefinition(tradeAction.shopId);
+            const access = getMerchantAccessResult(merchant, { flags, factionReputation });
+            const isAvailable = option.enabled && access.unlocked && !isClosed && !isBusy;
+
+            let reason: string | undefined;
+            if (!option.enabled) {
+                reason = 'Interaction conditions are not met yet.';
+            } else if (isClosed) {
+                reason = locationAvailability?.reason ?? 'Location is currently closed.';
+            } else if (isBusy) {
+                reason = 'Finish current travel sequence first.';
+            } else if (!access.unlocked) {
+                reason = access.reason;
+            }
+
+            return {
+                option,
+                merchant,
+                isAvailable,
+                reason
+            };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
     const pointVoices = (point.data?.voices as Partial<Record<VoiceId, string>>) || {};
     const activeVoiceIds = Object.keys(pointVoices) as VoiceId[];
@@ -117,7 +168,45 @@ export const CaseCard = ({
                                 </span>
                             </button>
                         ) : (
-                            <div className="text-center text-xs text-amber-900/50 py-2">No interaction available</div>
+                            <div className="text-center text-xs text-amber-900/50 py-2">No primary interaction available</div>
+                        )}
+
+                        {tradeOptions.length > 0 && (
+                            <div className="grid grid-cols-1 gap-2">
+                                {tradeOptions.map((trade) => (
+                                    <div key={trade.option.binding.id} className="space-y-1">
+                                        <button
+                                            onClick={() => void onExecute(trade.option.binding)}
+                                            disabled={!trade.isAvailable}
+                                            className={cn(
+                                                "w-full py-2 font-serif font-bold text-xs uppercase tracking-wider transition-colors border",
+                                                trade.isAvailable
+                                                    ? "bg-[#2e3f28] text-[#f3e9d2] border-[#5d7d50] hover:bg-[#3e5635]"
+                                                    : "bg-[#6f655a] text-[#f3e9d2]/70 border-[#8d8376] cursor-not-allowed"
+                                            )}
+                                        >
+                                            <span className="flex items-center justify-between gap-2 px-3">
+                                                <span>{trade.option.binding.label ?? `Trade: ${trade.merchant.name}`}</span>
+                                                <span
+                                                    className={cn(
+                                                        "rounded px-2 py-0.5 text-[10px]",
+                                                        trade.isAvailable
+                                                            ? "bg-emerald-900/50 text-emerald-100"
+                                                            : "bg-red-900/50 text-red-100"
+                                                    )}
+                                                >
+                                                    {trade.isAvailable ? 'Available' : 'Locked'}
+                                                </span>
+                                            </span>
+                                        </button>
+                                        {!trade.isAvailable && trade.reason && (
+                                            <div className="px-2 text-[10px] text-[#6c1b1b] bg-[#f6e3d8] border border-[#8b2f2f]/30">
+                                                {trade.reason}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         )}
 
                         {isClosed && locationAvailability && (

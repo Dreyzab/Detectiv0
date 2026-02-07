@@ -1,6 +1,7 @@
 import { useVNStore } from '@/entities/visual-novel/model/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
 import { useCharacterStore } from '@/entities/character/model/store';
+import { useQuestStore } from '@/features/quests/store';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { performSkillCheck } from '@repo/shared/lib/dice';
 import { TypedText, type TextToken, type TypedTextHandle } from '@/shared/ui/TypedText/TypedText';
@@ -9,11 +10,14 @@ import { ParliamentKeywordCard } from '@/features/detective/ui/ParliamentKeyword
 import { getTooltipContent } from '@/features/detective/lib/tooltipRegistry';
 import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { CHARACTERS } from '@repo/shared/data/characters';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { soundManager } from '@/shared/lib/audio/SoundManager';
 import type { VNChoice } from '@/entities/visual-novel/model/types';
 import { ChoiceButton } from './ChoiceButton';
 import { MindPalaceOverlay } from '@/features/detective/mind-palace/MindPalaceOverlay';
+import { choiceIsAvailable, filterAvailableChoices, resolveAccessibleSceneId } from '@/entities/visual-novel/lib/runtime';
+import type { VoiceId } from '@/features/detective/lib/parliament';
+import { isQuestAtStage as checkQuestAtStage, isQuestPastStage as checkQuestPastStage } from '@repo/shared/data/quests';
 
 export const VisualNovelOverlay = () => {
     const location = useLocation();
@@ -27,14 +31,17 @@ export const VisualNovelOverlay = () => {
 
 const VisualNovelOverlayInner = () => {
     const { activeScenarioId, currentSceneId, advanceScene, endScenario, locale, recordChoice, isChoiceVisited } = useVNStore();
-    const { setPointState, addEvidence, setFlag, addEntry, recordCheckResult, voiceStats, gainVoiceXp } = useDossierStore();
+    const { setPointState, addEvidence, setFlag, addEntry, recordCheckResult, voiceStats, gainVoiceXp, flags, evidence, setVoiceLevel } = useDossierStore();
     const { modifyRelationship, setCharacterStatus } = useCharacterStore();
+    const userQuests = useQuestStore((state) => state.userQuests);
+    const setQuestStage = useQuestStore((state) => state.setQuestStage);
     const navigate = useNavigate();
 
     // Refs
     const typedTextRef = useRef<TypedTextHandle>(null);
     const pointerDownAtRef = useRef<number | null>(null);
     const overlayCardRef = useRef<HTMLDivElement | null>(null);
+    const processedOnEnterRef = useRef<Set<string>>(new Set());
 
     const FAST_FORWARD_SPEED = 5;
     const HOLD_TO_SKIP_THRESHOLD_MS = 180;
@@ -54,10 +61,45 @@ const VisualNovelOverlayInner = () => {
 
     // 1. Resolve Scenario dynamically from ID + Locale
     const activeScenario = activeScenarioId ? getScenarioById(activeScenarioId, locale) : null;
+    const evidenceIds = useMemo(() => new Set(evidence.map((item) => item.id)), [evidence]);
+    const questStages = useMemo(() => {
+        const stages: Record<string, string> = {};
+        for (const [questId, questState] of Object.entries(userQuests)) {
+            if (questState.stage) {
+                stages[questId] = questState.stage;
+            }
+        }
+        return stages;
+    }, [userQuests]);
+    const conditionContext = useMemo(
+        () => ({
+            evidenceIds,
+            hasEvidence: (evidenceId: string) => evidenceIds.has(evidenceId),
+            questStages,
+            isQuestAtStage: (questId: string, stage: string) =>
+                checkQuestAtStage(questId, questStages[questId], stage),
+            isQuestPastStage: (questId: string, stage: string) =>
+                checkQuestPastStage(questId, questStages[questId], stage)
+        }),
+        [evidenceIds, questStages]
+    );
 
     // 2. Pick up initial scene if store doesn't have one yet
-    // SAFETY: If currentSceneId is set but doesn't exist in the scenario (e.g. stale save), fallback to initial
-    let effectiveSceneId = currentSceneId || activeScenario?.initialSceneId || null;
+    const requestedSceneId = currentSceneId || activeScenario?.initialSceneId || null;
+    let effectiveSceneId = requestedSceneId;
+
+    if (activeScenario && requestedSceneId) {
+        const resolvedSceneId = resolveAccessibleSceneId(activeScenario, requestedSceneId, flags, conditionContext);
+        if (!resolvedSceneId) {
+            console.warn(`[VN Recovery] No accessible scene found in scenario '${activeScenario.id}'.`);
+            effectiveSceneId = null;
+        } else {
+            if (resolvedSceneId !== requestedSceneId) {
+                console.warn(`[VN Recovery] Scene '${requestedSceneId}' blocked by preconditions in scenario '${activeScenario.id}'. Using '${resolvedSceneId}'.`);
+            }
+            effectiveSceneId = resolvedSceneId;
+        }
+    }
 
     if (activeScenario && effectiveSceneId && !activeScenario.scenes[effectiveSceneId]) {
         console.warn(`[VN Recovery] Scene '${effectiveSceneId}' not found in scenario '${activeScenario.id}'. Resetting to initial.`);
@@ -65,7 +107,10 @@ const VisualNovelOverlayInner = () => {
     }
 
     const scene = activeScenario?.scenes[effectiveSceneId || ''];
-    const sceneChoices = scene?.choices;
+    const sceneChoices = useMemo(
+        () => filterAvailableChoices(scene?.choices, flags, conditionContext),
+        [scene?.choices, flags, conditionContext]
+    );
     const sceneNextSceneId = scene?.nextSceneId;
 
     const character = scene?.characterId ? CHARACTERS[scene.characterId] : null;
@@ -147,6 +192,9 @@ const VisualNovelOverlayInner = () => {
                 case 'add_flag':
                     Object.entries(action.payload).forEach(([k, v]) => setFlag(k, v));
                     break;
+                case 'set_quest_stage':
+                    setQuestStage(action.payload.questId, action.payload.stage);
+                    break;
                 case 'start_battle': {
                     endScenario();
                     navigate(`/battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
@@ -158,11 +206,44 @@ const VisualNovelOverlayInner = () => {
                 case 'set_character_status':
                     setCharacterStatus(action.payload.characterId, action.payload.status as import('@/entities/character/model/store').CharacterStatus);
                     break;
+                case 'set_stat':
+                    if (action.payload.id in voiceStats) {
+                        setVoiceLevel(action.payload.id as VoiceId, action.payload.value);
+                    } else {
+                        console.warn(`[VN Action] Unknown stat id '${action.payload.id}'`);
+                    }
+                    break;
+                case 'add_heat':
+                    console.warn('[VN Action] add_heat is not wired into progression yet', action.payload);
+                    break;
             }
         });
     };
 
+    useEffect(() => {
+        processedOnEnterRef.current.clear();
+    }, [activeScenarioId]);
+
+    useEffect(() => {
+        if (!activeScenarioId || !effectiveSceneId || !scene?.onEnter || scene.onEnter.length === 0) {
+            return;
+        }
+
+        const sceneKey = `${activeScenarioId}:${effectiveSceneId}`;
+        if (processedOnEnterRef.current.has(sceneKey)) {
+            return;
+        }
+
+        processedOnEnterRef.current.add(sceneKey);
+        executeActions(scene.onEnter);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeScenarioId, effectiveSceneId, scene?.id]);
+
     const handleChoice = (choice: VNChoice) => {
+        if (!choiceIsAvailable(choice, flags, conditionContext)) {
+            return;
+        }
+
         // Record this choice as visited
         if (activeScenarioId && effectiveSceneId) {
             recordChoice(activeScenarioId, effectiveSceneId, choice.id);
@@ -351,7 +432,7 @@ const VisualNovelOverlayInner = () => {
                         />
                     </div>
 
-                    <Choices choiceList={scene.choices} />
+                    <Choices choiceList={sceneChoices} />
                 </div>
             </div>
         </div>

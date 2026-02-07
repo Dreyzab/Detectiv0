@@ -24,7 +24,7 @@ import type {
 } from '@repo/shared';
 import { api } from '@/shared/api/client';
 
-const DEFAULT_LOCATION_ID = 'p_hbf';
+const DEFAULT_LOCATION_ID = 'loc_hbf';
 const DEFAULT_WORLD_CLOCK: WorldClockState = { tick: 0, phase: 'morning' };
 const DEFAULT_PLAYER: PlayerProgressionState = { xp: 0, level: 1, traitPoints: 0 };
 
@@ -291,3 +291,4 @@ export const useWorldEngineStore = create<WorldEngineState>((set, get) => ({
 
     clearError: () => set({ error: null })
 }));
+

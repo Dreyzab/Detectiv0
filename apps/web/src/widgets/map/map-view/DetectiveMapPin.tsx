@@ -18,7 +18,7 @@ export const DetectiveMapPin = ({ point, state, onClick, isActive }: DetectiveMa
         // ALSO Log mount to prove pins are rendering at all
         logger.debug(`[PIN RENDER] ${point.id}`);
 
-        if (point.id === 'p_bank' || isActive) {
+        if (point.id === 'loc_freiburg_bank' || isActive) {
             logger.system(`[PIN DEBUG] ID: ${point.id} | Active: ${isActive} | State: ${state}`);
         }
     }, [isActive, point.id, point.title, state]);
@@ -187,3 +187,4 @@ export const DetectiveMapPin = ({ point, state, onClick, isActive }: DetectiveMa
         </div>
     );
 };
+

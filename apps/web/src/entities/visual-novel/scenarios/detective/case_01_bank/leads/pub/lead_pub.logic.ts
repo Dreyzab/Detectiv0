@@ -103,7 +103,7 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             characterId: 'cleaner',
             nextSceneId: 'END',
             onEnter: [
-                { type: 'unlock_point', payload: 'p_goods_station' }
+                { type: 'unlock_point', payload: 'loc_freiburg_warehouse' }
             ]
         },
 
@@ -149,3 +149,4 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
 };
 
 export default LEAD_PUB_LOGIC;
+

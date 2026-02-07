@@ -49,7 +49,7 @@
     - **Интеграция с VN**: Переход VN → Battle → VN с сохранением контекста.
 - **Interactive Text & Localization**: Мультиязычная система (EN, DE, RU). Игрок может кликать на `[[улики]]` (анимированные Framer Motion) для занесения в досье и на `[[ключевые слова]]` для получения контекста от Парламента (работает в Overlay и Fullscreen).
 - **Premium Navbar (The Detective's Desk)**: Унифицированный интерфейс управления в стиле Art Deco (Warm Black/Gold) с использованием шрифтов Playfair Display и Courier Prime.
-- **Character Page**: Профиль персонажа с визуализацией навыков (Parliament of Voices) и биографией.
+- **Character Page**: ÐŸÑ€Ð¾Ñ„Ð¸Ð»ÑŒ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶Ð° Ñ Ð²Ð¸Ð·ÑƒÐ°Ð»Ð¸Ð·Ð°Ñ†Ð¸ÐµÐ¹ Ð½Ð°Ð²Ñ‹ÐºÐ¾Ð² (Parliament of Voices), Ð° Ñ‚Ð°ÐºÐ¶Ðµ Ð²ÐºÐ»Ð°Ð´ÐºÐ¾Ð¹ **Psyche Profile** (Thought Cabinet) Ñ Ð²Ð¸Ð´Ð¸Ð¼Ñ‹Ð¼ Ð¿Ñ€Ð¾Ð³Ñ€ÐµÑÑÐ¾Ð¼ ÑÐµÐºÑ€ÐµÑ‚Ð¾Ð², ÑÐ²Ð¾Ð»ÑŽÑ†Ð¸Ð¸ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶ÐµÐ¹, Ñ„Ð°ÐºÑ†Ð¸Ð¾Ð½Ð½Ð¾Ð³Ð¾ Ð²Ñ‹Ñ€Ð°Ð²Ð½Ð¸Ð²Ð°Ð½Ð¸Ñ Ð¸ Ð½Ð°Ð´Ñ‘Ð¶Ð½Ð¾ÑÑ‚Ð¸ skill-check Ð¸ÑÑ‚Ð¾Ñ€Ð¸Ð¸.
 - **Progress Tracking**: Разблокировка новых точек интереса по мере продвижения в расследовании.
 - **Hybrid Quest System**: Система квестов, объединяющая линейное повествование с нелинейным сбором улик.
     - **Quest Log**: Виджет для отслеживания текущих целей.
@@ -216,6 +216,8 @@ Vite настроен на автоматическую загрузку пер�
   important actions advance ticks and world phase (`morning/day/evening/night`).
 - **Night access gating** for bank is active:
   standard approach can be blocked at night; alternatives: `lockpick`, `bribe`, `warrant`.
+- **District-aware availability** is active:
+  `stuhlinger` destinations are soft-gated at night with recovery alternatives (`district_pass`, `wait_until_day`).
 - **Travel beats** are active:
   travel can return contextual beat payloads (for example `intel_audio`).
 
@@ -241,3 +243,22 @@ Vite настроен на автоматическую загрузку пер�
 - `Fog of war` should be tracked at `location` level, not at individual scene/action level.
 - Reveal channels: successful travel arrival, travel beats (`intel_audio` / rumors), evidence discovery, faction-driven unlocks.
 - `Explored location` and `completed map point` must remain separate states.
+
+## Mirror Protocol Status (2026-02-07)
+
+### Phase 1 complete: Technical Debt Cleanup
+- VN runtime now enforces scene preconditions and preserves logic contract fields during localization merge.
+- Passive checks and scene `onEnter` behavior are stabilized for deterministic scene entry behavior.
+- Canonical Parliament IDs are fully normalized in runtime data paths.
+- Shared item registry is now the base data source for inventory/merchant flows.
+- Map/location identifiers are normalized to reduce `unlock_point` and route binding mismatches.
+
+### Phase 2 complete: Content and Systems Expansion (core slice)
+- ✅ Quest-stage aware branching integrated into VN and map condition runtime.
+- ✅ Stage-aware objective rendering in Quest Journal and Quest Log.
+- ✅ Interactive Stage Timeline popover with transition hints (flags/actions) in quest UI.
+- ✅ Expanded route graph in `city_routes` and normalized `loc_*` IDs in SQL seed.
+- ✅ District-level movement rule documented in Obsidian and enforced as soft gate in engine.
+- ✅ Merchant variants linked to character roles, location trade actions, and economy multipliers.
+- âœ… Consumable gameplay effects integrated into inventory runtime.
+- âœ… Secrets/evolution progression surfaced in dossier-facing UX (`Psyche Profile`).

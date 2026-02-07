@@ -4,6 +4,191 @@
 
 ---
 
+## [07.02.2026] — Phase 2: Dossier Psyche Profile + Secrets/Evolution UX
+
+### Added
+- **Dossier-facing Psyche Profile** in Character Page:
+  - new `Psyche` tab with Thought Cabinet, faction alignment signals, knowledge registry, evolution tracks, and field-check reliability summary.
+  - dynamic dossier background reacts to current alignment profile.
+  - File: `apps/web/src/pages/CharacterPage/CharacterPage.tsx`
+- **Deterministic profile derivation layer**:
+  - added `buildPsycheProfile(...)` to derive UX state from flags, factions, quest stages, relationships, and check history.
+  - File: `apps/web/src/pages/CharacterPage/psycheProfile.ts`
+- **Unit tests for psyche derivation**:
+  - unlock logic for knowledge entries, alignment resolution, and evolution progression.
+  - File: `apps/web/src/pages/CharacterPage/psycheProfile.test.ts`
+
+### Changed
+- **Phase 2 checklist closure**:
+  - `Surface secrets/evolution progression in dossier-facing UX` marked complete in sprint tracking and design notes.
+- **Main documentation synchronized**:
+  - updated high-level status in `README.md` and architecture notes in `ARCHITECTURE.md`.
+  - updated economy/design notes in:
+    - `obsidian/Detectiv/00_Map_Room/Sprint_Current.md`
+    - `obsidian/Detectiv/20_Game_Design/90_Game_Loops/Loop_Economy.md`
+    - `obsidian/Detectiv/20_Game_Design/Systems/Inventory_Merchant.md`
+
+### Validation
+- `bun test apps/web/src/pages/CharacterPage/psycheProfile.test.ts`
+- `bun x tsc -p apps/web/tsconfig.app.json --noEmit`
+
+## [07.02.2026] — Phase 2: Merchant Variants + Economy Loop Wiring
+
+### Added
+- **Merchant variants in shared registry**:
+  - added `apothecary_shop`, `tailor_shop`, `pub_keeper`, and gated `the_fence`.
+  - each merchant now links to character role (`characterId`) and location anchor (`locationId`).
+  - File: `packages/shared/data/items.ts`
+- **Access and economy helpers**:
+  - added merchant access evaluation (`flags` / `faction reputation`) and per-merchant pricing multipliers.
+  - added pricing helpers for buy/sell calculations.
+  - File: `packages/shared/data/items.ts`
+- **Trade action wiring from map interactions**:
+  - `open_trade` now opens merchant modal via shared UI store.
+  - trade bindings added to `loc_apothecary`, `loc_tailor`, `loc_pub`, `loc_workers_pub`.
+  - Files:
+    - `apps/web/src/features/merchant/model/store.ts`
+    - `apps/web/src/features/detective/lib/map-action-handler.ts`
+    - `apps/web/src/widgets/map/map-view/MapView.tsx`
+    - `apps/server/src/scripts/data/case_01_points.ts`
+    - `supabase_seed.sql`
+
+### Changed
+- **Merchant modal behavior**:
+  - now uses merchant-specific stock, access rules, role notes, and economy multipliers.
+  - blocks transactions when access requirements are not met (for example, `the_fence` without underworld trust).
+  - File: `apps/web/src/features/merchant/ui/MerchantModal.tsx`
+- **Inventory item effects**:
+  - added support for `add_voice_level` effect type for consumables tied to social/recovery gameplay.
+  - File: `apps/web/src/entities/inventory/model/store.ts`
+
+### Validation
+- `bun test apps/server/test/modules/engine.test.ts`
+- `bun test packages/shared/data/items.test.ts`
+- `bun x tsc -p apps/web/tsconfig.app.json --noEmit`
+- `bun x tsc -p apps/server/tsconfig.json --noEmit`
+
+---
+
+## [07.02.2026] — Phase 2: Route Graph Expansion + District Rules
+
+### Added
+- **Expanded travel graph in engine seed**:
+  - `city_routes` now includes bidirectional links for core (`loc_hbf`, `loc_freiburg_bank`, `loc_freiburg_archive`),
+    leads (`loc_tailor`, `loc_apothecary`, `loc_pub`), and industrial routes (`loc_freiburg_warehouse`, `loc_workers_pub`).
+  - route metadata now carries district transition context (`fromDistrict`, `toDistrict`, `nightRequiresPermit`).
+  - File: `supabase_seed.sql`
+- **District rule docs in Obsidian**:
+  - added route network note and district rule specification.
+  - Files:
+    - `obsidian/Detectiv/00_Map_Room/Route_Network_Case01.md`
+    - `obsidian/Detectiv/00_Map_Room/District_Rules.md`
+
+### Changed
+- **Location ID normalization completed in SQL seed**:
+  - map points, event code `unlock_point`, objectives, and routes now consistently use `loc_*` IDs.
+  - removed residual `p_*` drift from engine seed data.
+- **Engine location availability now district-aware**:
+  - added soft-gate district policy for night access in `stuhlinger`.
+  - bank night rule remains active and has priority.
+  - Files:
+    - `apps/server/src/modules/engine.ts`
+    - `apps/server/test/modules/engine.test.ts`
+
+### Validation
+- `bun test apps/server/test/modules/engine.test.ts`
+- Obsidian AGENTS checks:
+  - duplicate markdown basenames
+  - duplicate frontmatter `id`
+  - Parliament MOC/voice/canonical integrity
+
+---
+
+## [07.02.2026] — Phase 2: Quest Stages + Timeline Popover (Macro/Micro Flow Split)
+
+### Added
+- **Quest stage canonical model**:
+  - added shared stage registry and progression helpers (`QUEST_STAGES`, stage index checks).
+  - File: `packages/shared/data/quests.ts`
+- **Quest-stage aware runtime contracts**:
+  - VN condition context now includes `questStages`, `isQuestAtStage`, `isQuestPastStage`.
+  - VN actions support `set_quest_stage`.
+  - Map condition DSL supports `quest_stage` and `quest_past_stage`.
+  - Map action DSL supports `set_quest_stage`.
+- **Stage Timeline UI**:
+  - Quest Journal and Quest Log now display `prev/current/next` stage chips.
+  - Stage chips now use an interactive popover (hover/focus/click) instead of native `title`.
+  - Popover shows transition rationale (localized hint + technical flags/actions metadata).
+
+### Changed
+- **Responsibility split finalized**:
+  - `Quest Stage` = macro progression gate (global narrative flow).
+  - `Flags` = micro-world state and intra-stage branching.
+- **Quest data upgraded**:
+  - quest logic now supports `stageTransitions` metadata.
+  - quest content now supports localized `stages` and `transitions` labels.
+  - objectives can be stage-scoped (`objective.stage`) and UI filters by active stage.
+- **Map objective highlighting**:
+  - active map target selection now respects objective stage visibility.
+
+### Validation
+- `bun x tsc -p apps/web/tsconfig.app.json --noEmit`
+- `bun x tsc -p packages/shared/tsconfig.json --noEmit`
+- `bun test apps/web/src/entities/visual-novel/model/__tests__/engine.test.ts`
+- `bun test packages/shared/lib/map-resolver.test.ts`
+
+---
+
+## [07.02.2026] — Mirror Protocol: Phase 1 Complete, Phase 2 Kickoff
+
+### ✅ Phase 1 completed (Technical Debt Cleanup)
+- **VN runtime contract stabilized**:
+  - scene `preconditions` now enforced at runtime,
+  - passive checks now preserve and display fail/success text correctly,
+  - `onEnter` side effects are applied with re-entry protection.
+- **Logic/content merge fixed**:
+  - VN runtime merge now keeps logic-only fields (`preconditions`, `passiveChecks`, `onEnter`) instead of dropping them.
+- **Canonical data alignment completed**:
+  - legacy voice IDs migrated to canonical Parliament roster IDs,
+  - shared item registry introduced and wired into inventory/merchant flow,
+  - map/location identifiers normalized to a single runtime convention.
+- **Type-level hardening**:
+  - key IDs covered by shared TypeScript types to reduce runtime mismatches and typo regressions.
+
+### 🎯 Phase 2 started (Content & Systems Expansion)
+- Consumable effects system (real gameplay impact from inventory actions).
+- Quest stage integration into VN and world progression.
+- Expansion of route network and district-level world logic.
+- Merchant specialization linked to character archetypes/roles.
+- Secrets/evolution progression surfaces in dossier-facing UX.
+
+---
+
+## [07.02.2026] — Narrative + Gameplay Protocols (Story/Mechanics Governance)
+
+### Added
+- **`Narrative_Gameplay_Protocol`**: canonical operating contract for node-based story+gameplay authoring.
+  - File: `obsidian/Detectiv/99_System/Narrative_Gameplay_Protocol.md`
+  - Defines mandatory node contract (`Trigger Source -> Preconditions -> Designer View -> Mechanics View -> State Delta -> Transitions -> Validation`), skill-check rules, recovery rules, state-delta categories, and chain governance.
+- **`Narrative_Gameplay_Checklist`**: execution checklist for pre-implementation and pre-merge validation.
+  - File: `obsidian/Detectiv/99_System/Narrative_Gameplay_Checklist.md`
+  - Covers node completeness, branch safety, narrative quality gates, gameplay quality gates, and code-sync checks.
+
+### Changed
+- **`Template_Gameplay_Story_Node`** extended to enforce protocol fields:
+  - added `Preconditions`, `loop/*` tag, dramatic function, node type, detailed skill-check block, categorized state delta, recovery transition, and checklist pass block.
+  - File: `obsidian/Detectiv/99_System/Templates/Template_Gameplay_Story_Node.md`
+- **`Gameplay_Story_Board`** now links protocol + checklist as governance and requires both consistency checklists for active chains.
+  - File: `obsidian/Detectiv/00_Map_Room/Gameplay_Story_Board.md`
+- **`Scenario_Board`** now references both narrative consistency and narrative-gameplay checklist for flow-node work.
+  - File: `obsidian/Detectiv/00_Map_Room/Scenario_Board.md`
+- **`00_Start_Here`** developer zone now links protocol and checklist for daily entry use.
+  - File: `obsidian/Detectiv/00_Map_Room/00_Start_Here.md`
+- **`AGENTS.md`** updated with mandatory narrative+gameplay protocol section for AI edits.
+  - File: `AGENTS.md`
+
+---
+
 ## [07.02.2026] — Gameplay + Story Authoring Method (Node-Based)
 
 ### Added

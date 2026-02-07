@@ -39,6 +39,17 @@ $files | Group-Object Name | Where-Object { $_.Count -gt 1 }
 2. Avoid ambiguous bare links when basename duplicates exist.
 3. Do not keep obsolete notes as `.md` if they create graph noise; move to `.legacy.txt`.
 
+### Narrative + gameplay protocol
+1. For any `node_*` or `Gameplay_Story_Board` changes, follow:
+   - `obsidian/Detectiv/99_System/Narrative_Gameplay_Protocol.md`
+   - `obsidian/Detectiv/99_System/Narrative_Gameplay_Checklist.md`
+2. Required node sections:
+   - `Trigger Source`, `Preconditions`, `Designer View`, `Mechanics View`, `State Delta`, `Transitions`, `Validation`.
+3. Mandatory safety rule:
+   - no critical-path hard fail without a recovery route.
+4. Sync rule:
+   - when runtime behavior changes, update the related node note and board links in the same cycle.
+
 ### Post-change validation
 1. Re-run duplicate basename check.
 2. Re-run Parliament integrity check (missing/extra voice links).
