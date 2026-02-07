@@ -256,6 +256,8 @@ export const STARTER_ITEM_STACKS: ItemStackDefinition[] = [
     { itemId: 'bread', quantity: 3 }
 ];
 
+export const STARTER_MONEY = 140;
+
 export const MERCHANTS: Record<string, MerchantDefinition> = {
     the_fence: {
         id: 'the_fence',

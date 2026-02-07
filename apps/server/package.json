@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "obsidian:sync": "bun run src/scripts/obsidian-sync.ts",
+    "obsidian:validate": "bun run src/scripts/obsidian-validate.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",
@@ -14,6 +16,8 @@
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.2.9",
     "elysia-clerk": "^0.13.2",
+    "glob": "^13.0.1",
+    "gray-matter": "^4.0.3",
     "ioredis": "^5.9.2",
     "pg": "^8.18.0",
     "postgres": "^3.4.8",

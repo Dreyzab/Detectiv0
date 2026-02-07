@@ -29,6 +29,7 @@ export const VisualNovelPage = () => {
     const navigate = useNavigate();
     const [activeTooltip, setActiveTooltip] = useState<{ keyword: string; rect: DOMRect } | null>(null);
     const processedOnEnterRef = useRef<Set<string>>(new Set());
+    const processedPassiveChecksRef = useRef<Set<string>>(new Set());
 
     const {
         activeScenarioId,
@@ -185,6 +186,18 @@ export const VisualNovelPage = () => {
             return; // Don't end scenario, keep it active so useEffect doesn't restart it
         }
 
+        if (activeScenarioId === 'detective_case1_hbf_arrival') {
+            endScenario();
+            navigate('/vn/detective_case1_alt_briefing');
+            return;
+        }
+
+        if (activeScenarioId === 'detective_case1_qr_scan_bank') {
+            endScenario();
+            navigate('/vn/detective_case1_bank_scene');
+            return;
+        }
+
         endScenario();
         navigate('/map'); // Return to map between scenarios
     };
@@ -192,12 +205,13 @@ export const VisualNovelPage = () => {
     const handleTelegramComplete = (name: string) => {
         // 1. Set Player Name
         setPlayerName(name);
+        setFlag('telegram_acknowledged', true);
 
         // 2. Start Station Arrival (Briefing)
         setShowTelegram(false);
 
         // Navigate to the new URL which will trigger the useEffect to startScenario
-        navigate('/vn/detective_case1_alt_briefing');
+        navigate('/vn/detective_case1_hbf_arrival');
     };
 
     // Token interaction (clues, notes)
@@ -279,6 +293,7 @@ export const VisualNovelPage = () => {
 
     useEffect(() => {
         processedOnEnterRef.current.clear();
+        processedPassiveChecksRef.current.clear();
     }, [activeScenarioId]);
 
     useEffect(() => {
@@ -293,6 +308,42 @@ export const VisualNovelPage = () => {
 
         processedOnEnterRef.current.add(sceneKey);
         executeActions(runtimeScene.onEnter);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeScenarioId, effectiveSceneId, runtimeScene?.id]);
+
+    useEffect(() => {
+        if (!activeScenarioId || !effectiveSceneId || !runtimeScene?.passiveChecks || runtimeScene.passiveChecks.length === 0) {
+            return;
+        }
+
+        for (const check of runtimeScene.passiveChecks) {
+            const checkKey = `${activeScenarioId}:${effectiveSceneId}:${check.id}`;
+            if (processedPassiveChecksRef.current.has(checkKey)) {
+                continue;
+            }
+            processedPassiveChecksRef.current.add(checkKey);
+
+            const level = voiceStats[check.voiceId] || 0;
+            const res = performSkillCheck(level, check.difficulty);
+            recordCheckResult(check.id, res.success ? 'passed' : 'failed');
+            gainVoiceXp(check.voiceId, res.success ? 12 : 6);
+
+            const outcome = res.success ? check.onSuccess : check.onFail;
+            executeActions(outcome?.actions);
+
+            const passiveText = res.success ? check.passiveText : check.passiveFailText;
+            if (passiveText && passiveText.trim().length > 0) {
+                addDialogueEntry({
+                    characterName: check.voiceId.toUpperCase(),
+                    text: passiveText
+                });
+            }
+
+            if (outcome?.nextSceneId) {
+                advanceScene(outcome.nextSceneId);
+                return;
+            }
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeScenarioId, effectiveSceneId, runtimeScene?.id]);
 

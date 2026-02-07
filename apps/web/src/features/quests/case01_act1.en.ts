@@ -14,8 +14,8 @@ export const CASE_01_ACT_1_EN: QuestContent = {
         resolved: 'Resolved'
     },
     transitions: {
-        'not_started->briefing': 'Case intro starts and investigator enters the briefing flow.',
-        'briefing->bank_investigation': 'Briefing wraps and the first major investigation stage begins.',
+        'not_started->briefing': 'Telegram handoff leads into HBF arrival and Clara briefing.',
+        'briefing->bank_investigation': 'Map exploration and QR gate are complete; bank investigation begins.',
         'bank_investigation->leads_open': 'Bank clues are consolidated and city leads become available.',
         'leads_open->leads_done': 'All lead branches are resolved.',
         'leads_done->finale': 'Evidence chain converges and finale route opens.',

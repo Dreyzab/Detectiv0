@@ -207,6 +207,19 @@ Vite настроен на автоматическую загрузку пер�
   - `POST /engine/case/advance`
   - `POST /engine/progress/apply`
   - `POST /engine/evidence/discover`
+- **Inventory persistence module** is online on server:
+  - `GET /inventory/snapshot`
+  - `POST /inventory/snapshot`
+- **Quest persistence module** is online on server:
+  - `GET /quests/snapshot`
+  - `POST /quests/snapshot`
+- **Dossier persistence module** is online on server:
+  - `GET /dossier/snapshot`
+  - `POST /dossier/snapshot`
+- **Inventory boot hydration** is active in app shell:
+  - snapshot is loaded on app startup, not only on Inventory page.
+- **Dossier boot hydration** is active in app shell:
+  - dossier snapshot is loaded on app startup and normalized before runtime usage.
 - **World simulation foundation** is persisted in Postgres tables:
   `world_clocks`, `city_routes`, `travel_sessions`, `cases`, `case_objectives`,
   `user_case_progress`, `player_progression`, `voice_progression`,
@@ -262,3 +275,14 @@ Vite настроен на автоматическую загрузку пер�
 - ✅ Merchant variants linked to character roles, location trade actions, and economy multipliers.
 - âœ… Consumable gameplay effects integrated into inventory runtime.
 - âœ… Secrets/evolution progression surfaced in dossier-facing UX (`Psyche Profile`).
+
+### Phase 3 started: Polish + Persistence (first slice)
+- Added server-side inventory snapshot persistence with typed contracts (`GET/POST /inventory/snapshot`).
+- Inventory web store now hydrates and syncs `money/items` through backend snapshot API.
+- Added additive Drizzle migration `apps/server/drizzle/0004_lovely_mastermind.sql` for inventory snapshots.
+- Added server-side quest snapshot persistence with typed contracts (`GET/POST /quests/snapshot`).
+- Quest store now hydrates/syncs server snapshot and `useQuestEngine` auto-starts default quest only after hydration.
+- Added additive Drizzle migration `apps/server/drizzle/0005_shiny_plazm.sql` for quest stage/objective snapshot columns.
+- Added server-side dossier snapshot persistence with typed contracts (`GET/POST /dossier/snapshot`).
+- Dossier store now hydrates/syncs server snapshot with debounced sync queue for high-frequency gameplay state.
+- Added additive Drizzle migration `apps/server/drizzle/0006_magenta_satana.sql` for `user_dossier_snapshots`.

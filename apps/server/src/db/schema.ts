@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, doublePrecision, primaryKey, boolean, integer, jsonb } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const users = pgTable("users", {
     id: text("id").primaryKey(),
@@ -19,6 +20,19 @@ export const items = pgTable("items", {
     name: text("name").notNull(),
     type: text("type").notNull(),
     data: jsonb("data"), // JSON specific data
+});
+
+export const userInventorySnapshots = pgTable("user_inventory_snapshots", {
+    userId: text("user_id").references(() => users.id).notNull().primaryKey(),
+    money: integer("money").notNull().default(0),
+    items: jsonb("items").notNull(),
+    updatedAt: timestamp("updated_at").notNull()
+});
+
+export const userDossierSnapshots = pgTable("user_dossier_snapshots", {
+    userId: text("user_id").references(() => users.id).notNull().primaryKey(),
+    data: jsonb("data").notNull(),
+    updatedAt: timestamp("updated_at").notNull()
 });
 
 export const mapPoints = pgTable("map_points", {
@@ -71,6 +85,8 @@ export const userQuests = pgTable("user_quests", {
     userId: text("user_id").notNull(),
     questId: text("quest_id").notNull(),
     status: text("status").notNull(), // active | completed
+    stage: text("stage").notNull().default('not_started'),
+    completedObjectiveIds: jsonb("completed_objective_ids").notNull().default(sql`'[]'::jsonb`),
     completedAt: timestamp("completed_at"),
     rewardsClaimed: boolean("rewards_claimed").default(false),
 }, (t) => [

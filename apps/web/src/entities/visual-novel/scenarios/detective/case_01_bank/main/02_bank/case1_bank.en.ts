@@ -1,169 +1,187 @@
-import type { VNContentPack } from '../../../../../model/types';
+﻿import type { VNContentPack } from '../../../../../model/types';
 
 export const CASE1_BANK_EN: VNContentPack = {
     locale: 'en',
     scenes: {
-        // ─────────────────────────────────────────────────────────────
-        // ARRIVAL
-        // ─────────────────────────────────────────────────────────────
         'arrival': {
-            text: 'Bankhaus J.A. Krebs. The crime scene. The morning air is cold.',
+            text: 'Bankhaus J.A. Krebs. The crime scene. Morning air, locked faces, too much silence.',
             choices: {
-                'enter_solo': 'Time to get to work.',
-                'enter_duo': 'Let\'s go inside, Victoria.'
+                'enter_solo': 'I will take the first pass alone.',
+                'enter_duo': 'Victoria, with me.'
             }
         },
         'scene_solo_entry': {
-            text: 'I push open the heavy doors. The silence inside is heavy, oppressive. I prefer working alone at first.'
+            text: 'You push through the brass doors. The hall feels staged, as if everyone rehearsed this calm.'
         },
         'scene_duo_entry': {
-            text: 'We step inside together. Victoria looks around, unfazed by the grandeur or the tension.'
+            text: 'You enter with Victoria. She scans exits first, people second.'
         },
         'victoria_interrupts': {
-            text: 'Inspector! Wait! Don\'t start without me!'
+            text: '"Inspector! Wait. Do not start without me."'
         },
         'victoria_intro_dialogue': {
-            text: 'I am [[Victoria Sterling]]. My uncle... the Mayor... insisted I assist you. I promise not to get in the way.',
+            text: '"Victoria Sterling. The Mayor asked me to support your investigation."',
             choices: {
-                'react_mockery': 'This is an investigation, not a finishing school.',
-                'react_surprise': 'I did not expect the Mayor\'s kin to do dirty work.',
-                'react_interest': 'Let us see if you have the eyes for this work.'
+                'react_mockery': 'This is police work, not society theater.',
+                'react_surprise': 'Unexpected assignment for the Mayor\'s family.',
+                'react_interest': 'Then show me what you have noticed.'
             }
         },
-        'react_mockery_res': { text: 'I have read all your case files, Inspector. Do not underestimate me.' },
-        'react_surprise_res': { text: 'Surprises can be useful in our line of work, Inspector.' },
-        'react_interest_res': { text: 'I will not disappoint you. I found something already, actually.' },
+        'react_mockery_res': {
+            text: '"Noted. I still know this city better than you."'
+        },
+        'react_surprise_res': {
+            text: '"Surprise is useful when people hide things."'
+        },
+        'react_interest_res': {
+            text: '"Good. Then let us work."'
+        },
 
-        // ─────────────────────────────────────────────────────────────
-        // BANK HUB
-        // ─────────────────────────────────────────────────────────────
         'bank_hub': {
-            text: 'The [[grand hall]] of Bankhaus Krebs lacks its usual bustle. Herr [[Galdermann]] stands near his office. A [[nervous clerk]] fidgets by the counter. The [[heavy vault door]] is ajar.',
+            text: 'Main hall overview: [[Galdermann]] near his office, [[Vogel]] at the counter, [[vault door]] open.',
             choices: {
-                'speak_manager': 'Speak with Herr Galdermann',
-                'speak_clerk': 'Question the clerk',
-                'inspect_vault': 'Examine the vault',
-                'conclude_investigation': 'I have seen enough here.'
+                'speak_manager': 'Speak with Galdermann',
+                'speak_clerk': 'Question Vogel',
+                'inspect_vault': 'Inspect the vault',
+                'conclude_investigation': 'Conclude on-site phase'
             }
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // MANAGER DIALOGUE
-        // ─────────────────────────────────────────────────────────────
         'manager_intro': {
-            text: 'Herr Galdermann eyes you with the practiced warmth of a man who has smiled at debtors before foreclosing on them.'
+            text: 'Galdermann greets you with polished courtesy and careful distance.',
+            choices: {
+                'manager_confront_seed': 'Your name surfaced before I reached this bank.',
+                'manager_open_case': 'Start with the timeline.'
+            }
+        },
+        'manager_seed_reaction': {
+            text: 'A flicker crosses his face. "I am known in Freiburg. That proves nothing."'
         },
         'manager_about_robbery': {
-            text: '"A regrettable incident, Inspector. The vault was opened without force. An inside job, surely. I suggest you question the staff."'
-        },
-        'manager_dismissive': {
-            text: '"Now if you will excuse me, I have clients to reassure. The police have already taken all [[the statements]] they need."'
-        },
-
-        // ─────────────────────────────────────────────────────────────
-        // CLERK INTERROGATION
-        // ─────────────────────────────────────────────────────────────
-        'clerk_intro': {
-            text: 'The young clerk — [[Ernst Vogel]], according to his nameplate — looks like he hasn\'t slept in days. His hands tremble as he sorts papers.'
-        },
-        'clerk_nervous': {
-            text: '"I... I was on night duty, Inspector. I swear I [[locked the vault]]! But this morning, it was just... open. Like magic."',
+            text: '"No forced entry. Vault opened cleanly. Most likely internal negligence."',
             choices: {
-                'read_clerk_empathy': '[Empathy] He\'s hiding something. Read his fear.',
-                'press_clerk': 'You expect me to believe magic opened that vault?',
-                'leave_clerk': 'That will be all for now.'
+                'manager_press_hartmann': 'Hartmann appears in multiple traces. Explain.',
+                'manager_request_statements': 'I want raw statements, not summaries.'
             }
         },
-        'clerk_empathy_success': {
-            text: 'His eyes dart to the door. Not guilt — that\'s terror. He saw something that night. Someone. And he\'s afraid they\'ll come back.'
+        'manager_hartmann_reaction': {
+            text: '"[[Hartmann]] is a routine clerk. Gossip inflates ordinary names."'
         },
-        'clerk_empathy_fail': {
-            text: 'You can\'t quite read him. The fear is real, but its source remains opaque.'
-        },
-        'clerk_revelation': {
-            text: '"There\'s a man... Gustav. The [[Bächleputzer]]. He cleans the water channels at dawn. He told me... he said he saw a [[shadow]] near the bank that night. A figure in black."'
-        },
-        'clerk_closes_up': {
-            text: 'Vogel clams up, shuffling his papers with renewed intensity. "I\'ve told you everything I know, Inspector."'
-        },
-        'clerk_press': {
-            text: '"I... I don\'t know what you want me to say, sir! The lock wasn\'t forced! I checked it myself, three times!"'
-        },
-        'clerk_done': {
-            text: 'The clerk has nothing more to offer. For now.'
+        'manager_dismissive': {
+            text: '"My clients require confidence. You have enough to continue, Inspector."'
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // VAULT INSPECTION
-        // ─────────────────────────────────────────────────────────────
-        'vault_inspection': {
-            text: 'The vault door hangs open, mocking. Inside, empty boxes tell the story. But the [[lock mechanism]] and the [[floor]] might tell you more.',
+        'clerk_intro': {
+            text: 'Ernst Vogel looks exhausted. Ink on his fingers, fear in his posture.'
+        },
+        'clerk_nervous': {
+            text: '"I locked the vault myself. In the morning it was open. No damage, no noise."',
             choices: {
-                'examine_lock_logic': '[Logic] Analyze the lock mechanism.',
-                'sense_atmosphere_intuition': '[Intuition] Something about this room feels... off.',
-                'return_to_hub': 'Return to the main hall.'
+                'ask_about_hartmann': 'Who exactly is Hartmann in this operation?',
+                'ask_about_box_217': 'What was in vault box 217?',
+                'read_clerk_empathy': '[Empathy] Read his fear.',
+                'press_clerk': 'That sounds rehearsed. Try again.',
+                'leave_clerk': 'Enough for now.'
+            }
+        },
+        'clerk_hartmann_response': {
+            text: '"Ledger access. Trusted. Lately [[Hartmann]] got sealed letters almost daily."'
+        },
+        'clerk_box217_response': {
+            text: '"Private box policy is strict... but [[box 217]] was marked sensitive by management."'
+        },
+        'clerk_empathy_success': {
+            text: 'This is not guilt. It is fear of retaliation. He saw movement connected to the robbery.'
+        },
+        'clerk_empathy_fail': {
+            text: 'Fear is obvious, source unclear.'
+        },
+        'clerk_revelation': {
+            text: '"Ask Gustav, the Bächleputzer. Dawn shift. He saw a shadow near the bank."'
+        },
+        'clerk_closes_up': {
+            text: 'He withdraws behind procedure and refuses to elaborate.'
+        },
+        'clerk_press': {
+            text: '"I checked the lock three times. I am not lying."'
+        },
+        'clerk_done': {
+            text: 'You have extracted what Vogel will give today.'
+        },
+
+        'vault_inspection': {
+            text: 'Open vault. Intact mechanism. Empty boxes. Traces remain if you read them correctly.',
+            choices: {
+                'examine_lock_logic': '[Logic] Analyze lock operation.',
+                'sense_atmosphere_intuition': '[Intuition] Read the room for irregularities.',
+                'compare_chemical_sender': '[Logic] Compare residue with the chemical-works sender clue.',
+                'return_to_hub': 'Return to hall.'
             }
         },
         'vault_logic_success': {
-            text: 'No chemical residue on the tumblers. No pick marks. This lock was opened with the correct combination — or a perfect copy of the key. An [[insider]]? You notice a scrap of [[red velvet]] caught on the door hinge.'
+            text: 'No brute force. Controlled access. You also recover a torn red velvet fiber.'
         },
         'vault_logic_fail': {
-            text: 'The mechanism is complex. You\'d need more time or expertise to understand how it was bypassed.'
+            text: 'The mechanism yields no immediate explanation.'
         },
         'vault_intuition_success': {
-            text: 'You breathe in slowly. There — beneath the dust and brass — a faint scent. [[Bitter almonds]]. Industrial chemicals. Whatever was used here, it wasn\'t crude dynamite. You find a fine [[powder residue]] on the floor.'
+            text: 'Bitter almond note in the air. Industrial powder residue on the floor grid.'
         },
         'vault_intuition_fail': {
-            text: 'Something nags at the edge of your senses, but you can\'t quite grasp it. The room gives up no secrets.'
+            text: 'You sense interference, but cannot isolate it.'
         },
-        'vault_continue': {
-            text: 'The vault still holds secrets. What else do you want to examine?',
-            choices: {
-                'examine_lock_logic': '[Logic] Analyze the lock mechanism.',
-                'sense_atmosphere_intuition': '[Intuition] Focus on the atmosphere.',
-                'return_to_hub': 'That\'s enough for now.'
-            }
+        'vault_sender_match_success': {
+            text: 'Sender clue and residue profile align. This points to [[Breisgau Chemical Works]] access, not random burglary.'
         },
-        'vault_leave': {
-            text: 'You step back from the vault. The evidence you\'ve gathered paints a disturbing picture.'
+        'vault_sender_match_fail': {
+            text: 'Plausible connection, insufficient confidence. Needs corroboration.'
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // OCCULT DISCOVERY
-        // ─────────────────────────────────────────────────────────────
         'vault_occult_discovery': {
-            text: 'As you examine the floor where the chemical residue settles, something catches your eye. White chalk lines against the dark iron. Not scuff marks — these are deliberate. Geometric. A circle divided into segments, with strange symbols at each junction.'
+            text: 'Under the residue you spot chalk geometry: deliberate symbols, not accidental marks.'
         },
         'vault_occult_victoria': {
-            text: 'Victoria crouches beside you, her breath catching. "These markings... they resemble chemical notation. But the geometry is wrong. Alchemical, perhaps? Medieval?" She traces the air above the symbols without touching them. "Someone took considerable time to draw this. In a vault. During a robbery."',
+            text: 'Victoria kneels near the symbols. "Patterned, structured, and deliberate. Someone left this on purpose."',
             choices: {
-                'occult_shivers_check': '[Occultism] Open yourself to what the symbols whisper.',
-                'dismiss_occult': '"Theatrical nonsense. Focus on the physical evidence."',
-                'ask_victoria_occult': '"What does your scientific eye make of this, Fräulein?"'
+                'occult_shivers_check': '[Occultism] Listen to what the pattern implies.',
+                'dismiss_occult': 'Ignore theatrics. Stay with hard evidence.',
+                'ask_victoria_occult': 'Give me your technical reading.'
             }
         },
         'vault_shivers_success': {
-            text: 'You trace the pattern with your eyes and something shifts. Not sight — something deeper. The air grows heavy. Cold seeps from the iron walls.\n\n*They were here.*\n\nNot robbers. Something that used the robbers. A presence that lingered after the flesh had fled. The symbols are not decoration — they are a signature. A warning. Or a calling card.'
+            text: 'The symbols feel intentional in a way that exceeds intimidation. Signature, warning, or ritual marker.'
         },
         'vault_shivers_fail': {
-            text: 'You stare at the chalk, waiting for... something. Insight? Revelation? Nothing comes. Just lines on metal. Your mind touches the edge of understanding but cannot grasp it.'
+            text: 'Nothing resolves beyond chalk and conjecture.'
         },
         'vault_dismiss_theatrics': {
-            text: '"Chalk drawings are for children and charlatans." You stand, brushing dust from your knees. "Whoever staged this wanted to scare the police. Let us not give them the satisfaction."\n\nVictoria\'s expression is unreadable. "As you say, Inspector."'
+            text: 'You reject the symbolic layer and refocus on procedural evidence.'
         },
         'vault_victoria_analysis': {
-            text: 'Victoria\'s eyes narrow with professional interest. "The central figure resembles a hexagram, but inverted. The symbols at each point..." She pulls a small notebook from her satchel. "Mercury, sulfur, salt — alchemical principles. And here — a formula I do not recognize."\n\nShe sketches quickly. "This was drawn by someone with knowledge. Not a common criminal. Someone who has studied... forbidden texts."'
+            text: 'Victoria maps several alchemical references and records an unknown formula for later decoding.'
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // CONCLUSION
-        // ─────────────────────────────────────────────────────────────
+        'vault_continue': {
+            text: 'The vault still has open questions.',
+            choices: {
+                'examine_lock_logic': '[Logic] Re-check lock details.',
+                'sense_atmosphere_intuition': '[Intuition] Re-check atmospheric trace.',
+                'compare_chemical_sender': '[Logic] Re-test sender to residue link.',
+                'return_to_hub': 'Leave vault.'
+            }
+        },
+        'vault_leave': {
+            text: 'You step back into the hall with a tighter evidence chain than before.'
+        },
+
         'bank_conclusion': {
-            text: 'You\'ve gathered what you can from the bank itself. Three leads emerge from the chaos:'
+            text: 'On-site phase complete. Lead package is ready.'
         },
         'bank_conclusion_summary': {
-            text: 'The [[red velvet]] points to a [[tailor or costumer]]. The [[chemical residue]] requires an [[apothecary\'s analysis]]. And the [[Bächleputzer]] drinks at the [[local pub]]. Time to hit the streets of Freiburg.'
+            text: 'Lead A: red velvet -> tailor network. Lead B: chemical residue -> apothecary analysis. Lead C: Bächleputzer sighting -> pub inquiry. [[Hartmann]] and [[Galdermann]] remain active watch names.'
         }
     }
 };
+
 export default CASE1_BANK_EN;
+

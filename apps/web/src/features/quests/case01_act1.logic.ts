@@ -8,12 +8,12 @@ export const CASE_01_ACT_1_LOGIC: QuestLogic = {
         {
             from: 'not_started',
             to: 'briefing',
-            triggerActions: ['start_vn(detective_case1_alt_briefing)']
+            triggerActions: ['start_vn(detective_case1_hbf_arrival)']
         },
         {
             from: 'briefing',
             to: 'bank_investigation',
-            triggerActions: ['set_quest_stage(case01, bank_investigation) in briefing_exit']
+            triggerActions: ['set_quest_stage(case01, bank_investigation) in qr_success']
         },
         {
             from: 'bank_investigation',

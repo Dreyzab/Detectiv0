@@ -24,7 +24,10 @@ Follows FSD (Feature-Sliced Design):
 - **modules/**: API endpoints:
   - `map.ts`: `GET /map/points` (DB-backed), `GET /map/resolve-code/:code` (event codes + QR).
   - `detective.ts`: Save/load system.
-  - `health.ts`, `admin.ts`.
+  - `inventory.ts`: `GET/POST /inventory/snapshot` for persisted inventory snapshots.
+  - `quests.ts`: `GET/POST /quests/snapshot` for persisted quest-state snapshots.
+  - `dossier.ts`: `GET/POST /dossier/snapshot` for persisted detective dossier snapshots.
+  - `health.ts`, `admin.ts`, `engine.ts`.
 - **drizzle/**: Generated SQL migrations (`0000_*.sql`, `0001_*.sql`).
 
 ### `packages/shared`
@@ -74,9 +77,12 @@ Currently the project focuses on **Detective Mode** (Freiburg 1905).
 ## 🔄 State Management
 
 - **Global UI/Game State**: Zustand (5 persisted stores: `inventory` (Slots + Money), `dossier`, `quest`, `vn`, `character`).
-- **Server Sync**: Eden Treaty client (`apps/web/src/shared/api/client.ts`) with typed API calls. Used in `useMapPoints` and `QRScannerPage`.
+- **Server Sync**: Contract-driven API client (`apps/web/src/shared/api/client.ts`) with typed API calls. Used in map, engine, and inventory snapshot flows.
 - **Server State Cache**: React Query (`@tanstack/react-query`, staleTime 5min) wrapping Eden Treaty calls.
 - **Persistence**: LocalStorage keys: `gw4-inventory-storage`, `gw4-detective-dossier`, `gw4-quest-store`, `gw4-vn-store`, `character-storage`.
+- **Inventory persistence model**: local snapshot in Zustand + backend snapshot in `user_inventory_snapshots` via `/inventory/snapshot`.
+- **Quest persistence model**: local snapshot in Zustand + backend snapshot in `user_quests` via `/quests/snapshot`.
+- **Dossier persistence model**: local snapshot in Zustand + backend snapshot in `user_dossier_snapshots` via `/dossier/snapshot`.
 
 ## Dossier Psyche Profile Architecture
 
@@ -234,3 +240,16 @@ passiveFailText?: string;   // Optional, for future use
 - Expand travel route graph and district-level world rules. ✅ Implemented for Case 01 base network and district soft gate.
 - ✅ Merchant variants connected to character system roles and location trade actions.
 - ✅ Secrets/evolution progression surfaced in dossier-facing UX (`CharacterPage` -> `Psyche Profile`).
+
+### Phase 3 started (Polish + Persistence, first slice)
+- Added server-side inventory snapshot persistence (`/inventory/snapshot`) with Drizzle-backed `user_inventory_snapshots` table.
+- Added typed contracts in `packages/contracts/inventory.ts` and client wiring in `apps/web/src/shared/api/client.ts`.
+- Inventory store now hydrates from server and syncs item/money mutations back to backend.
+- Inventory hydration is triggered at app boot (`App.tsx`) so map/merchant gameplay persists without visiting Inventory page.
+- Added additive migration `apps/server/drizzle/0004_lovely_mastermind.sql` for rollout safety.
+- Added server-side quest snapshot persistence (`/quests/snapshot`) with normalized stage/objective payloads.
+- Quest store now hydrates/syncs server state and `useQuestEngine` gates default quest bootstrap behind hydration.
+- Added additive migration `apps/server/drizzle/0005_shiny_plazm.sql` for `user_quests.stage` and `user_quests.completed_objective_ids`.
+- Added server-side dossier snapshot persistence (`/dossier/snapshot`) with sanitized flags/evidence/check-state payloads.
+- Dossier store now hydrates/syncs server state with debounced write-back for gameplay mutations.
+- Added additive migration `apps/server/drizzle/0006_magenta_satana.sql` for `user_dossier_snapshots`.

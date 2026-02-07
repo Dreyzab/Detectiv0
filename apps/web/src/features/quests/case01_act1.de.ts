@@ -14,8 +14,8 @@ export const CASE_01_ACT_1_DE: QuestContent = {
         resolved: 'Abgeschlossen'
     },
     transitions: {
-        'not_started->briefing': 'Der Fall startet und der Ermittler tritt in den Briefing-Ablauf ein.',
-        'briefing->bank_investigation': 'Das Briefing endet, die eigentliche Bankermittlung beginnt.',
+        'not_started->briefing': 'Telegramm-Übergabe führt zu HBF-Ankunft und Clara-Briefing.',
+        'briefing->bank_investigation': 'Karten-Exploration und QR-Gate sind abgeschlossen; Bankermittlung beginnt.',
         'bank_investigation->leads_open': 'Die Bankhinweise sind konsolidiert, Stadtspuren werden freigeschaltet.',
         'leads_open->leads_done': 'Alle Spurzweige wurden abgeschlossen.',
         'leads_done->finale': 'Die Beweiskette verdichtet sich und das Finale wird freigeschaltet.',

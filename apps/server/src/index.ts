@@ -7,6 +7,9 @@ import { mapModule } from "./modules/map";
 import { adminModule } from "./modules/admin";
 import { detectiveModule } from "./modules/detective";
 import { engineModule } from "./modules/engine";
+import { inventoryModule } from "./modules/inventory";
+import { questsModule } from "./modules/quests";
+import { dossierModule } from "./modules/dossier";
 import { authModule } from "./middleware/auth";
 
 
@@ -31,6 +34,9 @@ const app = new Elysia()
   .use(authModule)
   .use(healthModule)
   .use(mapModule)
+  .use(inventoryModule)
+  .use(questsModule)
+  .use(dossierModule)
   .use(adminModule)
   .use(detectiveModule)
   .use(engineModule)

@@ -71,7 +71,7 @@ describe('VN Engine', () => {
                     id: 'scene_1',
                     text: 'Logic Text (Should be overwritten)',
                     preconditions: [
-                        (flags) => Boolean(flags['test_flag'])
+                        (flags: Record<string, boolean>) => flags['test_flag']
                     ],
                     passiveChecks: [
                         {

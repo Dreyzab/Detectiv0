@@ -1,0 +1,2 @@
+ALTER TABLE "user_quests" ADD COLUMN "stage" text DEFAULT 'not_started' NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_quests" ADD COLUMN "completed_objective_ids" jsonb DEFAULT '[]'::jsonb NOT NULL;

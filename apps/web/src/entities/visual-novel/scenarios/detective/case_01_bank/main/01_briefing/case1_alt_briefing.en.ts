@@ -1,103 +1,103 @@
 import type { VNContentPack } from '../../../../../model/types';
 
-/**
- * Case 1 Alt Briefing — English Content (Fallback)
- * 
- * NOTE: Unleashed requested "German only" for this scenario.
- * We are using the German content here to ensure the scenario loads
- * even if the app's locale is set to 'en'.
- */
-
 export const CASE1_ALT_BRIEFING_EN: VNContentPack = {
     locale: 'en',
     scenes: {
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 1: ANKUNFT AM BAHNHOF
-        // ═══════════════════════════════════════════════════════════════
-        'arrival_platform': {
-            text: '[[Freiburg Hauptbahnhof]]. Dampfwolken steigen von den Lokomotiven auf.'
-        },
-        'platform_atmosphere': {
-            text: 'Menschen eilen vorbei. Das Geräusch von Kutschen mischt sich mit dem Klirren der Schienen.'
-        },
-        'police_approach': {
-            text: 'Zwei Polizisten kommen auf mich zu. Sie haben mich sofort erkannt.',
-            choices: {}
-        },
-        'police_briefing': {
-            text: '„Herr Detektiv, gut, dass Sie da sind. Wir haben einen [[Banküberfall]] – professionell, keine Zeugen, kaum Spuren. Wir brauchen Ihre Hilfe."',
+        'beat1_open': {
+            text: 'A woman in a grey coat rises as you enter the cafe. "You are late. Sit. I have ten minutes."',
             choices: {
-                'ask_details': '„Was ist genau passiert?"',
-                'go_immediately': '„Bringen Sie mich zum Tatort."'
+                'tactic_professional': '"The train was delayed. Let us keep this efficient."',
+                'tactic_harsh': '"I am not late. You started early."',
+                'tactic_soft': '"My apologies. New city. Glad to meet you, Clara."'
             }
         },
-        'briefing_details': {
-            text: '„Die Bank wurde in der Nacht überfallen. Keine Schüsse, keine Gewalt gegen Kunden. Die Polizei vermutet [[Insiderwissen]]."'
+        'beat1_professional_response': {
+            text: 'She gives a short nod. "Good. We can work with that."'
+        },
+        'beat1_harsh_response': {
+            text: 'Her eyes narrow. "Then we should both stop wasting time."'
+        },
+        'beat1_soft_response': {
+            text: 'Her posture softens for a moment. "Then listen carefully."'
         },
 
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 2: FAHRT ZUM TATORT
-        // ═══════════════════════════════════════════════════════════════
-        'transition_to_bank': {
-            text: 'Die Polizisten bringen mich direkt zum Tatort. Eine elegante Bankfiliale in der Freiburger Innenstadt.'
-        },
-        'bank_arrival': {
-            text: 'Die Stadt ist herbstlich trüb. Die Kopfsteinpflaster glänzen vom Regen. Vor dem [[Bankhaus J.A. Krebs]] herrscht geschäftiges Treiben.'
-        },
-
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 3: BEGEGNUNG MIT CLARA
-        // ═══════════════════════════════════════════════════════════════
-        'notice_argument': {
-            text: 'Eine junge Frau unterhält sich lautstark mit einem uniformierten Beamten. Sie wirkt aufgebracht, aber ihre Haltung ist kontrolliert. Fast herausfordernd.'
-        },
-        'ask_about_clara': {
-            text: '„Das ist [[Clara von Altenburg]], die Tochter des Bürgermeisters. Sie studiert Medizin, aber... sie hat eine seltsame Faszination für Kriminologie entwickelt, seit ihr Mann gestorben ist."'
-        },
-        'clara_confronts': {
-            text: '„Und Sie, mein Herr? Wer sind Sie, dass Sie hier an einem Tatort wie diesem stehen und Fragen stellen?"',
+        'beat2_intro_professional': {
+            text: '"Kaiserliche Handelsbank. Robbed three days ago. Police are stalled."',
             choices: {
-                'respond_professional': '„Mein Name ist Vance. Ich wurde von der Polizei hinzugezogen, um bei diesem Fall zu ermitteln."',
-                'respond_curious': '„Jemand, der sich wundert, warum die Tochter des Bürgermeisters an einem Tatort wie diesem ist."',
-                'respond_direct': '„Ein Privatdetektiv, der versucht, einen Fall zu lösen, während die Zeit davonläuft."'
+                'beat2_ask_what_taken': '"What was taken?"',
+                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"'
             }
         },
-        'clara_react_professional': {
-            text: 'Sie nickt knapp. Eine Spur von Respekt ist in ihrem Blick zu erkennen.'
-        },
-        'clara_react_curious': {
-            text: 'Ihre Augen blitzen auf — eine Mischung aus Ärger und einer gewissen Amüsiertheit.'
-        },
-        'clara_react_direct': {
-            text: 'Sie mustert mich nachdenklich. Die direkte Fokussierung auf den Fall scheint ihren eigenen Drang nach Gerechtigkeit anzusprechen.'
-        },
-
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 4: CLARAS BEOBACHTUNGEN
-        // ═══════════════════════════════════════════════════════════════
-        'clara_introduces': {
-            text: '„Mein Name ist Clara von Altenburg. Und ich bin hier, weil die Herren der Polizei offensichtlich nicht die richtigen Schlüsse ziehen."'
-        },
-        'clara_observation_1': {
-            text: '„Die [[Fenster]] waren nicht eingeschlagen, sondern geöffnet. Nicht aufgebrochen, sondern einfach… entriegelt. Die angeblichen Aufbruchspuren an der [[Tresortür]]? Zu grob. Fast wie inszeniert."'
-        },
-        'officer_interrupts': {
-            text: '„Gnädiges Fräulein, Sie sollten sich nicht einmischen! Das ist Polizeisache!"'
-        },
-        'detective_intervenes': {
-            text: 'Ich hebe eine Hand und weise den Beamten damit in die Schranken. „Lassen Sie sie reden. Ich bin ganz Ohr."'
-        },
-        'clara_continues': {
-            text: '„Die Art, wie die [[Akten]] durchwühlt wurden — chaotisch, aber... verdächtig zielgerichtet. Als ob jemand wusste, was er suchte."'
-        },
-        'clara_smell_clue': {
-            text: '„Und dann ist da noch die Sache mit dem [[Geruch]]…"',
+        'beat2_intro_harsh': {
+            text: '"Bank robbery. Three days. No suspect. Berlin sent you because nobody here wants to move first."',
             choices: {
-                'enter_bank': '„Zeigen Sie mir, was Sie gefunden haben."'
+                'beat2_ask_what_taken': '"What was taken?"',
+                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"'
             }
         },
-        'briefing_exit': {
-            text: 'Clara führt mich zum Eingang der Bank. Die Untersuchung beginnt jetzt.'
+        'beat2_intro_soft': {
+            text: '"Three days ago they robbed the bank. Local police are overwhelmed. That is why you are here."',
+            choices: {
+                'beat2_ask_what_taken': '"What was taken?"',
+                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"'
+            }
+        },
+        'beat2_taken_answer': {
+            text: '"Not money. Documents from a vault box. Police refuse to name the box number."'
+        },
+        'beat2_inspector_answer': {
+            text: '"Inspector Weiss. Competent, but not fond of visitors from Berlin."'
+        },
+        'beat2_empathy_read': {
+            text: 'She keeps her tone level, but the grip on her cup is too tight.'
+        },
+
+        'beat3_setup': {
+            text: 'Clara slides a sealed envelope across the table. "Bank on Bertholdstrasse. You are unofficial. Stay quiet."',
+            choices: {
+                'beat3_professional_bonus': '"Who knows I arrived?"',
+                'beat3_harsh_bonus': '"Is that advice, or an order?"',
+                'beat3_soft_bonus': '"I am going in alone?"'
+            }
+        },
+        'beat3_professional_result': {
+            text: '"Only me and archivist Boehme. If you need records, use his name."'
+        },
+        'beat3_harsh_result': {
+            text: '"An order. The last investigator who made noise disappeared."'
+        },
+        'beat3_soft_result': {
+            text: '"Rumor says the night guard drinks at pub Zum Storchen. He may talk."'
+        },
+        'beat3_logic_gate': {
+            text: 'Documents, pressure, and urgency. The pattern does not look like a normal robbery.',
+            choices: {
+                'beat3_logic_deduce_coverup': '[Logic] "Someone wants this buried quietly."',
+                'beat3_logic_skip': '"I will focus on facts first."'
+            }
+        },
+        'beat3_logic_success': {
+            text: 'Clara holds your gaze for one extra second. "Then do not repeat that theory out loud."'
+        },
+        'beat3_logic_fail': {
+            text: 'You keep the thought to yourself. Better to test the scene first.'
+        },
+
+        'beat4_exit': {
+            text: 'She stands and leaves half her coffee untouched. "Time is gone. Move."',
+            choices: {
+                'beat4_ask_where': '"Where do I find you after this?"',
+                'beat4_silent_nod': 'Take the envelope and nod.'
+            }
+        },
+        'beat4_ask_where_result': {
+            text: '"Do not look for me. I will find you."'
+        },
+        'beat4_silent_nod_result': {
+            text: 'She tilts her head once. Approval without warmth.'
+        },
+        'briefing_finalize': {
+            text: 'Address confirmed. Bankhouse Krebs is now your next destination.'
         }
     }
 };

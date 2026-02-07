@@ -25,7 +25,7 @@ export const HomePage = () => {
 
     // Preload VN assets
     useEffect(() => {
-        const targetId = activeScenarioId || 'detective_case1_alt_briefing';
+        const targetId = activeScenarioId || 'detective_case1_hbf_arrival';
         const scenario = getScenarioById(targetId, locale);
         if (scenario) {
             const assets = extractScenarioAssets(scenario);
@@ -36,7 +36,8 @@ export const HomePage = () => {
 
     const startDetectiveMode = () => {
         if (activeScenarioId) {
-            if (activeScenarioId.includes('briefing') || activeScenarioId.includes('finale')) {
+            const activeScenario = getScenarioById(activeScenarioId, locale);
+            if (activeScenario?.mode === 'fullscreen') {
                 navigate(`/vn/${activeScenarioId}`);
                 return;
             }

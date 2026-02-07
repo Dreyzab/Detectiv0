@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { type VoiceId, VOICE_ORDER } from '../../../features/detective/lib/parliament';
-import type { InventoryItem, InventorySlot } from './types';
+import { api } from '../../../shared/api/client';
+import { fromSharedItem, type InventoryItem, type InventorySlot } from './types';
+import { ITEM_REGISTRY, STARTER_ITEM_STACKS, STARTER_MONEY, type ItemStackDefinition } from '@repo/shared/data/items';
 
 export type GameMode = 'detective';
 
@@ -9,6 +11,30 @@ const INITIAL_VOICE_LEVELS: Record<VoiceId, number> = VOICE_ORDER.reduce((acc: R
     acc[id] = 0;
     return acc;
 }, {} as Record<VoiceId, number>);
+
+const toInventorySlots = (stacks: ItemStackDefinition[]): InventorySlot[] =>
+    stacks
+        .map((stack) => {
+            const definition = ITEM_REGISTRY[stack.itemId];
+            if (!definition || stack.quantity <= 0) {
+                return null;
+            }
+
+            return {
+                itemId: stack.itemId,
+                quantity: Math.floor(stack.quantity),
+                item: fromSharedItem(definition)
+            };
+        })
+        .filter((slot): slot is InventorySlot => slot !== null);
+
+const toItemStacks = (items: InventorySlot[]): ItemStackDefinition[] =>
+    items
+        .filter((slot) => slot.quantity > 0)
+        .map((slot) => ({
+            itemId: slot.itemId,
+            quantity: Math.floor(slot.quantity)
+        }));
 
 interface InventoryState {
     gameMode: GameMode;
@@ -41,6 +67,11 @@ interface InventoryState {
 
     // Legacy/Detective specific (can be refactored into items[])
     detectiveInventory: Record<string, number>;
+    isServerHydrated: boolean;
+    isSyncing: boolean;
+    syncError: string | null;
+    hydrateFromServer: () => Promise<void>;
+    syncToServer: () => Promise<void>;
     resetAll: () => void;
 }
 
@@ -67,9 +98,12 @@ export const useInventoryStore = create<InventoryState>()(
             voiceLevels: INITIAL_VOICE_LEVELS,
 
             // New Inventory State
-            money: 140, // Starting money for testing
+            money: STARTER_MONEY,
             items: [],
             detectiveInventory: {},
+            isServerHydrated: false,
+            isSyncing: false,
+            syncError: null,
 
             setGameMode: (mode) => set({ gameMode: mode }),
             setPlayerName: (name) => set({ playerName: name }),
@@ -92,44 +126,64 @@ export const useInventoryStore = create<InventoryState>()(
             resetVoices: () => set({ voiceLevels: INITIAL_VOICE_LEVELS }),
 
             // Inventory Actions
-            addItem: (item, quantity = 1) => set((state) => {
-                const existingSlotIndex = state.items.findIndex(slot => slot.itemId === item.id);
-                if (existingSlotIndex >= 0 && item.stackable) {
+            addItem: (item, quantity = 1) => {
+                set((state) => {
+                    const existingSlotIndex = state.items.findIndex(slot => slot.itemId === item.id);
+                    if (existingSlotIndex >= 0 && item.stackable) {
+                        const newItems = [...state.items];
+                        newItems[existingSlotIndex].quantity += quantity;
+                        return { items: newItems };
+                    }
+                    // Add new slot
+                    return { items: [...state.items, { itemId: item.id, quantity, item }] };
+                });
+
+                if (get().isServerHydrated) {
+                    void get().syncToServer();
+                }
+            },
+
+            removeItem: (itemId, quantity = 1) => {
+                set((state) => {
+                    const existingSlotIndex = state.items.findIndex(slot => slot.itemId === itemId);
+                    if (existingSlotIndex === -1) return {}; // Item not found
+
                     const newItems = [...state.items];
-                    newItems[existingSlotIndex].quantity += quantity;
+                    const slot = newItems[existingSlotIndex];
+
+                    if (slot.quantity > quantity) {
+                        slot.quantity -= quantity;
+                    } else {
+                        // Remove slot entirely
+                        newItems.splice(existingSlotIndex, 1);
+                    }
                     return { items: newItems };
+                });
+
+                if (get().isServerHydrated) {
+                    void get().syncToServer();
                 }
-                // Add new slot
-                return { items: [...state.items, { itemId: item.id, quantity, item }] };
-            }),
-
-            removeItem: (itemId, quantity = 1) => set((state) => {
-                const existingSlotIndex = state.items.findIndex(slot => slot.itemId === itemId);
-                if (existingSlotIndex === -1) return {}; // Item not found
-
-                const newItems = [...state.items];
-                const slot = newItems[existingSlotIndex];
-
-                if (slot.quantity > quantity) {
-                    slot.quantity -= quantity;
-                } else {
-                    // Remove slot entirely
-                    newItems.splice(existingSlotIndex, 1);
-                }
-                return { items: newItems };
-            }),
+            },
 
             hasItem: (itemId, quantity = 1) => {
                 const slot = get().items.find(s => s.itemId === itemId);
                 return slot ? slot.quantity >= quantity : false;
             },
 
-            addMoney: (amount) => set((state) => ({ money: state.money + amount })),
+            addMoney: (amount) => {
+                set((state) => ({ money: state.money + amount }));
+                if (get().isServerHydrated) {
+                    void get().syncToServer();
+                }
+            },
 
             removeMoney: (amount) => {
                 const current = get().money;
                 if (current >= amount) {
                     set({ money: current - amount });
+                    if (get().isServerHydrated) {
+                        void get().syncToServer();
+                    }
                     return true;
                 }
                 return false;
@@ -177,6 +231,63 @@ export const useInventoryStore = create<InventoryState>()(
                 return { success: true, message: `Inspected ${item.name}` };
             },
 
+            hydrateFromServer: async () => {
+                const current = get();
+                if (current.isServerHydrated || current.isSyncing) {
+                    return;
+                }
+
+                set({ isSyncing: true, syncError: null });
+                const { data, error } = await api.inventory.snapshot.get();
+
+                if (error || !data?.success || !data.snapshot) {
+                    set((state) => ({
+                        isSyncing: false,
+                        isServerHydrated: true,
+                        syncError: error?.message ?? data?.error ?? 'Failed to hydrate inventory from server',
+                        items: state.items.length > 0 ? state.items : toInventorySlots(STARTER_ITEM_STACKS),
+                        money: state.money > 0 ? state.money : STARTER_MONEY
+                    }));
+                    return;
+                }
+
+                set({
+                    money: data.snapshot.money,
+                    items: toInventorySlots(data.snapshot.items),
+                    isSyncing: false,
+                    isServerHydrated: true,
+                    syncError: null
+                });
+            },
+
+            syncToServer: async () => {
+                const state = get();
+                if (!state.isServerHydrated) {
+                    return;
+                }
+
+                set({ isSyncing: true, syncError: null });
+                const { data, error } = await api.inventory.snapshot.post({
+                    body: {
+                        money: state.money,
+                        items: toItemStacks(state.items)
+                    }
+                });
+
+                if (error || !data?.success) {
+                    set({
+                        isSyncing: false,
+                        syncError: error?.message ?? data?.error ?? 'Failed to sync inventory to server'
+                    });
+                    return;
+                }
+
+                set({
+                    isSyncing: false,
+                    syncError: null
+                });
+            },
+
             resetAll: () => set({
                 gameMode: 'detective',
                 flags: {},
@@ -197,11 +308,14 @@ export const useInventoryStore = create<InventoryState>()(
                 items: [],
                 money: 0,
                 detectiveInventory: {},
+                isServerHydrated: false,
+                isSyncing: false,
+                syncError: null
             }),
         }),
         {
             name: 'gw4-inventory-storage',
-            version: 2, // Bumped version for new schema
+            version: 2,
         }
     )
 );

@@ -103,12 +103,54 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'manager_intro': {
             id: 'manager_intro',
             characterId: 'bank_manager',
-            nextSceneId: 'manager_about_robbery'
+            choices: [
+                {
+                    id: 'manager_confront_seed',
+                    nextSceneId: 'manager_seed_reaction',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        Boolean(flags['clue_galdermann_mention'] || flags['clue_galdermann_leaflet'])
+                },
+                {
+                    id: 'manager_open_case',
+                    nextSceneId: 'manager_about_robbery',
+                    type: 'action'
+                }
+            ]
+        },
+        'manager_seed_reaction': {
+            id: 'manager_seed_reaction',
+            characterId: 'bank_manager',
+            nextSceneId: 'manager_about_robbery',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_galdermann_preseed_confirmed': true } }
+            ]
         },
         'manager_about_robbery': {
             id: 'manager_about_robbery',
             characterId: 'bank_manager',
-            nextSceneId: 'manager_dismissive'
+            choices: [
+                {
+                    id: 'manager_press_hartmann',
+                    nextSceneId: 'manager_hartmann_reaction',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        Boolean(flags['clue_hartmann_newspaper'] || flags['clue_hartmann_letter'])
+                },
+                {
+                    id: 'manager_request_statements',
+                    nextSceneId: 'manager_dismissive',
+                    type: 'action'
+                }
+            ]
+        },
+        'manager_hartmann_reaction': {
+            id: 'manager_hartmann_reaction',
+            characterId: 'bank_manager',
+            nextSceneId: 'manager_dismissive',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_hartmann_brushed_off': true } }
+            ]
         },
         'manager_dismissive': {
             id: 'manager_dismissive',
@@ -131,6 +173,39 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
             id: 'clerk_nervous',
             characterId: 'clerk',
             choices: [
+                {
+                    id: 'ask_about_hartmann',
+                    nextSceneId: 'clerk_hartmann_response',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        Boolean(flags['clue_hartmann_newspaper'] || flags['clue_hartmann_letter']) &&
+                        !flags['asked_hartmann'],
+                    actions: [
+                        {
+                            type: 'add_flag',
+                            payload: {
+                                'asked_hartmann': true,
+                                'clue_hartmann_internal_contact': true
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'ask_about_box_217',
+                    nextSceneId: 'clerk_box217_response',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        Boolean(flags['clue_vault_box_217']) && !flags['asked_box_217'],
+                    actions: [
+                        {
+                            type: 'add_flag',
+                            payload: {
+                                'asked_box_217': true,
+                                'clue_box217_sensitive': true
+                            }
+                        }
+                    ]
+                },
                 {
                     id: 'read_clerk_empathy',
                     nextSceneId: 'clerk_empathy_result',
@@ -169,6 +244,16 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                     type: 'action'
                 }
             ]
+        },
+        'clerk_hartmann_response': {
+            id: 'clerk_hartmann_response',
+            characterId: 'clerk',
+            nextSceneId: 'clerk_nervous'
+        },
+        'clerk_box217_response': {
+            id: 'clerk_box217_response',
+            characterId: 'clerk',
+            nextSceneId: 'clerk_nervous'
         },
         'clerk_empathy_success': {
             id: 'clerk_empathy_success',
@@ -270,6 +355,27 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                     }
                 },
                 {
+                    id: 'compare_chemical_sender',
+                    nextSceneId: 'vault_sender_match_result',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        Boolean(flags['clue_chemical_sender']) && !flags['compared_sender_residue'],
+                    skillCheck: {
+                        id: 'chk_bank_logic_sender_chain',
+                        voiceId: 'logic',
+                        difficulty: 8,
+                        onSuccess: {
+                            nextSceneId: 'vault_sender_match_success',
+                            actions: [
+                                { type: 'add_flag', payload: { 'clue_sender_residue_match': true } }
+                            ]
+                        },
+                        onFail: {
+                            nextSceneId: 'vault_sender_match_fail'
+                        }
+                    }
+                },
+                {
                     id: 'return_to_hub',
                     nextSceneId: 'vault_leave',
                     type: 'action'
@@ -305,6 +411,22 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
             id: 'vault_intuition_fail',
             characterId: 'inspector',
             nextSceneId: 'vault_continue'
+        },
+        'vault_sender_match_success': {
+            id: 'vault_sender_match_success',
+            characterId: 'inspector',
+            nextSceneId: 'vault_continue',
+            onEnter: [
+                { type: 'add_flag', payload: { 'compared_sender_residue': true } }
+            ]
+        },
+        'vault_sender_match_fail': {
+            id: 'vault_sender_match_fail',
+            characterId: 'inspector',
+            nextSceneId: 'vault_continue',
+            onEnter: [
+                { type: 'add_flag', payload: { 'compared_sender_residue': true } }
+            ]
         },
 
         // ─────────────────────────────────────────────────────────────
@@ -419,6 +541,19 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                         difficulty: 12,
                         onSuccess: { nextSceneId: 'vault_intuition_success' },
                         onFail: { nextSceneId: 'vault_intuition_fail' }
+                    }
+                },
+                {
+                    id: 'compare_chemical_sender',
+                    nextSceneId: 'vault_sender_match_result',
+                    condition: (flags) =>
+                        Boolean(flags['clue_chemical_sender']) && !flags['compared_sender_residue'],
+                    skillCheck: {
+                        id: 'chk_bank_logic_sender_chain',
+                        voiceId: 'logic',
+                        difficulty: 8,
+                        onSuccess: { nextSceneId: 'vault_sender_match_success' },
+                        onFail: { nextSceneId: 'vault_sender_match_fail' }
                     }
                 },
                 {

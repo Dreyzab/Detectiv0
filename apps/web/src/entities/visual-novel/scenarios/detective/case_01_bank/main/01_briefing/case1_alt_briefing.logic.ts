@@ -1,235 +1,246 @@
 import type { VNScenarioLogic } from '../../../../../model/types';
 
-/**
- * Case 1 Alt Briefing: Bahnhof & Banküberfall (Alternative Opening)
- * 
- * Dynamic, modern visual novel style:
- * - Short text blocks, frequent transitions
- * - Station arrival → Police recognition → Bank crime scene → Clara meeting
- * 
- * This is a PARALLEL scenario to the original briefing, not a replacement.
- */
-
 export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_alt_briefing',
-    title: 'Ankunft am Hauptbahnhof',
-    defaultBackgroundUrl: '/images/scenarios/bahnhof_platform.png',
-    initialSceneId: 'arrival_platform',
+    title: 'Case 1 Briefing - Clara',
+    defaultBackgroundUrl: '/images/scenarios/street_day_1905.png',
+    initialSceneId: 'beat1_open',
     mode: 'fullscreen',
     scenes: {
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 1: ANKUNFT AM BAHNHOF (3 short scenes)
-        // ═══════════════════════════════════════════════════════════════
-        'arrival_platform': {
-            id: 'arrival_platform',
-            backgroundUrl: '/images/scenarios/bahnhof_platform.png',
-            nextSceneId: 'platform_atmosphere',
-            onEnter: [
-                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'briefing' } }
-            ],
-            // [TEST] Passive Check: Logic (Easy) - Should pass
-            passiveChecks: [
+        'beat1_open': {
+            id: 'beat1_open',
+            characterId: 'clara_altenburg',
+            choices: [
                 {
-                    id: 'check_arrival_logic',
-                    voiceId: 'logic',
-                    difficulty: 2, // Very easy
-                    isPassive: true,
-                    passiveText: "The train station structure suggests a late 19th-century construction. Efficient.",
-                    passiveFailText: "It's just a train station."
+                    id: 'tactic_professional',
+                    nextSceneId: 'beat1_professional_response',
+                    actions: [{ type: 'add_flag', payload: { 'briefing_tactic_professional': true } }]
+                },
+                {
+                    id: 'tactic_harsh',
+                    nextSceneId: 'beat1_harsh_response',
+                    actions: [{ type: 'add_flag', payload: { 'briefing_tactic_harsh': true } }]
+                },
+                {
+                    id: 'tactic_soft',
+                    nextSceneId: 'beat1_soft_response',
+                    actions: [{ type: 'add_flag', payload: { 'briefing_tactic_soft': true } }]
                 }
             ]
         },
-        'platform_atmosphere': {
-            id: 'platform_atmosphere',
-            backgroundUrl: '/images/scenarios/bahnhof_platform.png',
-            nextSceneId: 'police_approach'
+        'beat1_professional_response': {
+            id: 'beat1_professional_response',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_intro_professional'
         },
-        'police_approach': {
-            id: 'police_approach',
-            backgroundUrl: '/images/scenarios/bahnhof_platform.png',
-            characterId: 'gendarm',
-            nextSceneId: 'police_briefing',
-            // [TEST] Passive Check: Empathy (Impossible) - Should fail
+        'beat1_harsh_response': {
+            id: 'beat1_harsh_response',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_intro_harsh'
+        },
+        'beat1_soft_response': {
+            id: 'beat1_soft_response',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_intro_soft'
+        },
+
+        'beat2_intro_professional': {
+            id: 'beat2_intro_professional',
+            characterId: 'clara_altenburg',
+            choices: [
+                {
+                    id: 'beat2_ask_what_taken',
+                    nextSceneId: 'beat2_taken_answer',
+                    actions: [{ type: 'add_flag', payload: { 'intel_vault_box_unknown': true } }]
+                },
+                {
+                    id: 'beat2_ask_who_runs_case',
+                    nextSceneId: 'beat2_inspector_answer',
+                    actions: [{ type: 'add_flag', payload: { 'intel_inspector_weiss': true } }]
+                }
+            ]
+        },
+        'beat2_intro_harsh': {
+            id: 'beat2_intro_harsh',
+            characterId: 'clara_altenburg',
+            choices: [
+                {
+                    id: 'beat2_ask_what_taken',
+                    nextSceneId: 'beat2_taken_answer',
+                    actions: [{ type: 'add_flag', payload: { 'intel_vault_box_unknown': true } }]
+                },
+                {
+                    id: 'beat2_ask_who_runs_case',
+                    nextSceneId: 'beat2_inspector_answer',
+                    actions: [{ type: 'add_flag', payload: { 'intel_inspector_weiss': true } }]
+                }
+            ]
+        },
+        'beat2_intro_soft': {
+            id: 'beat2_intro_soft',
+            characterId: 'clara_altenburg',
+            choices: [
+                {
+                    id: 'beat2_ask_what_taken',
+                    nextSceneId: 'beat2_taken_answer',
+                    actions: [{ type: 'add_flag', payload: { 'intel_vault_box_unknown': true } }]
+                },
+                {
+                    id: 'beat2_ask_who_runs_case',
+                    nextSceneId: 'beat2_inspector_answer',
+                    actions: [{ type: 'add_flag', payload: { 'intel_inspector_weiss': true } }]
+                }
+            ]
+        },
+        'beat2_taken_answer': {
+            id: 'beat2_taken_answer',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_empathy_read'
+        },
+        'beat2_inspector_answer': {
+            id: 'beat2_inspector_answer',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_empathy_read'
+        },
+        'beat2_empathy_read': {
+            id: 'beat2_empathy_read',
+            characterId: 'inspector',
+            nextSceneId: 'beat3_setup',
             passiveChecks: [
                 {
-                    id: 'check_police_empathy',
+                    id: 'chk_case1_briefing_empathy_clara',
                     voiceId: 'empathy',
-                    difficulty: 99, // Impossible (avoids crit chance)
+                    difficulty: 7,
                     isPassive: true,
-                    passiveText: "He is hiding something deep beneath that uniform.",
-                    passiveFailText: "He seems like a standard officer. Nothing special."
+                    passiveText: 'Her tone is controlled, but she is personally invested in this case.',
+                    passiveFailText: 'She sounds composed. Nothing else stands out.',
+                    onSuccess: {
+                        actions: [{ type: 'add_flag', payload: { 'clue_clara_personal_stake': true } }]
+                    }
                 }
             ]
         },
-        'police_briefing': {
-            id: 'police_briefing',
-            backgroundUrl: '/images/scenarios/bahnhof_platform.png',
-            characterId: 'gendarm',
-            choices: [
-                {
-                    id: 'ask_details',
-                    nextSceneId: 'briefing_details',
-                    type: 'inquiry'
-                },
-                {
-                    id: 'go_immediately',
-                    nextSceneId: 'transition_to_bank',
-                    type: 'action'
-                }
-            ]
-        },
-        'briefing_details': {
-            id: 'briefing_details',
-            backgroundUrl: '/images/scenarios/bahnhof_platform.png',
-            characterId: 'gendarm',
-            nextSceneId: 'transition_to_bank'
-        },
 
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 2: FAHRT ZUM TATORT (2 scenes - transition)
-        // ═══════════════════════════════════════════════════════════════
-        'transition_to_bank': {
-            id: 'transition_to_bank',
-            backgroundUrl: '/images/scenarios/carriage_interior.png',
-            nextSceneId: 'bank_arrival'
-        },
-        'bank_arrival': {
-            id: 'bank_arrival',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            nextSceneId: 'notice_argument'
-        },
-
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 3: BEGEGNUNG MIT CLARA (6 scenes - main interaction)
-        // ═══════════════════════════════════════════════════════════════
-        'notice_argument': {
-            id: 'notice_argument',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            characterId: 'clara_altenburg',
-            nextSceneId: 'ask_about_clara'
-        },
-        'ask_about_clara': {
-            id: 'ask_about_clara',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            characterId: 'gendarm',
-            nextSceneId: 'clara_confronts'
-        },
-        'clara_confronts': {
-            id: 'clara_confronts',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
+        'beat3_setup': {
+            id: 'beat3_setup',
             characterId: 'clara_altenburg',
             choices: [
                 {
-                    id: 'respond_professional',
-                    nextSceneId: 'clara_react_professional',
-                    type: 'action',
+                    id: 'beat3_professional_bonus',
+                    nextSceneId: 'beat3_professional_result',
                     actions: [
-                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 10 } },
-                        { type: 'add_flag', payload: { 'clara_respect_earned': true } }
+                        { type: 'add_flag', payload: { 'contact_boehme': true } },
+                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 5 } }
                     ]
                 },
                 {
-                    id: 'respond_curious',
-                    nextSceneId: 'clara_react_curious',
-                    type: 'action',
+                    id: 'beat3_harsh_bonus',
+                    nextSceneId: 'beat3_harsh_result',
                     actions: [
-                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 5 } },
-                        { type: 'add_flag', payload: { 'clara_intrigued': true } }
+                        { type: 'add_flag', payload: { 'clue_previous_investigator': true } },
+                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 1 } }
                     ]
                 },
                 {
-                    id: 'respond_direct',
-                    nextSceneId: 'clara_react_direct',
-                    type: 'action',
+                    id: 'beat3_soft_bonus',
+                    nextSceneId: 'beat3_soft_result',
                     actions: [
-                        { type: 'add_flag', payload: { 'clara_tested': true } }
+                        { type: 'add_flag', payload: { 'rumor_night_guard': true } },
+                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 3 } }
                     ]
                 }
             ]
         },
-        'clara_react_professional': {
-            id: 'clara_react_professional',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
+        'beat3_professional_result': {
+            id: 'beat3_professional_result',
             characterId: 'clara_altenburg',
-            nextSceneId: 'clara_introduces'
+            nextSceneId: 'beat3_logic_gate'
         },
-        'clara_react_curious': {
-            id: 'clara_react_curious',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
+        'beat3_harsh_result': {
+            id: 'beat3_harsh_result',
             characterId: 'clara_altenburg',
-            nextSceneId: 'clara_introduces'
+            nextSceneId: 'beat3_logic_gate'
         },
-        'clara_react_direct': {
-            id: 'clara_react_direct',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
+        'beat3_soft_result': {
+            id: 'beat3_soft_result',
             characterId: 'clara_altenburg',
-            nextSceneId: 'clara_introduces'
+            nextSceneId: 'beat3_logic_gate'
         },
-
-        // ═══════════════════════════════════════════════════════════════
-        // ACT 4: CLARA'S OBSERVATIONS (5 scenes - exposition)
-        // ═══════════════════════════════════════════════════════════════
-        'clara_introduces': {
-            id: 'clara_introduces',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            characterId: 'clara_altenburg',
-            nextSceneId: 'clara_observation_1'
-        },
-        'clara_observation_1': {
-            id: 'clara_observation_1',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            characterId: 'clara_altenburg',
-            nextSceneId: 'officer_interrupts'
-        },
-        'officer_interrupts': {
-            id: 'officer_interrupts',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            characterId: 'gendarm',
-            nextSceneId: 'detective_intervenes'
-        },
-        'detective_intervenes': {
-            id: 'detective_intervenes',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            // No characterId = detective's inner monologue / action
-            nextSceneId: 'clara_continues',
-            onEnter: [
-                { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 5 } }
-            ]
-        },
-        'clara_continues': {
-            id: 'clara_continues',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            characterId: 'clara_altenburg',
-            nextSceneId: 'clara_smell_clue'
-        },
-        'clara_smell_clue': {
-            id: 'clara_smell_clue',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
-            characterId: 'clara_altenburg',
+        'beat3_logic_gate': {
+            id: 'beat3_logic_gate',
+            characterId: 'inspector',
             choices: [
                 {
-                    id: 'enter_bank',
-                    nextSceneId: 'briefing_exit',
-                    type: 'action'
+                    id: 'beat3_logic_deduce_coverup',
+                    nextSceneId: 'beat3_logic_fail',
+                    skillCheck: {
+                        id: 'chk_case1_briefing_logic_coverup',
+                        voiceId: 'logic',
+                        difficulty: 8,
+                        onSuccess: {
+                            nextSceneId: 'beat3_logic_success',
+                            actions: [{ type: 'add_flag', payload: { 'clue_coverup_suspicion': true } }]
+                        },
+                        onFail: {
+                            nextSceneId: 'beat3_logic_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'beat3_logic_skip',
+                    nextSceneId: 'beat4_exit'
                 }
             ]
         },
+        'beat3_logic_success': {
+            id: 'beat3_logic_success',
+            characterId: 'inspector',
+            nextSceneId: 'beat4_exit'
+        },
+        'beat3_logic_fail': {
+            id: 'beat3_logic_fail',
+            characterId: 'inspector',
+            nextSceneId: 'beat4_exit'
+        },
 
-        // ═══════════════════════════════════════════════════════════════
-        // EXIT: Transition to Bank Investigation
-        // ═══════════════════════════════════════════════════════════════
-        'briefing_exit': {
-            id: 'briefing_exit',
-            backgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
+        'beat4_exit': {
+            id: 'beat4_exit',
+            characterId: 'clara_altenburg',
+            choices: [
+                {
+                    id: 'beat4_ask_where',
+                    nextSceneId: 'beat4_ask_where_result'
+                },
+                {
+                    id: 'beat4_silent_nod',
+                    nextSceneId: 'beat4_silent_nod_result',
+                    actions: [{ type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 1 } }]
+                }
+            ]
+        },
+        'beat4_ask_where_result': {
+            id: 'beat4_ask_where_result',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'briefing_finalize'
+        },
+        'beat4_silent_nod_result': {
+            id: 'beat4_silent_nod_result',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'briefing_finalize'
+        },
+        'briefing_finalize': {
+            id: 'briefing_finalize',
+            characterId: 'inspector',
             nextSceneId: 'END',
             onEnter: [
-                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'bank_investigation' } },
+                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'briefing' } },
                 { type: 'unlock_point', payload: 'loc_freiburg_bank' },
                 {
                     type: 'add_flag', payload: {
                         'case01_started': true,
                         'clara_introduced': true,
-                        'alt_briefing_completed': true
+                        'alt_briefing_completed': true,
+                        'item_briefing_envelope': true
                     }
                 }
             ]
@@ -238,4 +249,3 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
 };
 
 export default CASE1_ALT_BRIEFING_LOGIC;
-

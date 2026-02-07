@@ -4,13 +4,11 @@ import { Check, X } from 'lucide-react';
 import { useInventoryStore } from '../../entities/inventory/model/store';
 import { InventoryGrid } from '../../entities/inventory/ui/InventoryGrid';
 import type { InventorySlot } from '../../entities/inventory/model/types';
-import { fromSharedItem } from '../../entities/inventory/model/types';
 import { MerchantModal } from '../../features/merchant/ui/MerchantModal';
 import { useMerchantUiStore } from '../../features/merchant/model/store';
-import { ITEM_REGISTRY, STARTER_ITEM_STACKS } from '@repo/shared/data/items';
 
 export const InventoryPage = () => {
-    const { items, money, addItem, removeItem, useItem: consumeItem } = useInventoryStore();
+    const { items, money, removeItem, useItem: consumeItem, hydrateFromServer } = useInventoryStore();
     const [selectedSlot, setSelectedSlot] = useState<InventorySlot | null>(null);
     const isMerchantOpen = useMerchantUiStore((state) => state.isOpen);
     const activeMerchantId = useMerchantUiStore((state) => state.merchantId);
@@ -18,16 +16,9 @@ export const InventoryPage = () => {
     const closeMerchant = useMerchantUiStore((state) => state.closeMerchant);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-    // Initial mock data for testing if empty
     React.useEffect(() => {
-        if (items.length === 0) {
-            STARTER_ITEM_STACKS.forEach((stack) => {
-                const itemDef = ITEM_REGISTRY[stack.itemId];
-                if (!itemDef) return;
-                addItem(fromSharedItem(itemDef), stack.quantity);
-            });
-        }
-    }, [items.length, addItem]);
+        void hydrateFromServer();
+    }, [hydrateFromServer]);
 
     const handleItemClick = (slot: InventorySlot) => {
         setSelectedSlot(slot);

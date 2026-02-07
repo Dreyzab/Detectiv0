@@ -27,7 +27,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         lng: 7.842609,
         type: 'interest',
         packId: 'fbg1905',
-        bindings: [vn('intro_arrival', 'Look around')],
+        bindings: [vn('detective_case1_hbf_arrival', 'Arrive in Freiburg')],
         image: '/images/detective/loc_hauptbahnhof.png',
         voices: { logic: "Trains arriving on time. A system in motion." }
     },
@@ -41,18 +41,30 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         packId: 'fbg1905',
         bindings: [
             {
+                id: 'bank_qr_gate',
+                trigger: 'marker_click',
+                label: 'Scan Entry Gate',
+                priority: 30,
+                conditions: [{ type: 'flag_is', flagId: 'qr_scanned_bank', value: false }],
+                actions: [
+                    { type: 'add_flags', flags: ['near_bank'] },
+                    { type: 'start_vn', scenarioId: 'detective_case1_qr_scan_bank' }
+                ]
+            },
+            {
                 id: 'bank_enter',
                 trigger: 'marker_click',
                 label: 'Investigate Crime Scene',
                 priority: 20,
+                conditions: [{ type: 'flag_is', flagId: 'qr_scanned_bank', value: true }],
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_bank_scene' }]
             },
             {
                 id: 'bank_qr',
-                trigger: 'qr_scan', // Hypothetical physical trigger
-                label: 'Scan Evidence',
-                priority: 30,
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_bank_hidden_clue' }]
+                trigger: 'qr_scan',
+                label: 'Direct QR Entry',
+                priority: 40,
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_bank_scene' }]
             }
         ],
         image: '/images/detective/loc_bankhaus.png',

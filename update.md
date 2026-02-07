@@ -4,6 +4,103 @@
 
 ---
 
+## [07.02.2026] — Phase 3 Kickoff: Inventory + Quest + Dossier Persistence Slices
+
+### Added
+- **Inventory API module** on server:
+  - `GET /inventory/snapshot` (loads user inventory snapshot, seeds starter snapshot if empty).
+  - `POST /inventory/snapshot` (persists money + item stacks with payload sanitization).
+  - File: `apps/server/src/modules/inventory.ts`
+- **Inventory persistence table in Drizzle schema**:
+  - `user_inventory_snapshots` (`user_id`, `money`, `items`, `updated_at`).
+  - File: `apps/server/src/db/schema.ts`
+- **Contracts for inventory snapshot flow**:
+  - `InventorySnapshot`, request/response types.
+  - File: `packages/contracts/inventory.ts`
+- **Server integration test**:
+  - new controlled integration test for inventory module behavior.
+  - File: `apps/server/test/modules/inventory.test.ts`
+- **Quest API module** on server:
+  - `GET /quests/snapshot` (loads persisted quest states).
+  - `POST /quests/snapshot` (replaces user quest snapshot with normalized payload).
+  - File: `apps/server/src/modules/quests.ts`
+- **Quest snapshot contracts**:
+  - added request/response types for quest snapshot sync.
+  - File: `packages/contracts/quests.ts`
+- **Server integration test (quests)**:
+  - controlled snapshot tests for `/quests/snapshot`.
+  - File: `apps/server/test/modules/quests.test.ts`
+- **Dossier API module** on server:
+  - `GET /dossier/snapshot` (loads dossier snapshot with safe defaults).
+  - `POST /dossier/snapshot` (persists normalized dossier payload).
+  - File: `apps/server/src/modules/dossier.ts`
+- **Dossier snapshot contracts**:
+  - added request/response types for dossier state sync.
+  - File: `packages/contracts/dossier.ts`
+- **Server integration test (dossier)**:
+  - controlled snapshot tests for `/dossier/snapshot`.
+  - File: `apps/server/test/modules/dossier.test.ts`
+
+### Changed
+- **Server bootstrap** now registers inventory module.
+  - File: `apps/server/src/index.ts`
+- **Server bootstrap** now registers quests + dossier modules.
+  - File: `apps/server/src/index.ts`
+- **Migration pipeline updated**:
+  - added additive Drizzle migration `apps/server/drizzle/0004_lovely_mastermind.sql` for `user_inventory_snapshots`.
+  - added additive Drizzle migration `apps/server/drizzle/0005_shiny_plazm.sql` for `user_quests.stage` and `user_quests.completed_objective_ids`.
+  - added additive Drizzle migration `apps/server/drizzle/0006_magenta_satana.sql` for `user_dossier_snapshots`.
+- **Typed web API client** now includes `api.inventory.snapshot.get/post`.
+  - File: `apps/web/src/shared/api/client.ts`
+- **Typed web API client** now includes `api.quests.snapshot.get/post`.
+  - File: `apps/web/src/shared/api/client.ts`
+- **Typed web API client** now includes `api.dossier.snapshot.get/post`.
+  - File: `apps/web/src/shared/api/client.ts`
+- **Inventory Zustand store** now supports:
+  - `hydrateFromServer()` for initial snapshot load,
+  - `syncToServer()` after item/money mutations,
+  - sync status flags (`isServerHydrated`, `isSyncing`, `syncError`).
+  - File: `apps/web/src/entities/inventory/model/store.ts`
+- **Quest Zustand store** now supports:
+  - `hydrateFromServer()` / `syncToServer()` for quest snapshot lifecycle,
+  - sync status flags and normalized snapshot payload handling.
+  - File: `apps/web/src/features/quests/store.ts`
+- **Global app boot hydration**:
+  - inventory snapshot hydration now starts from `App.tsx`, so merchant/map flows sync even without opening Inventory page first.
+  - File: `apps/web/src/App.tsx`
+- **Quest engine boot flow**:
+  - `useQuestEngine` now hydrates quest snapshot first, then auto-starts `case01` only if missing.
+  - File: `apps/web/src/features/quests/engine.ts`
+- **Dossier Zustand store** now supports:
+  - `hydrateFromServer()` / `syncToServer()` with debounced sync queue,
+  - sync status flags and snapshot normalization.
+  - File: `apps/web/src/features/detective/dossier/store.ts`
+- **Global app boot hydration**:
+  - dossier snapshot hydration now starts from `App.tsx` alongside inventory.
+  - File: `apps/web/src/App.tsx`
+- **Inventory page** now hydrates from server on mount (instead of local mock seeding).
+  - File: `apps/web/src/pages/InventoryPage/InventoryPage.tsx`
+- **Shared item data** exports starter currency constant `STARTER_MONEY`.
+  - File: `packages/shared/data/items.ts`
+
+### Validation
+- `bun test apps/server/test/modules/inventory.test.ts`
+- `bun x tsc -p apps/server/tsconfig.json --noEmit`
+- `bun x tsc -p apps/web/tsconfig.app.json --noEmit`
+- `bun x tsc -p packages/contracts/tsconfig.json --noEmit`
+- `bun x tsc -p packages/shared/tsconfig.json --noEmit`
+- `bun x eslint --config apps/server/eslint.config.js apps/server/src/db/schema.ts apps/server/src/index.ts apps/server/src/modules/inventory.ts`
+- `bun x eslint --config apps/server/eslint.config.js apps/server/src/modules/quests.ts apps/server/test/modules/quests.test.ts`
+- `bun x eslint --config apps/server/eslint.config.js apps/server/src/modules/dossier.ts apps/server/test/modules/dossier.test.ts`
+- `bun x eslint --config apps/server/eslint.config.js apps/server/test/modules/inventory.test.ts`
+- `bun x eslint --config apps/web/eslint.config.js apps/web/src/App.tsx apps/web/src/shared/api/client.ts apps/web/src/entities/inventory/model/store.ts apps/web/src/pages/InventoryPage/InventoryPage.tsx`
+- `bun x eslint --config apps/web/eslint.config.js apps/web/src/features/quests/store.ts apps/web/src/features/quests/engine.ts`
+- `bun x eslint --config apps/web/eslint.config.js apps/web/src/features/detective/dossier/store.ts`
+- `bun test apps/server/test/modules/quests.test.ts`
+- `bun test apps/server/test/modules/dossier.test.ts`
+
+---
+
 ## [07.02.2026] — UI Localization Refactoring (react-i18next)
 
 ### Changed

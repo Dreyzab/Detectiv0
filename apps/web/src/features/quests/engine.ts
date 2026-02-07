@@ -6,21 +6,39 @@ import { QUESTS } from './data';
 
 export const useQuestEngine = () => {
     const flags = useDossierStore(state => state.flags);
-    const { registerQuest, startQuest, evaluateQuests } = useQuestStore();
+    const {
+        registerQuest,
+        startQuest,
+        evaluateQuests,
+        hydrateFromServer,
+        isServerHydrated,
+        userQuests
+    } = useQuestStore();
 
-    // 1. Initial Setup (Register Quests)
     useEffect(() => {
-        // Load static quests
         Object.values(QUESTS).forEach(quest => {
             registerQuest(quest);
         });
+    }, [registerQuest]);
 
-        // Auto-start Case 01 for prototype
-        startQuest('case01');
-    }, [registerQuest, startQuest]);
-
-    // 2. React to Flags
     useEffect(() => {
+        void hydrateFromServer();
+    }, [hydrateFromServer]);
+
+    useEffect(() => {
+        if (!isServerHydrated) {
+            return;
+        }
+
+        if (!userQuests['case01']) {
+            startQuest('case01');
+        }
+    }, [isServerHydrated, startQuest, userQuests]);
+
+    useEffect(() => {
+        if (!isServerHydrated) {
+            return;
+        }
         evaluateQuests(flags);
-    }, [flags, evaluateQuests]);
+    }, [flags, evaluateQuests, isServerHydrated]);
 };

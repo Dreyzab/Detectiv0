@@ -3,11 +3,20 @@ import type {
     ApplyProgressionResponse,
     CaseAdvanceRequest,
     CaseAdvanceResponse,
+    DossierSnapshotResponse,
     DiscoverEvidenceRequest,
     DiscoverEvidenceResponse,
     MapPointsQuery,
     MapPointsResponse,
+    InventorySnapshotResponse,
     ResolveCodeResponse,
+    SaveDossierSnapshotRequest,
+    SaveDossierSnapshotResponse,
+    QuestSnapshotResponse,
+    SaveInventorySnapshotRequest,
+    SaveInventorySnapshotResponse,
+    SaveQuestSnapshotRequest,
+    SaveQuestSnapshotResponse,
     TimeTickRequest,
     TimeTickResponse,
     TravelCompleteResponse,
@@ -186,6 +195,39 @@ export const api = {
                         body
                     })
             }
+        }
+    },
+    inventory: {
+        snapshot: {
+            get: async (): Promise<ApiResult<InventorySnapshotResponse>> =>
+                requestJson<InventorySnapshotResponse>('/inventory/snapshot'),
+            post: async ({ body }: { body: SaveInventorySnapshotRequest }): Promise<ApiResult<SaveInventorySnapshotResponse>> =>
+                requestJson<SaveInventorySnapshotResponse, SaveInventorySnapshotRequest>('/inventory/snapshot', {
+                    method: 'POST',
+                    body
+                })
+        }
+    },
+    quests: {
+        snapshot: {
+            get: async (): Promise<ApiResult<QuestSnapshotResponse>> =>
+                requestJson<QuestSnapshotResponse>('/quests/snapshot'),
+            post: async ({ body }: { body: SaveQuestSnapshotRequest }): Promise<ApiResult<SaveQuestSnapshotResponse>> =>
+                requestJson<SaveQuestSnapshotResponse, SaveQuestSnapshotRequest>('/quests/snapshot', {
+                    method: 'POST',
+                    body
+                })
+        }
+    },
+    dossier: {
+        snapshot: {
+            get: async (): Promise<ApiResult<DossierSnapshotResponse>> =>
+                requestJson<DossierSnapshotResponse>('/dossier/snapshot'),
+            post: async ({ body }: { body: SaveDossierSnapshotRequest }): Promise<ApiResult<SaveDossierSnapshotResponse>> =>
+                requestJson<SaveDossierSnapshotResponse, SaveDossierSnapshotRequest>('/dossier/snapshot', {
+                    method: 'POST',
+                    body
+                })
         }
     }
 };

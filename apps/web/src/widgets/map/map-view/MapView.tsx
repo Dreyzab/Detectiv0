@@ -39,6 +39,7 @@ export const MapView = () => {
     const setPointState = useDossierStore((state) => state.setPointState);
     const setFlag = useDossierStore((state) => state.setFlag);
     const startScenario = useVNStore(state => state.startScenario);
+    const activeScenarioId = useVNStore(state => state.activeScenarioId);
     const locale = useVNStore(state => state.locale);
     const navigate = useNavigate();
     const { executeAction } = useMapActionHandler();
@@ -111,6 +112,24 @@ export const MapView = () => {
             caseId: worldCaseId
         });
     }, [worldCaseId, hydrateWorld]);
+
+    useEffect(() => {
+        if (activeScenarioId) {
+            return;
+        }
+
+        const shouldStartExplorationIntro =
+            flags['alt_briefing_completed'] &&
+            !flags['case01_map_exploration_intro_done'] &&
+            !flags['qr_scanned_bank'];
+
+        if (!shouldStartExplorationIntro) {
+            return;
+        }
+
+        startScenario('detective_case1_map_first_exploration');
+        navigate('/vn/detective_case1_map_first_exploration');
+    }, [activeScenarioId, flags, startScenario, navigate]);
 
     // Unified Map Hook
     const { points, pointStates } = useMapPoints({
@@ -301,14 +320,14 @@ export const MapView = () => {
                 </div>
 
                 <div
-                    className="absolute inset-0 pointer-events-none z-[var(--z-map-texture)] mix-blend-multiply opacity-15 bg-[#d4c5a3]"
+                    className="absolute inset-0 pointer-events-none z-(--z-map-texture) mix-blend-multiply opacity-15 bg-[#d4c5a3]"
                     style={{
                         backgroundImage: 'url("/images/paper-texture.png")',
                         backgroundSize: '200px'
                     }}
                 />
 
-                <div className={cn('absolute inset-0 z-[var(--z-map-base)]', isVintage && 'sepia-[.3] contrast-[1.05] brightness-95 saturate-[.9]')}>
+                <div className={cn('absolute inset-0 z-(--z-map-base)', isVintage && 'sepia-[.3] contrast-[1.05] brightness-95 saturate-[.9]')}>
                     <Map
                         ref={mapRef}
                         initialViewState={{
