@@ -21,7 +21,8 @@ const GLOBAL_POINT_IDS = new Set<string>([
 const PROGRESSION_POINT_IDS = new Set<string>([
     // Unlock mechanics during case and keep for long-term progression.
     'loc_uni_chem',
-    'loc_uni_med'
+    'loc_uni_med',
+    'loc_rathaus'
 ]);
 
 export const resolvePointLifecycle = (pointId: string): PointLifecycleConfig => {

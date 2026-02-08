@@ -2,11 +2,16 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_alt_briefing',
-    title: 'Case 1 Briefing - Clara',
+    title: 'Case 1 Briefing - Rathaus',
     defaultBackgroundUrl: '/images/scenarios/street_day_1905.png',
-    initialSceneId: 'beat1_open',
+    initialSceneId: 'beat0_mayor_intro',
     mode: 'fullscreen',
     scenes: {
+        'beat0_mayor_intro': {
+            id: 'beat0_mayor_intro',
+            characterId: 'mayor',
+            nextSceneId: 'beat1_open'
+        },
         'beat1_open': {
             id: 'beat1_open',
             characterId: 'clara_altenburg',
@@ -14,17 +19,29 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
                 {
                     id: 'tactic_professional',
                     nextSceneId: 'beat1_professional_response',
-                    actions: [{ type: 'add_flag', payload: { 'briefing_tactic_professional': true } }]
+                    actions: [
+                        { type: 'add_flag', payload: { 'briefing_tactic_professional': true } },
+                        { type: 'modify_relationship', payload: { characterId: 'mayor', amount: 2 } },
+                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 2 } }
+                    ]
                 },
                 {
                     id: 'tactic_harsh',
                     nextSceneId: 'beat1_harsh_response',
-                    actions: [{ type: 'add_flag', payload: { 'briefing_tactic_harsh': true } }]
+                    actions: [
+                        { type: 'add_flag', payload: { 'briefing_tactic_harsh': true } },
+                        { type: 'modify_relationship', payload: { characterId: 'mayor', amount: -1 } },
+                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 1 } }
+                    ]
                 },
                 {
                     id: 'tactic_soft',
                     nextSceneId: 'beat1_soft_response',
-                    actions: [{ type: 'add_flag', payload: { 'briefing_tactic_soft': true } }]
+                    actions: [
+                        { type: 'add_flag', payload: { 'briefing_tactic_soft': true } },
+                        { type: 'modify_relationship', payload: { characterId: 'mayor', amount: 1 } },
+                        { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 3 } }
+                    ]
                 }
             ]
         },
@@ -57,6 +74,11 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
                     id: 'beat2_ask_who_runs_case',
                     nextSceneId: 'beat2_inspector_answer',
                     actions: [{ type: 'add_flag', payload: { 'intel_inspector_weiss': true } }]
+                },
+                {
+                    id: 'beat2_ask_exactly_happened',
+                    nextSceneId: 'beat2_exactly_happened_professional',
+                    type: 'flavor'
                 }
             ]
         },
@@ -73,6 +95,11 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
                     id: 'beat2_ask_who_runs_case',
                     nextSceneId: 'beat2_inspector_answer',
                     actions: [{ type: 'add_flag', payload: { 'intel_inspector_weiss': true } }]
+                },
+                {
+                    id: 'beat2_ask_exactly_happened',
+                    nextSceneId: 'beat2_exactly_happened_harsh',
+                    type: 'flavor'
                 }
             ]
         },
@@ -89,8 +116,28 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
                     id: 'beat2_ask_who_runs_case',
                     nextSceneId: 'beat2_inspector_answer',
                     actions: [{ type: 'add_flag', payload: { 'intel_inspector_weiss': true } }]
+                },
+                {
+                    id: 'beat2_ask_exactly_happened',
+                    nextSceneId: 'beat2_exactly_happened_soft',
+                    type: 'flavor'
                 }
             ]
+        },
+        'beat2_exactly_happened_professional': {
+            id: 'beat2_exactly_happened_professional',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_intro_professional'
+        },
+        'beat2_exactly_happened_harsh': {
+            id: 'beat2_exactly_happened_harsh',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_intro_harsh'
+        },
+        'beat2_exactly_happened_soft': {
+            id: 'beat2_exactly_happened_soft',
+            characterId: 'clara_altenburg',
+            nextSceneId: 'beat2_intro_soft'
         },
         'beat2_taken_answer': {
             id: 'beat2_taken_answer',
@@ -235,9 +282,12 @@ export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
             onEnter: [
                 { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'briefing' } },
                 { type: 'unlock_point', payload: 'loc_freiburg_bank' },
+                { type: 'unlock_point', payload: 'loc_rathaus' },
                 {
                     type: 'add_flag', payload: {
                         'case01_started': true,
+                        'met_mayor_first': true,
+                        'clara_met_at_mayor': true,
                         'clara_introduced': true,
                         'alt_briefing_completed': true,
                         'item_briefing_envelope': true

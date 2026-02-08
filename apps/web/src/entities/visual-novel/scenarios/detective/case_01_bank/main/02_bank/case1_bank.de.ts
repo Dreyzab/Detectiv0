@@ -10,20 +10,20 @@ export const CASE1_BANK_DE: VNContentPack = {
             text: 'Bankhaus J.A. Krebs. Der Tatort. Die Morgenluft ist kalt.',
             choices: {
                 'enter_solo': 'Zeit, an die Arbeit zu gehen.',
-                'enter_duo': 'Gehen wir hinein, Victoria.'
+                'enter_duo': 'Gehen wir hinein, Clara.'
             }
         },
         'scene_solo_entry': {
             text: 'Ich stoße die schweren Türen auf. Die Stille drinnen ist beklemmend. Ich arbeite anfangs lieber allein.'
         },
         'scene_duo_entry': {
-            text: 'Wir betreten das Gebäude gemeinsam. Victoria schaut sich um, unbeeindruckt von der Pracht oder der Anspannung.'
+            text: 'Wir betreten das Gebaude gemeinsam. Mit Clara an Ihrer Seite verandert sich die Stimmung in der Halle sofort.'
         },
         'victoria_interrupts': {
             text: 'Herr Inspektor! Warten Sie! Fangen Sie nicht ohne mich an!'
         },
         'victoria_intro_dialogue': {
-            text: 'Ich bin [[Victoria Sterling]]. Mein Onkel... der Bürgermeister... bestand darauf, dass ich Ihnen helfe. Ich verspreche, nicht im Weg zu sein.',
+            text: 'Ich bin [[Clara von Altenburg]]. Ich bin aus eigenem Antrieb hier. Mein Vater kann den formalen Teil spater erledigen, aber jetzt arbeiten wir.',
             choices: {
                 'react_mockery': 'Das ist eine Ermittlung, kein Mädchenpensionat.',
                 'react_surprise': 'Ich hätte nicht erwartet, dass die Verwandtschaft des Bürgermeisters sich die Hände schmutzig macht.',

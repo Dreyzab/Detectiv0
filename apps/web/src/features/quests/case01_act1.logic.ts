@@ -42,6 +42,29 @@ export const CASE_01_ACT_1_LOGIC: QuestLogic = {
     ],
     objectives: [
         {
+            id: 'select_priority_route',
+            condition: {
+                type: 'logic_or',
+                conditions: [
+                    { type: 'flag', flag: 'priority_bank_first' },
+                    { type: 'flag', flag: 'priority_mayor_first' }
+                ]
+            },
+            stage: 'briefing'
+        },
+        {
+            id: 'visit_briefing_bank',
+            condition: { type: 'flag', flag: 'VISITED_loc_freiburg_bank' },
+            stage: 'briefing',
+            targetPointId: 'loc_freiburg_bank'
+        },
+        {
+            id: 'visit_briefing_mayor',
+            condition: { type: 'flag', flag: 'VISITED_loc_rathaus' },
+            stage: 'briefing',
+            targetPointId: 'loc_rathaus'
+        },
+        {
             id: 'visit_bank',
             condition: { type: 'flag', flag: 'VISITED_loc_freiburg_bank' },
             stage: 'bank_investigation',

@@ -14,14 +14,17 @@ export const CASE_01_ACT_1_EN: QuestContent = {
         resolved: 'Resolved'
     },
     transitions: {
-        'not_started->briefing': 'Telegram handoff leads into HBF arrival and Clara briefing.',
-        'briefing->bank_investigation': 'Map exploration and QR gate are complete; bank investigation begins.',
+        'not_started->briefing': 'Telegram handoff leads into HBF arrival, Fritz routing choice, and map entry.',
+        'briefing->bank_investigation': 'After initial routing through bank/mayor tasks and bank QR gate, investigation begins.',
         'bank_investigation->leads_open': 'Bank clues are consolidated and city leads become available.',
         'leads_open->leads_done': 'All lead branches are resolved.',
         'leads_done->finale': 'Evidence chain converges and finale route opens.',
         'finale->resolved': 'Final confrontation is completed and case is closed.'
     },
     objectives: {
+        select_priority_route: 'Choose Initial Priority (Bank first or Mayor first)',
+        visit_briefing_bank: 'Visit Bankhaus Krebs (routing objective)',
+        visit_briefing_mayor: 'Visit Rathaus / Mayor Thoma (routing objective)',
         visit_bank: 'Visit the Crime Scene (Bankhaus J.A. Krebs)',
         find_clue_safe: 'Inspect the Safe',
         interrogate_clerk: 'Interrogate the Clerk'

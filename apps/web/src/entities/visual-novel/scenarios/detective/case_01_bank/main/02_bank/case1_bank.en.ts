@@ -7,20 +7,20 @@ export const CASE1_BANK_EN: VNContentPack = {
             text: 'Bankhaus J.A. Krebs. The crime scene. Morning air, locked faces, too much silence.',
             choices: {
                 'enter_solo': 'I will take the first pass alone.',
-                'enter_duo': 'Victoria, with me.'
+                'enter_duo': 'Clara, with me.'
             }
         },
         'scene_solo_entry': {
             text: 'You push through the brass doors. The hall feels staged, as if everyone rehearsed this calm.'
         },
         'scene_duo_entry': {
-            text: 'You enter with Victoria. She scans exits first, people second.'
+            text: 'You enter with Clara at your side. Her presence changes how the room reacts.'
         },
         'victoria_interrupts': {
             text: '"Inspector! Wait. Do not start without me."'
         },
         'victoria_intro_dialogue': {
-            text: '"Victoria Sterling. The Mayor asked me to support your investigation."',
+            text: '"Clara von Altenburg. I came on my own. The Mayor can formalize this later, but we start now."',
             choices: {
                 'react_mockery': 'This is police work, not society theater.',
                 'react_surprise': 'Unexpected assignment for the Mayor\'s family.',
@@ -141,11 +141,11 @@ export const CASE1_BANK_EN: VNContentPack = {
             text: 'Under the residue you spot chalk geometry: deliberate symbols, not accidental marks.'
         },
         'vault_occult_victoria': {
-            text: 'Victoria kneels near the symbols. "Patterned, structured, and deliberate. Someone left this on purpose."',
+            text: 'Clara kneels near the symbols. "Patterned, structured, and deliberate. Someone left this on purpose."',
             choices: {
                 'occult_shivers_check': '[Occultism] Listen to what the pattern implies.',
                 'dismiss_occult': 'Ignore theatrics. Stay with hard evidence.',
-                'ask_victoria_occult': 'Give me your technical reading.'
+                'ask_victoria_occult': 'Give me your technical reading, Clara.'
             }
         },
         'vault_shivers_success': {
@@ -158,7 +158,7 @@ export const CASE1_BANK_EN: VNContentPack = {
             text: 'You reject the symbolic layer and refocus on procedural evidence.'
         },
         'vault_victoria_analysis': {
-            text: 'Victoria maps several alchemical references and records an unknown formula for later decoding.'
+            text: 'Clara maps several alchemical references and records an unknown formula for later decoding.'
         },
 
         'vault_continue': {

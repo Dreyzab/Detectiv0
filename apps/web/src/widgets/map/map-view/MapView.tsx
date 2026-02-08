@@ -119,7 +119,9 @@ export const MapView = () => {
         }
 
         const shouldStartExplorationIntro =
-            flags['alt_briefing_completed'] &&
+            flags['arrived_at_hbf'] &&
+            flags['hbf_priority_selected'] &&
+            flags['priority_bank_first'] &&
             !flags['case01_map_exploration_intro_done'] &&
             !flags['qr_scanned_bank'];
 

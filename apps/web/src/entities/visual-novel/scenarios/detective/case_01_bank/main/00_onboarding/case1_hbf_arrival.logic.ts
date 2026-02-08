@@ -9,7 +9,7 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
     scenes: {
         'beat1_collision': {
             id: 'beat1_collision',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             onEnter: [
                 { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'briefing' } }
             ],
@@ -46,23 +46,23 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
         },
         'beat1_authority_result': {
             id: 'beat1_authority_result',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             nextSceneId: 'beat2_kiosk'
         },
         'beat1_perception_result': {
             id: 'beat1_perception_result',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             nextSceneId: 'beat2_kiosk'
         },
         'beat1_intuition_result': {
             id: 'beat1_intuition_result',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             nextSceneId: 'beat2_kiosk'
         },
 
         'beat2_kiosk': {
             id: 'beat2_kiosk',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             passiveChecks: [
                 {
                     id: 'chk_case1_hbf_intuition_kiosk',
@@ -96,18 +96,18 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
         },
         'beat2_buy_result': {
             id: 'beat2_buy_result',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             nextSceneId: 'beat3_square'
         },
         'beat2_glance_result': {
             id: 'beat2_glance_result',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             nextSceneId: 'beat3_square'
         },
 
         'beat3_square': {
             id: 'beat3_square',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             passiveChecks: [
                 {
                     id: 'chk_case1_hbf_senses_galdermann',
@@ -139,30 +139,67 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
         'beat3_driver_result': {
             id: 'beat3_driver_result',
             characterId: 'gendarm',
-            nextSceneId: 'hbf_finalize'
+            nextSceneId: 'beat_fritz_priority'
         },
         'beat3_orient_result': {
             id: 'beat3_orient_result',
-            characterId: 'inspector',
-            nextSceneId: 'hbf_finalize'
+            characterId: 'gendarm',
+            nextSceneId: 'beat_fritz_priority'
         },
         'beat3_blind_result': {
             id: 'beat3_blind_result',
-            characterId: 'inspector',
-            nextSceneId: 'hbf_finalize'
+            characterId: 'gendarm',
+            nextSceneId: 'beat_fritz_priority'
+        },
+
+        'beat_fritz_priority': {
+            id: 'beat_fritz_priority',
+            characterId: 'gendarm',
+            choices: [
+                {
+                    id: 'priority_bank_first',
+                    nextSceneId: 'hbf_finalize',
+                    actions: [
+                        {
+                            type: 'add_flag',
+                            payload: {
+                                'priority_bank_first': true,
+                                'priority_mayor_first': false
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'priority_mayor_first',
+                    nextSceneId: 'hbf_finalize',
+                    actions: [
+                        {
+                            type: 'add_flag',
+                            payload: {
+                                'priority_bank_first': false,
+                                'priority_mayor_first': true
+                            }
+                        }
+                    ]
+                }
+            ]
         },
 
         'hbf_finalize': {
             id: 'hbf_finalize',
-            characterId: 'inspector',
+            characterId: 'gendarm',
             nextSceneId: 'END',
             onEnter: [
                 { type: 'unlock_point', payload: 'loc_hbf' },
+                { type: 'unlock_point', payload: 'loc_freiburg_bank' },
+                { type: 'unlock_point', payload: 'loc_rathaus' },
                 {
                     type: 'add_flag', payload: {
+                        'case01_started': true,
                         'telegram_acknowledged': true,
                         'arrived_at_hbf': true,
-                        'map_tutorial_shown': true
+                        'map_tutorial_shown': true,
+                        'hbf_priority_selected': true
                     }
                 }
             ]

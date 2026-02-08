@@ -29,18 +29,26 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 {
                     id: 'enter_solo',
                     nextSceneId: 'scene_solo_entry',
-                    condition: (flags) => !flags['met_mayor_first']
+                    condition: (flags) => !flags['met_mayor_first'] && !flags['clara_introduced']
                 },
                 {
                     id: 'enter_duo',
                     nextSceneId: 'scene_duo_entry',
-                    condition: (flags) => flags['met_mayor_first']
+                    condition: (flags) => Boolean(flags['met_mayor_first'] || flags['clara_introduced'])
                 }
             ]
         },
         'scene_duo_entry': {
             id: 'scene_duo_entry',
             characterId: 'inspector',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'clara_seen_in_bank': true
+                    }
+                }
+            ],
             nextSceneId: 'bank_hub'
         },
         'scene_solo_entry': {
@@ -50,17 +58,27 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         },
         'victoria_interrupts': {
             id: 'victoria_interrupts',
-            characterId: 'assistant',
+            characterId: 'clara_altenburg',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'clara_introduced': true,
+                        'clara_met_at_bank': true,
+                        'clara_seen_in_bank': true
+                    }
+                }
+            ],
             nextSceneId: 'victoria_intro_dialogue'
         },
         'victoria_intro_dialogue': {
             id: 'victoria_intro_dialogue',
-            characterId: 'assistant',
+            characterId: 'clara_altenburg',
             choices: [
                 {
                     id: 'react_mockery',
                     nextSceneId: 'react_mockery_res',
-                    actions: [{ type: 'modify_relationship', payload: { characterId: 'assistant', amount: -10 } }]
+                    actions: [{ type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: -10 } }]
                 },
                 {
                     id: 'react_surprise',
@@ -69,13 +87,13 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 {
                     id: 'react_interest',
                     nextSceneId: 'react_interest_res',
-                    actions: [{ type: 'modify_relationship', payload: { characterId: 'assistant', amount: 10 } }]
+                    actions: [{ type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 10 } }]
                 }
             ]
         },
-        'react_mockery_res': { id: 'react_mockery_res', characterId: 'assistant', nextSceneId: 'bank_hub' },
-        'react_surprise_res': { id: 'react_surprise_res', characterId: 'assistant', nextSceneId: 'bank_hub' },
-        'react_interest_res': { id: 'react_interest_res', characterId: 'assistant', nextSceneId: 'bank_hub' },
+        'react_mockery_res': { id: 'react_mockery_res', characterId: 'clara_altenburg', nextSceneId: 'bank_hub' },
+        'react_surprise_res': { id: 'react_surprise_res', characterId: 'clara_altenburg', nextSceneId: 'bank_hub' },
+        'react_interest_res': { id: 'react_interest_res', characterId: 'clara_altenburg', nextSceneId: 'bank_hub' },
 
         // ─────────────────────────────────────────────────────────────
         // BANK HUB — Central navigation point
@@ -440,7 +458,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         },
         'vault_occult_victoria': {
             id: 'vault_occult_victoria',
-            characterId: 'assistant',
+            characterId: 'clara_altenburg',
             backgroundUrl: '/images/scenarios/bank_vault_1905.png',
             choices: [
                 {
@@ -505,12 +523,12 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         },
         'vault_victoria_analysis': {
             id: 'vault_victoria_analysis',
-            characterId: 'assistant',
+            characterId: 'clara_altenburg',
             backgroundUrl: '/images/scenarios/bank_vault_1905.png',
             nextSceneId: 'vault_continue',
             onEnter: [
-                { type: 'modify_relationship', payload: { characterId: 'assistant', amount: 5 } },
-                { type: 'add_flag', payload: { 'victoria_analyzed_occult': true } }
+                { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 5 } },
+                { type: 'add_flag', payload: { 'clara_analyzed_occult': true } }
             ]
         },
 
@@ -582,7 +600,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         },
         'bank_conclusion_summary': {
             id: 'bank_conclusion_summary',
-            characterId: 'assistant',
+            characterId: 'clara_altenburg',
             nextSceneId: 'END',
             onEnter: [
                 { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'leads_open' } },

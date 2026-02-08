@@ -3,8 +3,11 @@ import type { VNContentPack } from '../../../../../model/types';
 export const CASE1_ALT_BRIEFING_EN: VNContentPack = {
     locale: 'en',
     scenes: {
+        'beat0_mayor_intro': {
+            text: 'Mayor Thoma closes the office door behind you. "Detective Vance, this city needs discretion. Clara von Altenburg will brief you personally. Hear her out."'
+        },
         'beat1_open': {
-            text: 'A woman in a grey coat rises as you enter the cafe. "You are late. Sit. I have ten minutes."',
+            text: 'A woman in a grey coat rises beside the Mayor\'s desk. "You are late. Sit. We have ten minutes before this turns political."',
             choices: {
                 'tactic_professional': '"The train was delayed. Let us keep this efficient."',
                 'tactic_harsh': '"I am not late. You started early."',
@@ -25,22 +28,34 @@ export const CASE1_ALT_BRIEFING_EN: VNContentPack = {
             text: '"Kaiserliche Handelsbank. Robbed three days ago. Police are stalled."',
             choices: {
                 'beat2_ask_what_taken': '"What was taken?"',
-                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"'
+                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"',
+                'beat2_ask_exactly_happened': '"What exactly happened?"'
             }
         },
         'beat2_intro_harsh': {
             text: '"Bank robbery. Three days. No suspect. Berlin sent you because nobody here wants to move first."',
             choices: {
                 'beat2_ask_what_taken': '"What was taken?"',
-                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"'
+                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"',
+                'beat2_ask_exactly_happened': '"What exactly happened?"'
             }
         },
         'beat2_intro_soft': {
             text: '"Three days ago they robbed the bank. Local police are overwhelmed. That is why you are here."',
             choices: {
                 'beat2_ask_what_taken': '"What was taken?"',
-                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"'
+                'beat2_ask_who_runs_case': '"Who is in charge on the police side?"',
+                'beat2_ask_exactly_happened': '"What exactly happened?"'
             }
+        },
+        'beat2_exactly_happened_professional': {
+            text: '"Pre-dawn access, no signs of forced entry, the wrong files missing, and too many people pretending this is routine. That is what happened."'
+        },
+        'beat2_exactly_happened_harsh': {
+            text: '"A clean breach and a dirty cover story. Nobody admits who had vault access that night."'
+        },
+        'beat2_exactly_happened_soft': {
+            text: '"Quiet entry, missing documents, frightened staff, and pressure from city hall. It is not just a robbery."'
         },
         'beat2_taken_answer': {
             text: '"Not money. Documents from a vault box. Police refuse to name the box number."'

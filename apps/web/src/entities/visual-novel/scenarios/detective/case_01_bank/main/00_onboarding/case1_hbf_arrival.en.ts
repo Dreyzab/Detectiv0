@@ -52,9 +52,16 @@ export const CASE1_HBF_ARRIVAL_EN: VNContentPack = {
         'beat3_blind_result': {
             text: 'Not clean, but decisive. Momentum matters.'
         },
+        'beat_fritz_priority': {
+            text: '"Schutzmann Fritz Muller, Freiburg police. Bankhaus Krebs was hit hard, and Mayor Thoma is demanding answers. Your call, detective: bank first or Rathaus first."',
+            choices: {
+                'priority_bank_first': 'Primary task: Bank. Secondary: Mayor.',
+                'priority_mayor_first': 'Primary task: Mayor. Secondary: Bank.'
+            }
+        },
 
         'hbf_finalize': {
-            text: 'Arrival complete. Clara is waiting with the first real briefing.'
+            text: 'Arrival complete. Freiburg map is open: Bankhaus Krebs and Rathaus are now available.'
         }
     }
 };

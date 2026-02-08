@@ -52,11 +52,52 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 ]
             },
             {
-                id: 'bank_enter',
+                id: 'bank_enter_primary',
+                trigger: 'marker_click',
+                label: 'Primary Objective: Investigate the Bank',
+                priority: 30,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'qr_scanned_bank', value: true },
+                        { type: 'flag_is', flagId: 'priority_bank_first', value: true }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_bank_scene' }]
+            },
+            {
+                id: 'bank_enter_secondary',
+                trigger: 'marker_click',
+                label: 'Secondary Objective: Investigate the Bank',
+                priority: 20,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'qr_scanned_bank', value: true },
+                        { type: 'flag_is', flagId: 'priority_mayor_first', value: true }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_bank_scene' }]
+            },
+            {
+                id: 'bank_enter_fallback',
                 trigger: 'marker_click',
                 label: 'Investigate Crime Scene',
-                priority: 20,
-                conditions: [{ type: 'flag_is', flagId: 'qr_scanned_bank', value: true }],
+                priority: 15,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'qr_scanned_bank', value: true },
+                        {
+                            type: 'logic_not',
+                            condition: { type: 'flag_is', flagId: 'priority_bank_first', value: true }
+                        },
+                        {
+                            type: 'logic_not',
+                            condition: { type: 'flag_is', flagId: 'priority_mayor_first', value: true }
+                        }
+                    ]
+                }],
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_bank_scene' }]
             },
             {
@@ -101,6 +142,120 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
             }
         ],
         image: '/images/detective/loc_rathaus_archiv.png'
+    },
+    'loc_rathaus': {
+        id: 'loc_rathaus',
+        title: 'Rathaus',
+        description: 'The City Hall of Freiburg. Seat of power and location of Mayor Thoma\'s office.',
+        lat: 47.99629692434917,
+        lng: 7.8492596695028,
+        type: 'bureau',
+        packId: 'fbg1905',
+        bindings: [
+            {
+                id: 'rathaus_intro_primary',
+                trigger: 'marker_click',
+                label: 'Primary Objective: Meet Mayor Thoma',
+                priority: 32,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'clara_introduced', value: false },
+                        { type: 'flag_is', flagId: 'priority_mayor_first', value: true }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_alt_briefing' }]
+            },
+            {
+                id: 'rathaus_intro_secondary',
+                trigger: 'marker_click',
+                label: 'Secondary Objective: Meet Mayor Thoma',
+                priority: 24,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'clara_introduced', value: false },
+                        { type: 'flag_is', flagId: 'priority_bank_first', value: true }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_alt_briefing' }]
+            },
+            {
+                id: 'rathaus_intro_fallback',
+                trigger: 'marker_click',
+                label: 'Visit Mayor Thoma',
+                priority: 20,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'clara_introduced', value: false },
+                        {
+                            type: 'logic_not',
+                            condition: { type: 'flag_is', flagId: 'priority_bank_first', value: true }
+                        },
+                        {
+                            type: 'logic_not',
+                            condition: { type: 'flag_is', flagId: 'priority_mayor_first', value: true }
+                        }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_alt_briefing' }]
+            },
+            {
+                id: 'rathaus_followup_primary',
+                trigger: 'marker_click',
+                label: 'Primary Objective: Rathaus Follow-up',
+                priority: 22,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'clara_introduced', value: true },
+                        { type: 'flag_is', flagId: 'priority_mayor_first', value: true },
+                        { type: 'flag_is', flagId: 'mayor_followup_completed', value: false }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_mayor_followup' }]
+            },
+            {
+                id: 'rathaus_followup_secondary',
+                trigger: 'marker_click',
+                label: 'Secondary Objective: Rathaus Follow-up',
+                priority: 18,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'clara_introduced', value: true },
+                        { type: 'flag_is', flagId: 'priority_bank_first', value: true },
+                        { type: 'flag_is', flagId: 'mayor_followup_completed', value: false }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_mayor_followup' }]
+            },
+            {
+                id: 'rathaus_followup_fallback',
+                trigger: 'marker_click',
+                label: 'Rathaus Follow-up',
+                priority: 14,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'clara_introduced', value: true },
+                        { type: 'flag_is', flagId: 'mayor_followup_completed', value: false },
+                        {
+                            type: 'logic_not',
+                            condition: { type: 'flag_is', flagId: 'priority_bank_first', value: true }
+                        },
+                        {
+                            type: 'logic_not',
+                            condition: { type: 'flag_is', flagId: 'priority_mayor_first', value: true }
+                        }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_mayor_followup' }]
+            }
+        ],
+        image: '/images/detective/loc_rathaus_archiv.png',
+        voices: { authority: "The heavy oak doors and stone corridors speak of centuries of local rule." }
     },
 
     // --- UNIVERSITY QUARTER ---
@@ -403,5 +558,3 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         image: '/images/detective/loc_rathaus_archiv.png'
     }
 };
-
-

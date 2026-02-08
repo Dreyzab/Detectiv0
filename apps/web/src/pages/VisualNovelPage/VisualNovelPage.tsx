@@ -186,12 +186,6 @@ export const VisualNovelPage = () => {
             return; // Don't end scenario, keep it active so useEffect doesn't restart it
         }
 
-        if (activeScenarioId === 'detective_case1_hbf_arrival') {
-            endScenario();
-            navigate('/vn/detective_case1_alt_briefing');
-            return;
-        }
-
         if (activeScenarioId === 'detective_case1_qr_scan_bank') {
             endScenario();
             navigate('/vn/detective_case1_bank_scene');
