@@ -63,15 +63,15 @@ class SoundManager {
         const osc = this.ctx.createOscillator();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(100, t);
-        osc.frequency.exponentialRampToValueAtTime(10, t + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(10, t + 0.25);
         osc.connect(gain);
 
         osc.start(t);
-        osc.stop(t + 0.05);
+        osc.stop(t + 0.25);
 
         // 2. "Click" - High frequency noise burst (Hammer hit)
         // Creating noise buffer
-        const bufferSize = this.ctx.sampleRate * 0.05; // 50ms
+        const bufferSize = this.ctx.sampleRate * 0.25; // 250ms (5x slower)
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -91,7 +91,7 @@ class SoundManager {
 
         // Envelope for impact
         gain.gain.setValueAtTime(this._sfxVolume, t);
-        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
 
         noise.start(t);
     }
