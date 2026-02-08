@@ -31,6 +31,16 @@ const getStableLocationId = (point: MapPoint): string => {
     return point.id;
 };
 
+const isOneShotScenarioComplete = (scenarioId: string, flags: Record<string, boolean>): boolean => {
+    if (scenarioId === 'detective_case1_hbf_arrival') {
+        return Boolean(flags['arrived_at_hbf']);
+    }
+    if (scenarioId === 'detective_case1_map_first_exploration') {
+        return Boolean(flags['case01_map_exploration_intro_done']);
+    }
+    return false;
+};
+
 export const MapView = () => {
     const mapRef = useRef<MapRef>(null);
     const flags = useDossierStore((state) => state.flags);
@@ -181,6 +191,10 @@ export const MapView = () => {
                 if (action.type === 'start_vn') {
                     const legacyPayload = (action as { payload?: unknown }).payload;
                     const id = typeof legacyPayload === 'string' ? legacyPayload : action.scenarioId;
+                    if (isOneShotScenarioComplete(id, flags)) {
+                        logger.debug(`Skipping one-shot VN replay from map: ${id} already complete`);
+                        return;
+                    }
                     startScenario(id);
                     const scenario = getScenarioById(id, locale);
                     if (scenario?.mode === 'fullscreen') {
@@ -204,6 +218,7 @@ export const MapView = () => {
         worldCaseId,
         setPointState,
         setFlag,
+        flags,
         startScenario,
         locale,
         navigate,

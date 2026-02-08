@@ -20,6 +20,12 @@ import { choiceIsAvailable, filterAvailableChoices, resolveAccessibleSceneId } f
 import type { VoiceId } from '@/features/detective/lib/parliament';
 import { isQuestAtStage as checkQuestAtStage, isQuestPastStage as checkQuestPastStage } from '@repo/shared/data/quests';
 
+const ONE_SHOT_SCENARIO_COMPLETION_FLAGS: Record<string, string> = {
+    intro_char_creation: 'char_creation_complete',
+    detective_case1_hbf_arrival: 'arrived_at_hbf',
+    detective_case1_map_first_exploration: 'case01_map_exploration_intro_done'
+};
+
 /**
  * Fullscreen Visual Novel Page
  * Route: /vn/:scenarioId
@@ -65,6 +71,16 @@ export const VisualNovelPage = () => {
             return;
         }
 
+        const completionFlag = ONE_SHOT_SCENARIO_COMPLETION_FLAGS[scenarioId];
+        if (completionFlag && flags[completionFlag]) {
+            if (activeScenarioId === scenarioId) {
+                suppressUrlScenarioRestartRef.current = scenarioId;
+                endScenario();
+            }
+            navigate('/map', { replace: true });
+            return;
+        }
+
         if (activeScenarioId === scenarioId) {
             suppressUrlScenarioRestartRef.current = scenarioId;
             return;
@@ -80,7 +96,7 @@ export const VisualNovelPage = () => {
 
         startScenario(scenarioId);
         suppressUrlScenarioRestartRef.current = scenarioId;
-    }, [scenarioId, activeScenarioId, startScenario]);
+    }, [scenarioId, activeScenarioId, flags, endScenario, navigate, startScenario]);
 
     // Resolve Scenario dynamically from ID + Locale
     const activeScenario = activeScenarioId ? getScenarioById(activeScenarioId, locale) : null;
@@ -222,6 +238,8 @@ export const VisualNovelPage = () => {
 
         // 2. Start Station Arrival (Briefing)
         setShowTelegram(false);
+        suppressUrlScenarioRestartRef.current = activeScenarioId;
+        endScenario();
 
         // Navigate to the new URL which will trigger the useEffect to startScenario
         navigate('/vn/detective_case1_hbf_arrival');
@@ -438,7 +456,12 @@ export const VisualNovelPage = () => {
             {showTelegram && (
                 <OnboardingModal
                     onComplete={handleTelegramComplete}
-                    onCancel={() => setShowTelegram(false)}
+                    onCancel={() => {
+                        setShowTelegram(false);
+                        suppressUrlScenarioRestartRef.current = activeScenarioId;
+                        endScenario();
+                        navigate('/', { replace: true });
+                    }}
                 />
             )}
             <MobileVNLayout

@@ -22,13 +22,23 @@ export const useMapActionHandler = () => {
     const startScenario = useVNStore(state => state.startScenario);
     // const navigate = useNavigate();
 
+    const isOneShotScenarioAlreadyComplete = (scenarioId: string): boolean => {
+        if (scenarioId === 'detective_case1_hbf_arrival') {
+            return Boolean(flags['arrived_at_hbf']);
+        }
+        if (scenarioId === 'detective_case1_map_first_exploration') {
+            return Boolean(flags['case01_map_exploration_intro_done']);
+        }
+        return false;
+    };
+
     const executeAction = (action: MapAction) => {
         console.log('[MapAction] Executing:', action);
 
         switch (action.type) {
             case 'start_vn': {
-                if (action.scenarioId === 'detective_case1_hbf_arrival' && flags['arrived_at_hbf']) {
-                    console.log('[MapAction] Skipping HBF arrival replay: already arrived_at_hbf');
+                if (isOneShotScenarioAlreadyComplete(action.scenarioId)) {
+                    console.log('[MapAction] Skipping one-shot VN replay:', action.scenarioId);
                     break;
                 }
                 // Pass scenario ID to the store, not the scenario object

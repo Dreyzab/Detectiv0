@@ -10,6 +10,19 @@ import { preloadManager, extractScenarioAssets, toPreloadQueue } from '../shared
 import { Archive, Play, RefreshCw, Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const isOneShotScenarioComplete = (scenarioId: string, flags: Record<string, boolean>): boolean => {
+    if (scenarioId === 'intro_char_creation') {
+        return Boolean(flags['char_creation_complete']);
+    }
+    if (scenarioId === 'detective_case1_hbf_arrival') {
+        return Boolean(flags['arrived_at_hbf']);
+    }
+    if (scenarioId === 'detective_case1_map_first_exploration') {
+        return Boolean(flags['case01_map_exploration_intro_done']);
+    }
+    return false;
+};
+
 export const HomePage = () => {
     const navigate = useNavigate();
     const setGameMode = useInventoryStore(state => state.setGameMode);
@@ -21,7 +34,9 @@ export const HomePage = () => {
 
     // active session
     const activeScenarioId = useVNStore(state => state.activeScenarioId);
+    const endScenario = useVNStore(state => state.endScenario);
     const locale = useVNStore(state => state.locale);
+    const flags = useDossierStore(state => state.flags);
 
     // Preload VN assets
     useEffect(() => {
@@ -36,6 +51,12 @@ export const HomePage = () => {
 
     const startDetectiveMode = () => {
         if (activeScenarioId) {
+            if (isOneShotScenarioComplete(activeScenarioId, flags)) {
+                endScenario();
+                setGameMode('detective');
+                navigate('/map');
+                return;
+            }
             const activeScenario = getScenarioById(activeScenarioId, locale);
             if (activeScenario?.mode === 'fullscreen') {
                 navigate(`/vn/${activeScenarioId}`);

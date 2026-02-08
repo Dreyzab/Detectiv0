@@ -3,6 +3,12 @@ import type { VNContentPack } from '../../../model/types';
 export const introCharCreationEn: VNContentPack = {
     locale: 'en',
     scenes: {
+        'start_game': {
+            text: `Dawn claws its way over Freiburg. A telegram waits with your name on it, and the city is already sharpening its teeth.`,
+            choices: {
+                'continue': `Begin.`
+            }
+        },
         'select_origin': {
             text: `Who are you? The reflection in the darkened window offers no clear answer. Your face is a map of choices made and paths taken. Before the telegram, before the bank, before the rain... what were you?`,
             choices: {
@@ -18,8 +24,14 @@ export const introCharCreationEn: VNContentPack = {
                 'continue': `Step into the light.`
             }
         },
-        'start_game_journalist': {
-            text: `The memory fades. You are in Cafe Riegler. It is 1905.`,
+        'telegram_gate': {
+            text: `A courier slaps a sealed telegram into your hand. Rathaus wax. Urgent. No pleasantries, no signatures, only orders.`,
+            choices: {
+                'continue': `Break the seal and move.`
+            }
+        },
+        'intro_journey': {
+            text: `The train to Freiburg groans through morning fog. Coal smoke, wet stone, and a city waiting for answers.`,
             choices: {}
         }
     }

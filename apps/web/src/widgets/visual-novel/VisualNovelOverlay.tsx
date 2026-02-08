@@ -19,6 +19,12 @@ import { choiceIsAvailable, filterAvailableChoices, resolveAccessibleSceneId } f
 import type { VoiceId } from '@/features/detective/lib/parliament';
 import { isQuestAtStage as checkQuestAtStage, isQuestPastStage as checkQuestPastStage } from '@repo/shared/data/quests';
 
+const ONE_SHOT_SCENARIO_COMPLETION_FLAGS: Record<string, string> = {
+    intro_char_creation: 'char_creation_complete',
+    detective_case1_hbf_arrival: 'arrived_at_hbf',
+    detective_case1_map_first_exploration: 'case01_map_exploration_intro_done'
+};
+
 export const VisualNovelOverlay = () => {
     const location = useLocation();
 
@@ -83,6 +89,17 @@ const VisualNovelOverlayInner = () => {
         }),
         [evidenceIds, questStages]
     );
+
+    useEffect(() => {
+        if (!activeScenarioId) {
+            return;
+        }
+
+        const completionFlag = ONE_SHOT_SCENARIO_COMPLETION_FLAGS[activeScenarioId];
+        if (completionFlag && flags[completionFlag]) {
+            endScenario();
+        }
+    }, [activeScenarioId, flags, endScenario]);
 
     // 2. Pick up initial scene if store doesn't have one yet
     const requestedSceneId = currentSceneId || activeScenario?.initialSceneId || null;

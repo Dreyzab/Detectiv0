@@ -9,11 +9,17 @@ import type { VNScenarioLogic } from '../../../model/types';
 
 export const INTRO_CHAR_CREATION_LOGIC: VNScenarioLogic = {
     id: 'intro_char_creation',
-    title: 'Character Selection',
+    title: 'Case 01 Onboarding',
     defaultBackgroundUrl: '/images/scenarios/inspector_office_night.png', // Placeholder: dark room or mirror
-    initialSceneId: 'select_origin',
+    initialSceneId: 'start_game',
     mode: 'fullscreen',
     scenes: {
+        'start_game': {
+            id: 'start_game',
+            characterId: 'inspector',
+            nextSceneId: 'select_origin',
+            choices: []
+        },
         'select_origin': {
             id: 'select_origin',
             characterId: 'inspector', // Internal monologue
@@ -43,7 +49,7 @@ export const INTRO_CHAR_CREATION_LOGIC: VNScenarioLogic = {
         'confirm_journalist': {
             id: 'confirm_journalist',
             characterId: 'inspector',
-            nextSceneId: 'start_game_journalist',
+            nextSceneId: 'telegram_gate',
             onEnter: [
                 { type: 'set_stat', payload: { id: 'charisma', value: 4 } },
                 { type: 'set_stat', payload: { id: 'perception', value: 4 } },
@@ -51,12 +57,26 @@ export const INTRO_CHAR_CREATION_LOGIC: VNScenarioLogic = {
                 { type: 'add_flag', payload: { 'origin_journalist': true } }
             ]
         },
-        'start_game_journalist': {
-            id: 'start_game_journalist',
+        'telegram_gate': {
+            id: 'telegram_gate',
             characterId: 'inspector',
-            nextSceneId: 'END', // Return to HomePage to trigger Telegram
+            nextSceneId: 'intro_journey',
             onEnter: [
-                { type: 'add_flag', payload: { 'char_creation_complete': true } }
+                { type: 'add_flag', payload: { 'telegram_received': true } }
+            ]
+        },
+        'intro_journey': {
+            id: 'intro_journey',
+            characterId: 'inspector',
+            nextSceneId: 'END',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'char_creation_complete': true,
+                        'journey_to_freiburg_complete': true
+                    }
+                }
             ]
         }
     }
