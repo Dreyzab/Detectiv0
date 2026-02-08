@@ -18,9 +18,30 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             id: 'entrance',
             characterId: 'inspector',
             choices: [
+                {
+                    id: 'follow_night_guard_rumor',
+                    nextSceneId: 'pub_night_guard_path',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['rumor_night_guard'] && !flags['pub_asked_night_guard']
+                },
                 { id: 'approach_gustav', nextSceneId: 'gustav_intro' },
                 { id: 'ask_barkeep', nextSceneId: 'barkeep_intro' },
                 { id: 'eavesdrop', nextSceneId: 'eavesdrop' }
+            ]
+        },
+        'pub_night_guard_path': {
+            id: 'pub_night_guard_path',
+            characterId: 'inspector',
+            nextSceneId: 'gustav_intro',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'pub_asked_night_guard': true,
+                        'clue_night_guard_pub_confirmed': true
+                    }
+                }
             ]
         },
 
@@ -36,6 +57,14 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             id: 'gustav_suspicious',
             characterId: 'cleaner',
             choices: [
+                {
+                    id: 'mention_hartmann_payments',
+                    nextSceneId: 'gustav_hartmann_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_hartmann_internal_contact'] && !flags['gustav_asked_hartmann'],
+                    actions: [{ type: 'add_flag', payload: { 'gustav_asked_hartmann': true } }]
+                },
                 {
                     id: 'charisma_buy_drink',
                     nextSceneId: 'gustav_charisma_result',
@@ -59,6 +88,14 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
                     }
                 },
                 { id: 'leave_gustav', nextSceneId: 'entrance' }
+            ]
+        },
+        'gustav_hartmann_reply': {
+            id: 'gustav_hartmann_reply',
+            characterId: 'cleaner',
+            nextSceneId: 'gustav_suspicious',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_hartmann_cash_runner': true } }
             ]
         },
         'gustav_charisma_success': {
@@ -103,6 +140,7 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             characterId: 'cleaner',
             nextSceneId: 'END',
             onEnter: [
+                { type: 'add_flag', payload: { 'pub_lead_complete': true } },
                 { type: 'unlock_point', payload: 'loc_freiburg_warehouse' }
             ]
         },
@@ -115,7 +153,15 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             characterId: 'innkeeper',
             choices: [
                 { id: 'barkeep_ask_gustav', nextSceneId: 'barkeep_points_gustav' },
-                { id: 'barkeep_ask_rumors', nextSceneId: 'barkeep_rumors' }
+                { id: 'barkeep_ask_rumors', nextSceneId: 'barkeep_rumors' },
+                {
+                    id: 'ask_previous_investigator',
+                    nextSceneId: 'barkeep_previous_investigator',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_previous_investigator'] &&
+                        !flags['barkeep_prev_investigator_asked']
+                }
             ]
         },
         'barkeep_points_gustav': {
@@ -127,6 +173,20 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             id: 'barkeep_rumors',
             characterId: 'innkeeper',
             nextSceneId: 'entrance'
+        },
+        'barkeep_previous_investigator': {
+            id: 'barkeep_previous_investigator',
+            characterId: 'innkeeper',
+            nextSceneId: 'entrance',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'barkeep_prev_investigator_asked': true,
+                        'clue_previous_investigator_last_seen_pub': true
+                    }
+                }
+            ]
         },
 
         // ─────────────────────────────────────────────────────────────

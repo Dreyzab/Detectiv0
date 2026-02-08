@@ -28,6 +28,22 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
                     nextSceneId: 'show_fabric_scene',
                     condition: (flags) => flags['found_velvet']
                 },
+                {
+                    id: 'ask_hartmann_orders',
+                    nextSceneId: 'tailor_hartmann_response',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_hartmann_internal_contact'] && !flags['tailor_asked_hartmann'],
+                    actions: [{ type: 'add_flag', payload: { 'tailor_asked_hartmann': true } }]
+                },
+                {
+                    id: 'ask_box217_usage',
+                    nextSceneId: 'tailor_box217_response',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_box217_sensitive'] && !flags['tailor_asked_box217'],
+                    actions: [{ type: 'add_flag', payload: { 'tailor_asked_box217': true } }]
+                },
                 { id: 'ask_customers', nextSceneId: 'ask_customers' },
                 { id: 'browse_stock', nextSceneId: 'browse_stock' },
                 { id: 'leave_shop', nextSceneId: 'END' }
@@ -61,6 +77,14 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
                         onSuccess: { nextSceneId: 'perception_success' },
                         onFail: { nextSceneId: 'perception_fail' }
                     }
+                },
+                {
+                    id: 'press_galdermann_name',
+                    nextSceneId: 'tailor_galdermann_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_galdermann_preseed_confirmed'] &&
+                        !flags['tailor_pressed_galdermann']
                 },
                 { id: 'ask_client', nextSceneId: 'tailor_client_info' },
                 { id: 'thank_leave', nextSceneId: 'END' }
@@ -97,6 +121,31 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
             id: 'tailor_client_info',
             characterId: 'tailor',
             nextSceneId: 'END'
+        },
+        'tailor_hartmann_response': {
+            id: 'tailor_hartmann_response',
+            characterId: 'tailor',
+            nextSceneId: 'tailor_greets',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_hartmann_tailor_route': true } }
+            ]
+        },
+        'tailor_box217_response': {
+            id: 'tailor_box217_response',
+            characterId: 'tailor',
+            nextSceneId: 'tailor_greets',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_box217_costume_storage': true } }
+            ]
+        },
+        'tailor_galdermann_reply': {
+            id: 'tailor_galdermann_reply',
+            characterId: 'tailor',
+            nextSceneId: 'tailor_recognition',
+            onEnter: [
+                { type: 'add_flag', payload: { 'tailor_pressed_galdermann': true } },
+                { type: 'add_flag', payload: { 'clue_galdermann_tailor_denial': true } }
+            ]
         },
         'tailor_description': {
             id: 'tailor_description',

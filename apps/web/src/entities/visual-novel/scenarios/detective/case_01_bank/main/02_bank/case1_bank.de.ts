@@ -51,10 +51,24 @@ export const CASE1_BANK_DE: VNContentPack = {
         // DIALOG MIT DEM DIREKTOR
         // ─────────────────────────────────────────────────────────────
         'manager_intro': {
-            text: 'Herr Galdermann mustert Sie mit der einstudierten Wärme eines Mannes, der Schuldnern zulächelt, bevor er sie pfändet.'
+            text: 'Herr Galdermann mustert Sie mit der einstudierten Wärme eines Mannes, der Schuldnern zulächelt, bevor er sie pfändet.',
+            choices: {
+                'manager_confront_seed': 'Ihr Name fiel schon, bevor ich diese Bank erreichte.',
+                'manager_open_case': 'Beginnen wir mit dem Zeitablauf.'
+            }
+        },
+        'manager_seed_reaction': {
+            text: 'Ein Flackern huscht über sein Gesicht. „Ich bin bekannt in Freiburg. Das beweist überhaupt nichts.“'
         },
         'manager_about_robbery': {
-            text: '„Ein bedauerlicher Vorfall, Herr Inspektor. Der Tresor wurde gewaltlos geöffnet. Zweifellos ein Insiderjob. Ich empfehle Ihnen, das Personal zu befragen."'
+            text: '„Ein bedauerlicher Vorfall, Herr Inspektor. Der Tresor wurde gewaltlos geöffnet. Zweifellos ein Insiderjob. Ich empfehle Ihnen, das Personal zu befragen."',
+            choices: {
+                'manager_press_hartmann': 'Hartmann erscheint in mehreren Spuren. Erklären Sie das.',
+                'manager_request_statements': 'Ich will die unverfälschten Aussagen, keine Zusammenfassungen.'
+            }
+        },
+        'manager_hartmann_reaction': {
+            text: '„[[Hartmann]] ist ein routinierter Angestellter. Klatsch bauscht gewöhnliche Namen auf.“'
         },
         'manager_dismissive': {
             text: '„Und nun entschuldigen Sie mich bitte, ich muss Kunden beruhigen. Die Polizei hat bereits alle [[Aussagen]] aufgenommen, die sie braucht."'
@@ -69,10 +83,18 @@ export const CASE1_BANK_DE: VNContentPack = {
         'clerk_nervous': {
             text: '„Ich... Ich hatte Nachtdienst, Herr Inspektor. Ich schwöre, ich habe [[den Tresor abgeschlossen]]! Aber heute Morgen stand er einfach... offen. Wie von Zauberhand."',
             choices: {
+                'ask_about_hartmann': 'Wer genau ist dieser Hartmann in Ihrem Betrieb?',
+                'ask_about_box_217': 'Was war im Schließfach 217?',
                 'read_clerk_empathy': '[Empathie] Er verbirgt etwas. Seine Angst lesen.',
                 'press_clerk': 'Sie erwarten, dass ich glaube, Magie hat den Tresor geöffnet?',
                 'leave_clerk': 'Das wäre vorerst alles.'
             }
+        },
+        'clerk_hartmann_response': {
+            text: '„Zugriff auf die Hauptbücher. Vertrauenswürdig. In letzter Zeit bekam [[Hartmann]] fast täglich versiegelte Briefe.“'
+        },
+        'clerk_box217_response': {
+            text: '„Die Diskretion bei Schließfächern ist strikt... aber [[Fach 217]] war von der Direktion als sensibel markiert.“'
         },
         'clerk_empathy_success': {
             text: 'Sein Blick zuckt zur Tür. Keine Schuld — das ist Terror. Er hat in jener Nacht etwas gesehen. Jemanden. Und er hat Angst, dass sie zurückkommen.'
@@ -101,6 +123,7 @@ export const CASE1_BANK_DE: VNContentPack = {
             choices: {
                 'examine_lock_logic': '[Logik] Den Schließmechanismus analysieren.',
                 'sense_atmosphere_intuition': '[Intuition] Irgendetwas an diesem Raum fühlt sich... falsch an.',
+                'compare_chemical_sender': '[Logik] Rückstände mit dem Absender der Chemiewerke vergleichen.',
                 'return_to_hub': 'Zurück zur Haupthalle.'
             }
         },
@@ -115,6 +138,12 @@ export const CASE1_BANK_DE: VNContentPack = {
         },
         'vault_intuition_fail': {
             text: 'Etwas nagt am Rand Ihrer Sinne, aber Sie können es nicht greifen. Der Raum gibt seine Geheimnisse nicht preis.'
+        },
+        'vault_sender_match_success': {
+            text: 'Absenderhinweis und Rückstandsprofil stimmen überein. Dies deutet auf Zugang durch die [[Breisgauer Chemiewerke]] hin, kein zufälliger Einbruch.'
+        },
+        'vault_sender_match_fail': {
+            text: 'Plausible Verbindung, aber unzureichende Sicherheit. Benötigt Bestätigung.'
         },
         'vault_continue': {
             text: 'Der Tresor birgt noch Geheimnisse. Was möchten Sie noch untersuchen?',
@@ -139,4 +168,5 @@ export const CASE1_BANK_DE: VNContentPack = {
         }
     }
 };
+
 export default CASE1_BANK_DE;

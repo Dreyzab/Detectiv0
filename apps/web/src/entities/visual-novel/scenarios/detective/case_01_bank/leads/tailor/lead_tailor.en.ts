@@ -1,58 +1,68 @@
-import type { VNContentPack } from '../../../../../model/types';
+﻿import type { VNContentPack } from '../../../../../model/types';
 
 export const LEAD_TAILOR_EN: VNContentPack = {
     locale: 'en',
     scenes: {
         'entrance': {
-            text: 'The cramped workshop is a riot of color — bolts of fabric, half-finished garments, and theatrical costumes crowd every surface. The smell of wool and sizing fills the air.'
+            text: 'The workshop is packed with bolts of fabric and half-finished costumes. Wool dust hangs in warm light.'
         },
         'tailor_greets': {
-            text: 'A slight man with round spectacles looks up from his sewing machine. "Good day, mein Herr. What can [[Leopold Fein]] do for you?"',
+            text: 'A slight man with round spectacles looks up from his sewing machine. "Good day. I am [[Leopold Fein]]. What can I do for you, Inspector?"',
             choices: {
-                'show_fabric': 'Show the torn velvet from the bank',
-                'ask_customers': '"Who are your clients, Herr Fein?"',
-                'browse_stock': 'Look around the shop',
-                'leave_shop': 'Leave'
+                'show_fabric': 'Show torn velvet from the bank.',
+                'ask_hartmann_orders': '"Does the name Hartmann appear in your records?"',
+                'ask_box217_usage': '"Any clients tied to private box 217?"',
+                'ask_customers': '"Who commissions your premium work?"',
+                'browse_stock': 'Inspect the workshop stock.',
+                'leave_shop': 'Leave.'
             }
         },
 
-        // SHOW FABRIC
         'show_fabric_scene': {
-            text: 'I produce the scrap of red velvet. "Have you seen this fabric before?"'
+            text: 'You place the red scrap on his table. "Recognize this weave?"'
         },
         'tailor_examines': {
-            text: 'Fein takes the fabric, holds it to the light. His fingers run across the weave with professional precision. His expression changes — recognition, then worry.'
+            text: 'Fein studies the fibers with professional care. Recognition lands before he can hide it.'
         },
         'tailor_recognition': {
-            text: '"This is... this is [[Venetian theatrical velvet]]. Very expensive. I am one of three tailors in Baden who stock it."',
+            text: '"[[Venetian theatrical velvet]]. Rare and expensive. I am one of few tailors in Baden who keeps it."',
             choices: {
-                'perception_check_records': '[Perception] Notice something on his desk',
-                'ask_client': '"Did you sell any recently?"',
-                'thank_leave': 'Thank him and leave'
+                'perception_check_records': '[Perception] Read what is visible on his ledger.',
+                'press_galdermann_name': '"Galdermann surfaced in this case before your name did. Explain."',
+                'ask_client': '"Who bought this recently?"',
+                'thank_leave': 'Thank him and leave.'
             }
         },
         'perception_success': {
-            text: 'Your eye catches an open ledger on his desk. An entry from last week — paid in cash, no name. "[[Black theatrical cape with red lining]]."'
+            text: 'Your eye catches an open ledger line: cash order, no name, "[[black cape with red lining]]."'
         },
         'perception_fail': {
-            text: 'His desk is cluttered with papers and fabric samples. Nothing stands out.'
+            text: 'The desk is cluttered. Nothing readable before he closes it.'
         },
         'tailor_caught': {
-            text: 'Fein notices your gaze and quickly closes the ledger, but it\'s too late. "I... the customer paid in cash. I never ask questions when the money is good."'
+            text: 'Fein notices your gaze too late. "Cash customers ask for discretion. I provide tailoring, not biography."'
         },
         'tailor_client_info': {
-            text: '"I have sold this fabric only once in the past month. A gentleman — younger, wore student colors. He said it was for a [[theatrical performance]]. I did not ask further."'
+            text: '"One buyer this month. Young, student colors, asked for stage-grade concealment."'
+        },
+        'tailor_hartmann_response': {
+            text: '"Hartmann appeared on discreet delivery notes. Always urgent. Always cash transfer through intermediaries."'
+        },
+        'tailor_box217_response': {
+            text: '"Private-box clients request travel capes with hidden inner seams. Expensive work, minimal names."'
+        },
+        'tailor_galdermann_reply': {
+            text: 'Fein exhales. "I do not discuss banking patrons. I discuss measurements and payment."'
         },
         'tailor_description': {
-            text: '"He had a [[dueling scar]] on his cheek. Very proud of it. Walked with a slight limp — old injury, I think. Mentioned [[Corps Suevia]]..."'
+            text: '"Buyer had a [[dueling scar]] and slight limp. Mentioned [[Corps Suevia]]."'
         },
 
-        // ALTERNATIVES
         'ask_customers': {
-            text: '"My clients? The theater, mostly. Some private individuals who need costumes for festivals. The occasional eccentric."'
+            text: '"Theater staff, festival committees, and private patrons who value discretion."'
         },
         'browse_stock': {
-            text: 'The shop contains fabrics from across Europe. You spot several bolts of the same red velvet — clearly expensive stock.'
+            text: 'You spot multiple red velvet bolts. Same premium grade as the bank sample.'
         }
     }
 };

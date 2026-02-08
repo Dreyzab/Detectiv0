@@ -4,6 +4,53 @@
 
 ---
 
+## [07.02.2026] — Case 01 Lead Payoff Expansion (Clue Seeding -> Lead Branches)
+
+### Changed
+- Added clue-gated payoff branches in lead runtime scenarios:
+  - `lead_tailor`: Hartmann/Box 217/Galdermann inquiry branches and payoff flags.
+  - `lead_apothecary`: sender manifest + Hartmann procurement branches and sender-chain crosscheck payoff.
+  - `lead_pub`: night-guard rumor follow-up, previous-investigator inquiry, Hartmann payment hint branch.
+- Added completion parity for pub lead:
+  - `pub_lead_complete` now set on lead resolution path.
+- Updated EN narrative packs to include all new scene/choice IDs.
+
+### Obsidian
+- Updated lead-selection and lead node contracts:
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_first_lead_selection.md`
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_lead_tailor.md`
+- Added missing lead node docs:
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_lead_apothecary.md`
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_lead_pub.md`
+- Updated board links:
+  - `obsidian/Detectiv/00_Map_Room/Gameplay_Story_Board.md`
+
+### Validation
+- `bun run --filter web build`
+
+---
+
+## [07.02.2026] — Obsidian Sync: Case 01 Onboarding + Bank Clue Seeding
+
+### Changed
+- Updated node contracts in Obsidian to match current runtime flow and flags:
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_hbf_arrival.md`
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_alt_briefing_entry.md`
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_map_first_exploration.md`
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_qr_scan_bank.md`
+  - `obsidian/Detectiv/10_Narrative/Scenes/node_case1_bank_investigation.md`
+- Updated board-level chain and clue seeding notes:
+  - `obsidian/Detectiv/00_Map_Room/Gameplay_Story_Board.md`
+
+### Notes
+- Documentation now reflects that:
+  - HBF onboarding is a dedicated VN scenario handoff.
+  - map exploration intro auto-starts once after alt briefing.
+  - QR bank gate is currently VN-based with recovery routes.
+  - bank investigation consumes onboarding clue flags for extra dialogue/check options.
+
+---
+
 ## [07.02.2026] — Phase 3 Kickoff: Inventory + Quest + Dossier Persistence Slices
 
 ### Added

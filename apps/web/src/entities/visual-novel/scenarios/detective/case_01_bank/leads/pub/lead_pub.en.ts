@@ -1,69 +1,78 @@
-import type { VNContentPack } from '../../../../../model/types';
+﻿import type { VNContentPack } from '../../../../../model/types';
 
 export const LEAD_PUB_EN: VNContentPack = {
     locale: 'en',
     scenes: {
         'entrance': {
-            text: 'The [[Gasthaus "Zum Schlappen"]] reeks of tobacco and cheap beer. In the corner, a [[wizened old man]] in filthy work clothes nurses a drink. The [[barkeep]] polishes glasses with practiced disinterest.',
+            text: 'Gasthaus "Zum Schlappen" is loud, smoky, and watchful. Old Gustav sits in the corner while the barkeep tracks every stranger.',
             choices: {
-                'approach_gustav': 'Approach the old man',
-                'ask_barkeep': 'Talk to the barkeep',
-                'eavesdrop': 'Listen to the workers\' conversation'
+                'follow_night_guard_rumor': 'Follow Clara\'s night-guard rumor lead.',
+                'approach_gustav': 'Approach Gustav directly.',
+                'ask_barkeep': 'Question the barkeep first.',
+                'eavesdrop': 'Listen to workers at the next table.'
             }
         },
+        'pub_night_guard_path': {
+            text: 'The barkeep taps his chin toward Gustav. "If you want dawn-shift eyes, start with him."'
+        },
 
-        // GUSTAV
         'gustav_intro': {
-            text: 'The old man looks up with rheumy eyes. His hands are cracked from decades of working in cold water.'
+            text: 'Gustav looks up slowly. Canal water has aged his hands before his years.'
         },
         'gustav_suspicious': {
-            text: '"You ain\'t from here. What do you want with old Gustav?"',
+            text: '"You are not local. Why are you asking old Gustav questions?"',
             choices: {
-                'charisma_buy_drink': '[Charisma] "Let me buy you a drink, friend."',
-                'authority_badge': '[Authority] "Police. I need information."',
-                'leave_gustav': 'Nevermind, old timer.'
+                'mention_hartmann_payments': '"Heard Hartmann moved cash through intermediaries. Ring a bell?"',
+                'charisma_buy_drink': '[Charisma] "Let me buy the next drink."',
+                'authority_badge': '[Authority] "Police inquiry. Cooperate."',
+                'leave_gustav': 'Back off for now.'
             }
         },
+        'gustav_hartmann_reply': {
+            text: 'Gustav squints. "Name was whispered with runner boys near dawn. Money moved quiet, not honest."'
+        },
         'gustav_charisma_success': {
-            text: 'His eyes light up at the prospect of free schnapps. "Well now, you seem like a decent sort..."'
+            text: 'He softens at the offer. "Fine. I will tell you what I saw."'
         },
         'gustav_charisma_fail': {
-            text: '"I don\'t take charity from strangers." He turns back to his drink.'
+            text: '"I do not drink with strangers." He turns away.'
         },
         'gustav_authority_success': {
-            text: 'He pales slightly. "Police? I don\'t want no trouble. I\'ll tell you what I saw."'
+            text: 'He stiffens. "No trouble, Inspector. I will talk."'
         },
         'gustav_clams_up': {
-            text: '"Police?" He spits. "I ain\'t seen nothing. I ain\'t heard nothing. Now leave me be."'
+            text: '"Police? Then I saw nothing."'
         },
         'gustav_reveals': {
-            text: '"That night... the night of the robbery... I was cleaning the [[Fischerau]] channel. I saw someone on the [[scaffolding]] at the bank. A figure in dark clothes. Theatrical-like."'
+            text: '"Night of the robbery, I was cleaning Fischerau. Saw a dark figure on bank scaffolding. Moved like stage folk."'
         },
         'gustav_description': {
-            text: '"Moved like a dancer, they did. Climbed down, walked toward [[Stühlinger]]. That\'s all I know, I swear."'
+            text: '"Then headed toward Stuhlinger. Fast, practiced, no hesitation."'
         },
 
-        // BARKEEP
         'barkeep_intro': {
-            text: 'The barkeep eyes you warily. "What\'ll it be?"',
+            text: 'The barkeep wipes a glass without looking away from you.',
             choices: {
-                'barkeep_ask_gustav': '"Who\'s the old man in the corner?"',
-                'barkeep_ask_rumors': '"Heard anything interesting lately?"'
+                'barkeep_ask_gustav': '"Who is the old man?"',
+                'barkeep_ask_rumors': '"What rumors are circulating?"',
+                'ask_previous_investigator': '"A prior investigator disappeared. Did he come through here?"'
             }
         },
         'barkeep_points_gustav': {
-            text: '"That\'s [[Old Gustav]]. The [[Bächleputzer]]. Cleans the water channels every dawn. Sees more than he should, that one."'
+            text: '"That is Gustav, the Bachleputzer. Dawn shifts, sharp eyes, loose tongue after schnapps."'
         },
         'barkeep_rumors': {
-            text: '"Interesting? Only thing interesting is people asking too many questions. You want a drink or not?"'
+            text: '"Everyone has rumors. Few survive contact with facts."'
+        },
+        'barkeep_previous_investigator': {
+            text: 'He lowers his voice. "Yes. Asked about bank scaffolds, then vanished from this route."'
         },
 
-        // EAVESDROP
         'eavesdrop': {
-            text: 'You pretend to study your drink while listening to the nearby conversation.'
+            text: 'You stay quiet and let the room speak around you.'
         },
         'eavesdrop_content': {
-            text: '"...they say the night watchman at [[Haus Kapferer]] was paid to look the other way. Easy money, easy access through the scaffolding..."'
+            text: '"...night watch was bought off... scaffold entry looked clean..."'
         }
     }
 };

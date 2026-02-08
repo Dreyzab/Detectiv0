@@ -28,6 +28,21 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                     nextSceneId: 'show_residue_scene',
                     condition: (flags) => flags['found_residue']
                 },
+                {
+                    id: 'ask_sender_manifest',
+                    nextSceneId: 'apothecary_sender_manifest',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_chemical_sender'] && !flags['apothecary_asked_sender']
+                },
+                {
+                    id: 'ask_hartmann_procurement',
+                    nextSceneId: 'apothecary_hartmann_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_hartmann_internal_contact'] &&
+                        !flags['apothecary_asked_hartmann']
+                },
                 { id: 'ask_poisons', nextSceneId: 'ask_poisons' },
                 { id: 'ask_chemicals', nextSceneId: 'ask_chemicals' },
                 { id: 'leave_shop', nextSceneId: 'END' }
@@ -67,6 +82,14 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                         onFail: { nextSceneId: 'forensics_fail' }
                     }
                 },
+                {
+                    id: 'crosscheck_sender_chain',
+                    nextSceneId: 'apothecary_sender_crosscheck',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_sender_residue_match'] &&
+                        !flags['apothecary_crosschecked_sender']
+                },
                 { id: 'ask_source', nextSceneId: 'apothecary_source' },
                 { id: 'thank_leave', nextSceneId: 'END' }
             ],
@@ -78,6 +101,34 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                         name: 'Chemical Analysis',
                         description: 'Weiss identified the powder: ammonium nitrate mixed with charcoal. A crude but effective explosive, distinct from dynamite.',
                         packId: 'fbg1905'
+                    }
+                }
+            ]
+        },
+        'apothecary_sender_manifest': {
+            id: 'apothecary_sender_manifest',
+            characterId: 'apothecary',
+            nextSceneId: 'apothecary_greets',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'apothecary_asked_sender': true,
+                        'clue_chemical_sender_confirmed': true
+                    }
+                }
+            ]
+        },
+        'apothecary_hartmann_reply': {
+            id: 'apothecary_hartmann_reply',
+            characterId: 'apothecary',
+            nextSceneId: 'apothecary_greets',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'apothecary_asked_hartmann': true,
+                        'clue_hartmann_chemical_orders': true
                     }
                 }
             ]
@@ -94,6 +145,29 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                         id: 'ev_university_formula',
                         name: 'University Formula',
                         description: 'The specific mixture ratio matches research published last year by Prof. Kiliani\'s chemistry department.',
+                        packId: 'fbg1905'
+                    }
+                }
+            ]
+        },
+        'apothecary_sender_crosscheck': {
+            id: 'apothecary_sender_crosscheck',
+            characterId: 'apothecary',
+            nextSceneId: 'apothecary_university',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'apothecary_crosschecked_sender': true,
+                        'clue_sender_route_to_kiliani': true
+                    }
+                },
+                {
+                    type: 'grant_evidence',
+                    payload: {
+                        id: 'ev_supplier_registry_note',
+                        name: 'Supplier Registry Note',
+                        description: 'Weiss confirms Breisgau Chemical Works batches were purchased through intermediary accounts tied to university procurement channels.',
                         packId: 'fbg1905'
                     }
                 }

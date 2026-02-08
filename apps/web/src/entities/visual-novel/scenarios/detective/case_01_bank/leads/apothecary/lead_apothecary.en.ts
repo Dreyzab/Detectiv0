@@ -1,61 +1,70 @@
-import type { VNContentPack } from '../../../../../model/types';
+﻿import type { VNContentPack } from '../../../../../model/types';
 
 export const LEAD_APOTHECARY_EN: VNContentPack = {
     locale: 'en',
     scenes: {
         'entrance': {
-            text: 'The [[Löwen-Apotheke]] is a temple of medicine and mystery. Shelves of colored bottles stretch to the ceiling. The air smells of camphor, mint, and something sharper beneath.'
+            text: 'The Lowen-Apotheke is dense with glassware, herbs, and sharp medicinal smells.'
         },
         'apothecary_greets': {
-            text: 'An elderly man in a white coat emerges from the back room. "Welcome. I am [[Adalbert Weiss]]. How may I assist you?"',
+            text: 'An elderly man in a white coat steps forward. "Adalbert Weiss. State your need."',
             choices: {
-                'show_residue': 'Show the strange powder from the vault',
-                'ask_poisons': '"What do you know about poisons?"',
-                'ask_chemicals': '"I need information about industrial chemicals."',
-                'leave_shop': 'Leave'
+                'show_residue': 'Show powder recovered at the bank vault.',
+                'ask_sender_manifest': '"Have you seen shipments from Breisgau Chemical Works?"',
+                'ask_hartmann_procurement': '"Any chemical orders routed through a bank contact named Hartmann?"',
+                'ask_poisons': '"What poison traffic passes through this district?"',
+                'ask_chemicals': '"Who supplies industrial reagents nearby?"',
+                'leave_shop': 'Leave.'
             }
         },
 
-        // SHOW RESIDUE
         'show_residue_scene': {
-            text: 'I carefully unwrap the sample. "Can you identify this substance? It was found at a crime scene."'
+            text: 'You unwrap the sample. "Identify this."'
         },
         'apothecary_examines': {
-            text: 'Weiss puts on a pair of spectacles and examines the powder. He sniffs it cautiously, then places a pinch in a glass dish.'
+            text: 'Weiss inspects, smells, and measures the grains in silence.'
         },
         'apothecary_tests': {
-            text: 'He adds a few drops of acid. The mixture fizzes, releasing a pungent gas. "Interesting. Very interesting."'
+            text: 'A reagent drop hits the powder. The mixture fizzes and releases a bitter note.'
         },
         'apothecary_result': {
-            text: '"This is [[ammonium nitrate]] mixed with [[charcoal]]. A crude explosive — less powerful than dynamite, but easier to make. And no licensed supplier would sell this mixture."',
+            text: '"Ammonium nitrate with charcoal. Crude explosive blend. Not standard legal inventory."',
             choices: {
-                'forensics_check': '[Senses] Analyze the specific composition',
-                'ask_source': '"Where would someone obtain this?"',
-                'thank_leave': 'Thank him and leave'
+                'forensics_check': '[Senses] Analyze ratio and formulation.',
+                'crosscheck_sender_chain': '"Cross-check this with the Breisgau sender trace."',
+                'ask_source': '"Where would an operator source this mix?"',
+                'thank_leave': 'Thank him and leave.'
             }
         },
+        'apothecary_sender_manifest': {
+            text: 'Weiss nods once. "Yes. Small sealed lots, irregular schedule, intermediary billing."'
+        },
+        'apothecary_hartmann_reply': {
+            text: '"Hartmann appears in settlement slips, not direct orders. Clerk-level name, high-sensitivity routing."'
+        },
         'forensics_success': {
-            text: 'The ratio is precise. Too precise for random mixing. Someone followed a formula — likely from a chemistry textbook or research paper.'
+            text: 'The ratio is disciplined and reproducible. This came from trained hands, not improvisation.'
+        },
+        'apothecary_sender_crosscheck': {
+            text: 'Weiss aligns your sender clue with his records. "Then the chain points toward university-adjacent procurement."'
         },
         'forensics_fail': {
-            text: 'The analysis confirms it\'s an explosive mixture, but the specific source remains unclear.'
+            text: 'Explosive confirmed. Source precision remains uncertain.'
         },
         'apothecary_source': {
-            text: '"The components can be bought separately — fertilizer from farmers, charcoal from any smithy. But this mixture... it would take knowledge of chemistry to combine them safely."'
+            text: '"Inputs are common. Safe combination requires chemical competence and controlled access."'
         },
         'apothecary_university': {
-            text: '"In fact... this ratio. It looks familiar." He pulls a journal from his shelf. "Last year, Professor [[Kiliani]] at the university published a paper on controlled combustion. This is very similar to his work."'
+            text: 'He opens a journal and taps a formula line. "Kiliani\'s combustion work. This profile is too close to ignore."'
         },
 
-        // ALTERNATIVES
         'ask_poisons': {
-            text: '"Poisons? I am a licensed pharmacist, mein Herr. I deal in medicines. Though... certain substances can cure or kill, depending on the dose."'
+            text: '"Dose defines poison. Most killers misuse ordinary compounds."'
         },
         'ask_chemicals': {
-            text: '"Industrial chemicals? I stock pharmaceuticals, not factory supplies. But I may know someone who deals in such things. For the right consideration."'
+            text: '"Factories, labs, and smugglers all claim clean ledgers. Only one of those is usually true."'
         }
     }
 };
 
 export default LEAD_APOTHECARY_EN;
-
