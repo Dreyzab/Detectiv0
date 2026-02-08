@@ -2,6 +2,15 @@ const DEFAULT_LOCAL_API_URL = 'http://localhost:3000';
 
 const trimTrailingSlash = (value: string): string => value.replace(/\/+$/, '');
 
+const isHttpUrl = (value: string): boolean => {
+    try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+        return false;
+    }
+};
+
 const isLoopbackHost = (host: string): boolean => {
     const normalized = host.toLowerCase();
     return normalized === 'localhost'
@@ -33,6 +42,10 @@ const readConfiguredBaseUrl = (): string | null => {
         || import.meta.env.VITE_API_URL?.trim();
 
     if (!configured) {
+        return null;
+    }
+
+    if (!isHttpUrl(configured)) {
         return null;
     }
 

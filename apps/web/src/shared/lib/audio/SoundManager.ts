@@ -14,6 +14,7 @@ class SoundManager {
 
     private _sfxVolume = 0.5;
     private _musicVolume = 0.3;
+    private _muted = true; // All sounds disabled
 
     constructor() {
         // Lazy init on first user interaction to handle autoplay policies
@@ -52,6 +53,7 @@ class SoundManager {
      * Synthesizes a mechanical click sound using filtered noise + oscillator.
      */
     public playTypewriterClick() {
+        if (this._muted) return;
         if (!this.ctx || !this.masterGain) return;
 
         const t = this.ctx.currentTime;
@@ -100,6 +102,7 @@ class SoundManager {
      * PROCEDURAL SFX: Soft notification chime for clues
      */
     public playClueFound() {
+        if (this._muted) return;
         if (!this.ctx || !this.masterGain) return;
         const t = this.ctx.currentTime;
         const gain = this.ctx.createGain();
@@ -127,6 +130,7 @@ class SoundManager {
      * Intentionally different from typewriter clicks and clue chimes.
      */
     public playOverlayAdvance() {
+        if (this._muted) return;
         if (!this.ctx || !this.masterGain) return;
 
         const t = this.ctx.currentTime;
@@ -169,6 +173,7 @@ class SoundManager {
      * Handles cross-fading if track changes.
      */
     public playAmbient(url: string) {
+        if (this._muted) return;
         if (this.currentAmbientUrl === url) return;
 
         // Fade out existing
