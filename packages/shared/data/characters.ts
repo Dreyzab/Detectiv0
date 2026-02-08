@@ -44,6 +44,7 @@ export type CharacterId =
     | 'mastermind'
     | 'corps_student'
     | 'saccharin_maud'
+    | 'narrator'
     | 'unknown';
 
 export type CharacterTier = 'major' | 'functional' | 'generic';
@@ -571,6 +572,14 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         color: '#a8a29e',
         role: 'npc',
         archetypeId: 'mystery_figure'
+    },
+    narrator: {
+        id: 'narrator',
+        tier: 'generic',
+        name: 'Narrator',
+        color: '#a8a29e',
+        role: 'npc',
+        archetypeId: 'narrator_voice'
     },
 };
 

@@ -7,6 +7,9 @@ import { API_BASE_URL } from '@/shared/api/baseUrl';
 
 const MAX_HISTORY_LENGTH = 200;
 const MAX_DIALOGUE_HISTORY = 50;
+const RECENT_SCENARIO_RESTART_GUARD_MS = 1200;
+
+let lastEndedScenario: { id: string; endedAt: number } | null = null;
 
 interface VNState {
     locale: string;
@@ -98,6 +101,14 @@ export const useVNStore = create<VNState>()(
             },
 
             startScenario: (scenarioId) => {
+                if (
+                    lastEndedScenario &&
+                    lastEndedScenario.id === scenarioId &&
+                    Date.now() - lastEndedScenario.endedAt < RECENT_SCENARIO_RESTART_GUARD_MS
+                ) {
+                    logger.vn(`Ignoring immediate restart for scenario: ${scenarioId}`);
+                    return;
+                }
                 logger.vn(`Starting Scenario: ${scenarioId}`);
                 set({
                     activeScenarioId: scenarioId,
@@ -116,6 +127,13 @@ export const useVNStore = create<VNState>()(
             },
 
             endScenario: () => {
+                const activeId = get().activeScenarioId;
+                if (activeId) {
+                    lastEndedScenario = {
+                        id: activeId,
+                        endedAt: Date.now()
+                    };
+                }
                 logger.vn("Ending Scenario");
                 set({
                     activeScenarioId: null,

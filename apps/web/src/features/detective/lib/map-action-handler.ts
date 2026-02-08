@@ -16,6 +16,7 @@ export const useMapActionHandler = () => {
         unlockEntry,
         setActiveCase
     } = useDossierStore();
+    const flags = useDossierStore((state) => state.flags);
     const setQuestStage = useQuestStore((state) => state.setQuestStage);
     const openMerchant = useMerchantUiStore((state) => state.openMerchant);
     const startScenario = useVNStore(state => state.startScenario);
@@ -26,6 +27,10 @@ export const useMapActionHandler = () => {
 
         switch (action.type) {
             case 'start_vn': {
+                if (action.scenarioId === 'detective_case1_hbf_arrival' && flags['arrived_at_hbf']) {
+                    console.log('[MapAction] Skipping HBF arrival replay: already arrived_at_hbf');
+                    break;
+                }
                 // Pass scenario ID to the store, not the scenario object
                 startScenario(action.scenarioId);
                 break;

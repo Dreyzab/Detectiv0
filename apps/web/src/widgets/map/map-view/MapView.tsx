@@ -39,7 +39,6 @@ export const MapView = () => {
     const setPointState = useDossierStore((state) => state.setPointState);
     const setFlag = useDossierStore((state) => state.setFlag);
     const startScenario = useVNStore(state => state.startScenario);
-    const activeScenarioId = useVNStore(state => state.activeScenarioId);
     const locale = useVNStore(state => state.locale);
     const navigate = useNavigate();
     const { executeAction } = useMapActionHandler();
@@ -112,26 +111,6 @@ export const MapView = () => {
             caseId: worldCaseId
         });
     }, [worldCaseId, hydrateWorld]);
-
-    useEffect(() => {
-        if (activeScenarioId) {
-            return;
-        }
-
-        const shouldStartExplorationIntro =
-            flags['arrived_at_hbf'] &&
-            flags['hbf_priority_selected'] &&
-            flags['priority_bank_first'] &&
-            !flags['case01_map_exploration_intro_done'] &&
-            !flags['qr_scanned_bank'];
-
-        if (!shouldStartExplorationIntro) {
-            return;
-        }
-
-        startScenario('detective_case1_map_first_exploration');
-        navigate('/vn/detective_case1_map_first_exploration');
-    }, [activeScenarioId, flags, startScenario, navigate]);
 
     // Unified Map Hook
     const { points, pointStates } = useMapPoints({

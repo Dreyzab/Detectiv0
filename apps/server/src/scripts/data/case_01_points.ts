@@ -8,15 +8,6 @@ type DetectivePoint = Omit<MapPoint, 'category'> & {
     voices?: Partial<Record<string, string>>;
 };
 
-// Helper to create bindings easily
-const vn = (scenarioId: string, label: string) => ({
-    id: `vn_${Math.random().toString(36).substr(2, 5)}`,
-    trigger: 'marker_click' as const,
-    label,
-    priority: 10,
-    actions: [{ type: 'start_vn' as const, scenarioId }]
-});
-
 export const CASE_01_POINTS: Record<string, DetectivePoint> = {
     // --- CENTRAL DISTRICT ---
     'loc_hbf': {
@@ -27,7 +18,18 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         lng: 7.842609,
         type: 'interest',
         packId: 'fbg1905',
-        bindings: [vn('detective_case1_hbf_arrival', 'Arrive in Freiburg')],
+        bindings: [
+            {
+                id: 'hbf_intro_once',
+                trigger: 'marker_click',
+                label: 'Arrive in Freiburg',
+                priority: 30,
+                conditions: [
+                    { type: 'flag_is', flagId: 'arrived_at_hbf', value: false }
+                ],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_hbf_arrival' }]
+            }
+        ],
         image: '/images/detective/loc_hauptbahnhof.png',
         voices: { logic: "Trains arriving on time. A system in motion." }
     },
