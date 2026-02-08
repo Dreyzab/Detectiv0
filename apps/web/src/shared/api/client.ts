@@ -24,6 +24,7 @@ import type {
     TravelStartResponse,
     WorldSnapshotResponse
 } from '@repo/contracts';
+import { API_BASE_URL } from './baseUrl';
 
 export interface ApiError {
     status: number;
@@ -42,8 +43,6 @@ interface RequestOptions<TBody> {
     query?: Record<string, string | undefined>;
     body?: TBody;
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
 const toQueryString = (query?: Record<string, string | undefined>): string => {
     if (!query) {
@@ -91,7 +90,17 @@ const requestJson = async <TResponse, TBody = undefined>(
 
         const contentType = response.headers.get('content-type') ?? '';
         const isJson = contentType.includes('application/json');
-        const payload = isJson ? await response.json() as TResponse : null;
+        if (!isJson) {
+            return {
+                data: null,
+                error: {
+                    status: response.status,
+                    message: `Expected JSON response but received '${contentType || 'unknown'}'`
+                }
+            };
+        }
+
+        const payload = await response.json() as TResponse;
 
         if (!response.ok) {
             return {

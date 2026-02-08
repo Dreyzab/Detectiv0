@@ -6,16 +6,26 @@ export const CASE1_HBF_ARRIVAL_DE: VNContentPack = {
     locale: 'de',
     scenes: {
         ...CASE1_HBF_ARRIVAL_EN.scenes,
-        'beat3_square': {
-            text: 'Vor dem Bahnhof klingeln Strassenbahnen, Kutschen schneiden durch nasses Pflaster. Freiburg ist schon in Bewegung.',
+        'beat1_atmosphere': {
+            text: 'Der Zug kommt mit einem Quietschen der Bremsen zum Stehen. Dampf füllt den Bahnsteig und versperrt die Sicht. Die Luft riecht nach Kohle und feuchtem Stein.'
+        },
+        'beat1_spot_fritz': {
+            text: 'Passagiere strömen heraus, ein chaotischer Fluss aus Mänteln und Koffern.',
             choices: {
-                'beat3_ask_driver': 'Nach dem Weg fragen.',
-                'beat3_self_orient': 'An Schildern und Verkehrsfluss orientieren.',
-                'beat3_go_blind': 'Schnell los und improvisieren.'
+                'choice_approach_fritz': 'Auf den uniformierten Mann zugehen.',
+                'choice_investigate_station': 'Erst die Station untersuchen.'
             }
         },
-        'beat3_driver_result': {
-            text: '"Geradeaus, dann links beim Munster", sagt Schutzmann Fritz Muller knapp. "Und passen Sie auf die Presse am Bankhaus auf."'
+        'beat2_paperboy': {
+            text: 'Ein junger Zeitungsjunge schreit Schlagzeilen, aber seine Augen wandern nervös umher.',
+            choices: {
+                'beat2_buy_newspaper': 'Zeitung kaufen (1 Mark).',
+                'beat2_glance_headline': 'Nur die Schlagzeile lesen.'
+            }
+        },
+        'beat3_square': {
+            text: 'Vor dem Bahnhof klingeln Strassenbahnen, Kutschen schneiden durch nasses Pflaster. Freiburg ist schon in Bewegung.',
+            choices: {}
         },
         'beat_fritz_priority': {
             text: '"Ich bin Schutzmann Fritz Muller, Freiburger Polizei. Der Bankraub setzt uns unter Druck, und der Burgermeister fordert sofort Ergebnisse. Ihre Entscheidung: zuerst zur Bank oder zuerst ins Rathaus?"',

@@ -67,17 +67,17 @@ export const questLotteWiresLogic: VNScenarioLogic = {
         end_success: {
             id: 'end_success',
             characterId: 'operator',
-            // End
+            nextSceneId: 'END'
         },
         end_fail: {
             id: 'end_fail',
             characterId: 'operator',
-            // End
+            nextSceneId: 'END'
         },
         end_broke: {
             id: 'end_broke',
             onEnter: [{ type: 'add_heat', payload: 1 }],
-            // End
+            nextSceneId: 'END'
         }
     }
 };

@@ -4,26 +4,23 @@ export const INTERLUDE_LOTTE_EN: VNContentPack = {
     locale: 'en',
     scenes: {
         'phone_rings': {
-            text: 'The telephone in the booth rings. Sharp. Insistent. Once. Twice. Three times.',
-            choices: {
-                'answer': 'Answer it.'
-            }
+            text: 'A telegraph office handset rings once, then again. The clerk points at you as if he was told to expect exactly this moment.'
         },
         'lotte_speaks': {
-            text: '"Inspector?" The voice is tinny, distorted by the wire. It\'s [[Lotte]]. "I... I shouldn\'t be calling. The line is monitored."'
+            text: '"Inspector?" The voice arrives in fragments through static. It is [[Lotte]]. "Keep this brief. The city switchboard is being watched."'
         },
         'lotte_warning': {
-            text: '"Commissioner Richter... my father... he gave the order to cut you off. He knows you\'re finding things. Real things. Please, stop. Before they hurt you."',
+            text: '"Your lead pattern is visible," Lotte whispers. "Someone in the Presidium is routing surveillance through maintenance lines. If you keep pushing, they will move before you do."',
             choices: {
-                'thank_personal': '"Thank you for the warning, Lotte. It means a lot."',
-                'dismiss_professional': '"You are violating protocol, Fräulein. Clear the line."'
+                'thank_personal': '"You did the right thing, Lotte. Keep feeding me what they miss."',
+                'dismiss_professional': '"Understood. Return to protocol and forget this call happened."'
             }
         },
         'thank_res': {
-            text: '"I... I just didn\'t want you to walk into a trap. Be careful, Detective." Click. The line goes dead.'
+            text: '"Then we continue carefully," she says. "Come by the switchboard when you can. I found something buried in the dead channels." The line clicks dead.'
         },
         'dismiss_res': {
-            text: 'A pause. "I see. I won\'t bother you again." Click. The line goes dead.'
+            text: 'A pause. "Fine. Professional, then. If you change your mind, ask for me at the central board." The line goes dead.'
         }
     }
 };

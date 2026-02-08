@@ -190,7 +190,7 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
             onEnter: [
                 { type: 'add_flag', payload: { 'apothecary_lead_complete': true } },
                 { type: 'unlock_point', payload: 'loc_uni_chem' },
-                { type: 'unlock_point', payload: 'loc_telephone' } // Interlude B
+                { type: 'unlock_point', payload: 'loc_telephone' } // Interlude B / Lotte channel
             ]
         },
 

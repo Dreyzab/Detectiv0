@@ -4,73 +4,56 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_hbf_arrival',
     title: 'Arrival at Freiburg HBF',
     defaultBackgroundUrl: '/images/scenarios/bahnhof_platform.png',
-    initialSceneId: 'beat1_collision',
+    initialSceneId: 'beat1_atmosphere',
     mode: 'fullscreen',
     scenes: {
-        'beat1_collision': {
-            id: 'beat1_collision',
-            characterId: 'gendarm',
-            onEnter: [
-                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'briefing' } }
-            ],
+        'beat1_atmosphere': {
+            id: 'beat1_atmosphere',
+            characterId: 'narrator',
+            nextSceneId: 'beat1_spot_fritz',
+            choices: []
+        },
+        'beat1_spot_fritz': {
+            id: 'beat1_spot_fritz',
+            characterId: 'narrator',
             passiveChecks: [
                 {
-                    id: 'chk_case1_hbf_perception_schedule',
+                    id: 'chk_case1_hbf_perception_fritz',
                     voiceId: 'perception',
                     difficulty: 7,
                     isPassive: true,
-                    passiveText: 'A timetable route is marked in red: Freiburg - Basel - Zurich.',
-                    passiveFailText: 'The station board is a blur of departures.',
+                    passiveText: 'In the flow of people, you notice a man in uniform with a spiked helmet.',
+                    passiveFailText: 'The crowd is a chaotic blur of faces and luggage.',
                     onSuccess: {
-                        actions: [{ type: 'add_flag', payload: { 'clue_marked_schedule': true } }]
+                        actions: [{ type: 'add_flag', payload: { 'spotted_fritz_early': true } }]
                     }
                 }
             ],
             choices: [
                 {
-                    id: 'beat1_authority',
-                    nextSceneId: 'beat1_authority_result',
-                    actions: [{ type: 'add_flag', payload: { 'beat1_choice_authority': true } }]
+                    id: 'choice_approach_fritz',
+                    nextSceneId: 'beat_fritz_priority',
+                    actions: [{ type: 'add_flag', payload: { 'skipped_station_investigation': true } }]
                 },
                 {
-                    id: 'beat1_perception',
-                    nextSceneId: 'beat1_perception_result',
-                    actions: [{ type: 'add_flag', payload: { 'beat1_choice_perception': true } }]
-                },
-                {
-                    id: 'beat1_intuition',
-                    nextSceneId: 'beat1_intuition_result',
-                    actions: [{ type: 'add_flag', payload: { 'beat1_choice_intuition': true } }]
+                    id: 'choice_investigate_station',
+                    nextSceneId: 'beat2_paperboy',
+                    actions: [{ type: 'add_flag', payload: { 'investigated_station': true } }]
                 }
             ]
         },
-        'beat1_authority_result': {
-            id: 'beat1_authority_result',
-            characterId: 'gendarm',
-            nextSceneId: 'beat2_kiosk'
-        },
-        'beat1_perception_result': {
-            id: 'beat1_perception_result',
-            characterId: 'gendarm',
-            nextSceneId: 'beat2_kiosk'
-        },
-        'beat1_intuition_result': {
-            id: 'beat1_intuition_result',
-            characterId: 'gendarm',
-            nextSceneId: 'beat2_kiosk'
-        },
 
-        'beat2_kiosk': {
-            id: 'beat2_kiosk',
-            characterId: 'gendarm',
+        'beat2_paperboy': {
+            id: 'beat2_paperboy',
+            characterId: 'narrator',
             passiveChecks: [
                 {
-                    id: 'chk_case1_hbf_intuition_kiosk',
+                    id: 'chk_case1_hbf_intuition_paperboy',
                     voiceId: 'intuition',
                     difficulty: 6,
                     isPassive: true,
-                    passiveText: 'The kiosk woman flinches at the word "bank". She knows more than she says.',
-                    passiveFailText: 'The kiosk seller looks ordinary in the morning rush.',
+                    passiveText: 'The newspaper boy is shouting too loud. He is hiding fear.',
+                    passiveFailText: 'A boy shouts headlines about the robbery.',
                     onSuccess: {
                         actions: [{ type: 'add_flag', payload: { 'clue_kiosk_nervousness': true } }]
                     }
@@ -96,18 +79,18 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
         },
         'beat2_buy_result': {
             id: 'beat2_buy_result',
-            characterId: 'gendarm',
+            characterId: 'narrator',
             nextSceneId: 'beat3_square'
         },
         'beat2_glance_result': {
             id: 'beat2_glance_result',
-            characterId: 'gendarm',
+            characterId: 'narrator',
             nextSceneId: 'beat3_square'
         },
 
         'beat3_square': {
             id: 'beat3_square',
-            characterId: 'gendarm',
+            characterId: 'narrator',
             passiveChecks: [
                 {
                     id: 'chk_case1_hbf_senses_galdermann',
@@ -121,34 +104,6 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
                     }
                 }
             ],
-            choices: [
-                {
-                    id: 'beat3_ask_driver',
-                    nextSceneId: 'beat3_driver_result'
-                },
-                {
-                    id: 'beat3_self_orient',
-                    nextSceneId: 'beat3_orient_result'
-                },
-                {
-                    id: 'beat3_go_blind',
-                    nextSceneId: 'beat3_blind_result'
-                }
-            ]
-        },
-        'beat3_driver_result': {
-            id: 'beat3_driver_result',
-            characterId: 'gendarm',
-            nextSceneId: 'beat_fritz_priority'
-        },
-        'beat3_orient_result': {
-            id: 'beat3_orient_result',
-            characterId: 'gendarm',
-            nextSceneId: 'beat_fritz_priority'
-        },
-        'beat3_blind_result': {
-            id: 'beat3_blind_result',
-            characterId: 'gendarm',
             nextSceneId: 'beat_fritz_priority'
         },
 

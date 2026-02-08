@@ -141,7 +141,7 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             nextSceneId: 'END',
             onEnter: [
                 { type: 'add_flag', payload: { 'pub_lead_complete': true } },
-                { type: 'unlock_point', payload: 'loc_freiburg_warehouse' }
+                { type: 'unlock_point', payload: 'loc_telephone' }
             ]
         },
 

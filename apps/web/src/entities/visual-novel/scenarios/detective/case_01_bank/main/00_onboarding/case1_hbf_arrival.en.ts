@@ -3,29 +3,22 @@ import type { VNContentPack } from '../../../../../model/types';
 export const CASE1_HBF_ARRIVAL_EN: VNContentPack = {
     locale: 'en',
     scenes: {
-        'beat1_collision': {
-            text: 'The train jerks to a stop. Steam and noise hit you at once. A porter slams your shoulder as he rushes by.',
+        'beat1_atmosphere': {
+            text: 'The train comes to a halt with a screeching of brakes. Steam fills the platform, obscuring the view. The air smells of coal and damp stone.'
+        },
+        'beat1_spot_fritz': {
+            text: 'Passengers stream out, a chaotic river of coats and luggage.',
             choices: {
-                'beat1_authority': '"Watch where you are going."',
-                'beat1_perception': 'Step aside and scan the platform.',
-                'beat1_intuition': 'Track where the porter is heading.'
+                'choice_approach_fritz': 'Approach the officer in uniform.',
+                'choice_investigate_station': 'Investigate the station first.'
             }
         },
-        'beat1_authority_result': {
-            text: 'The porter mutters under his breath but remembers your face.'
-        },
-        'beat1_perception_result': {
-            text: 'The crowd starts to make sense. Movement has a pattern.'
-        },
-        'beat1_intuition_result': {
-            text: 'He turns toward the cargo exit. Odd route for normal luggage.'
-        },
 
-        'beat2_kiosk': {
-            text: 'A kiosk girl snaps open a newspaper: "Freiburger Zeitung. Bank scandal on the front page."',
+        'beat2_paperboy': {
+            text: 'A young newspaper boy is shouting headlines near the pillar, but his eyes dart nervously around the hall.',
             choices: {
-                'beat2_buy_newspaper': 'Buy the paper.',
-                'beat2_glance_headline': 'Catch the headline and move.'
+                'beat2_buy_newspaper': 'Buy the paper (1 Mark).',
+                'beat2_glance_headline': 'Just glance at the headline.'
             }
         },
         'beat2_buy_result': {
@@ -37,20 +30,7 @@ export const CASE1_HBF_ARRIVAL_EN: VNContentPack = {
 
         'beat3_square': {
             text: 'Outside the station, trams ring and carriages cut through wet stone. The city is already moving.',
-            choices: {
-                'beat3_ask_driver': 'Ask for directions.',
-                'beat3_self_orient': 'Orient by signs and traffic flow.',
-                'beat3_go_blind': 'Move fast and improvise.'
-            }
-        },
-        'beat3_driver_result': {
-            text: '"Straight, then left near the Munster." Quick and precise.'
-        },
-        'beat3_orient_result': {
-            text: 'A sign to Zentrum points your way. You lock in the route.'
-        },
-        'beat3_blind_result': {
-            text: 'Not clean, but decisive. Momentum matters.'
+            choices: {}
         },
         'beat_fritz_priority': {
             text: '"Schutzmann Fritz Muller, Freiburg police. Bankhaus Krebs was hit hard, and Mayor Thoma is demanding answers. Your call, detective: bank first or Rathaus first."',

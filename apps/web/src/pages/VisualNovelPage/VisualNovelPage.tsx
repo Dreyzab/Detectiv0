@@ -30,6 +30,7 @@ export const VisualNovelPage = () => {
     const [activeTooltip, setActiveTooltip] = useState<{ keyword: string; rect: DOMRect } | null>(null);
     const processedOnEnterRef = useRef<Set<string>>(new Set());
     const processedPassiveChecksRef = useRef<Set<string>>(new Set());
+    const suppressUrlScenarioRestartRef = useRef<string | null>(null);
 
     const {
         activeScenarioId,
@@ -60,9 +61,25 @@ export const VisualNovelPage = () => {
 
     // Start scenario from URL param if not already active
     useEffect(() => {
-        if (scenarioId && activeScenarioId !== scenarioId) {
-            startScenario(scenarioId);
+        if (!scenarioId) {
+            return;
         }
+
+        if (activeScenarioId === scenarioId) {
+            suppressUrlScenarioRestartRef.current = scenarioId;
+            return;
+        }
+
+        const justEndedSameScenario =
+            activeScenarioId === null &&
+            suppressUrlScenarioRestartRef.current === scenarioId;
+
+        if (justEndedSameScenario) {
+            return;
+        }
+
+        startScenario(scenarioId);
+        suppressUrlScenarioRestartRef.current = scenarioId;
     }, [scenarioId, activeScenarioId, startScenario]);
 
     // Resolve Scenario dynamically from ID + Locale
@@ -187,11 +204,13 @@ export const VisualNovelPage = () => {
         }
 
         if (activeScenarioId === 'detective_case1_qr_scan_bank') {
+            suppressUrlScenarioRestartRef.current = activeScenarioId;
             endScenario();
             navigate('/vn/detective_case1_bank_scene');
             return;
         }
 
+        suppressUrlScenarioRestartRef.current = activeScenarioId;
         endScenario();
         navigate('/map'); // Return to map between scenarios
     };

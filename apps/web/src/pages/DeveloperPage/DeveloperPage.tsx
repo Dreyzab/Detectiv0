@@ -7,13 +7,14 @@ import { useQuestStore } from '@/features/quests/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
 import { useInventoryStore } from '@/entities/inventory/model/store';
 import { type LayerKey, type LayerValues, LAYER_DEFINITIONS, getLayerDefaults, getLayerValues, layerVarName, resetLayerOverrides, setLayerValue } from '@/shared/lib/layers';
+import { API_BASE_URL } from '@/shared/api/baseUrl';
 import type { MapPoint } from '@repo/shared';
 import type { ReactNode } from 'react';
+import { getLocalizedText } from '@/features/quests/utils';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || API_BASE_URL;
 const DEV_DASHBOARD_ENABLED = import.meta.env.VITE_ENABLE_DEV_DASHBOARD === 'true';
 const DEV_ADMIN_TOKEN = import.meta.env.VITE_DEV_ADMIN_TOKEN;
-import { getLocalizedText } from '@/features/quests/utils';
 
 export const DeveloperPage = () => {
     const [activeTab, setActiveTab] = useState<'points' | 'quests' | 'system' | 'layers'>('points');

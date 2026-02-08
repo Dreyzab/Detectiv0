@@ -154,7 +154,8 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
             onEnter: [
                 { type: 'add_flag', payload: { 'tailor_lead_complete': true } },
                 { type: 'unlock_point', payload: 'loc_student_house' },
-                { type: 'unlock_point', payload: 'loc_street_event' } // Interlude A
+                { type: 'unlock_point', payload: 'loc_street_event' }, // Interlude A
+                { type: 'unlock_point', payload: 'loc_telephone' }
             ]
         },
 

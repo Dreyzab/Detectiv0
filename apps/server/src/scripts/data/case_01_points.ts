@@ -132,12 +132,35 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         packId: 'fbg1905',
         bindings: [
             {
-                id: 'archive_enter',
+                id: 'archive_enter_primary',
+                trigger: 'marker_click',
+                label: 'Primary Objective: Build Archive Dossier',
+                priority: 35,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'archive_casefile_complete', value: false },
+                        { type: 'flag_is', flagId: 'tailor_lead_complete', value: true },
+                        { type: 'flag_is', flagId: 'apothecary_lead_complete', value: true },
+                        { type: 'flag_is', flagId: 'pub_lead_complete', value: true }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
+            },
+            {
+                id: 'archive_enter_followup',
                 trigger: 'marker_click',
                 label: 'Consult Archives',
-                priority: 10,
-                // Critical path: accessible? Maybe gated by knowing about it.
-                // Anti-softlock: Always open, but context changes if we have clues.
+                priority: 24,
+                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: false }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
+            },
+            {
+                id: 'archive_review',
+                trigger: 'marker_click',
+                label: 'Review Archive Findings',
+                priority: 14,
+                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: true }],
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
             }
         ],
@@ -367,7 +390,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 trigger: 'marker_click',
                 label: 'Inspect Warehouse',
                 priority: 100,
-                // conditions: [{ type: 'flag_is', flagId: 'knows_warehouse_location', value: true }], // handled by unlock
+                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: true }],
                 actions: [{ type: 'start_vn', scenarioId: 'case1_finale' }]
             }
         ],
@@ -552,7 +575,54 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 trigger: 'marker_click',
                 label: 'Answer Call',
                 priority: 100,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'lotte_interlude_complete', value: false },
+                        {
+                            type: 'logic_or',
+                            conditions: [
+                                {
+                                    type: 'logic_and',
+                                    conditions: [
+                                        { type: 'flag_is', flagId: 'tailor_lead_complete', value: true },
+                                        { type: 'flag_is', flagId: 'apothecary_lead_complete', value: true }
+                                    ]
+                                },
+                                {
+                                    type: 'logic_and',
+                                    conditions: [
+                                        { type: 'flag_is', flagId: 'tailor_lead_complete', value: true },
+                                        { type: 'flag_is', flagId: 'pub_lead_complete', value: true }
+                                    ]
+                                },
+                                {
+                                    type: 'logic_and',
+                                    conditions: [
+                                        { type: 'flag_is', flagId: 'apothecary_lead_complete', value: true },
+                                        { type: 'flag_is', flagId: 'pub_lead_complete', value: true }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }],
                 actions: [{ type: 'start_vn', scenarioId: 'interlude_lotte_warning' }]
+            },
+            {
+                id: 'trigger_lotte_side_quest',
+                trigger: 'marker_click',
+                label: 'Meet Lotte at the Switchboard',
+                priority: 90,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'lotte_interlude_complete', value: true },
+                        { type: 'flag_is', flagId: 'lotte_quest_available', value: true },
+                        { type: 'flag_is', flagId: 'lotte_quest_complete', value: false }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'quest_lotte_wires' }]
             }
         ],
         image: '/images/detective/loc_rathaus_archiv.png'

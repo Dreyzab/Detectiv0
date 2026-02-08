@@ -3,6 +3,7 @@ import { persist, type PersistOptions } from 'zustand/middleware';
 import type { DialogueEntry } from './types';
 import { logger } from '@repo/shared';
 import i18n from '@/shared/lib/i18n';
+import { API_BASE_URL } from '@/shared/api/baseUrl';
 
 const MAX_HISTORY_LENGTH = 200;
 const MAX_DIALOGUE_HISTORY = 50;
@@ -190,8 +191,7 @@ export const useVNStore = create<VNState>()(
             syncToServer: async (slotId: number) => {
                 const json = get().exportSave();
                 try {
-                    // TODO: Replace localhost with env variable
-                    const res = await fetch(`http://localhost:3000/detective/saves/${slotId}`, {
+                    const res = await fetch(`${API_BASE_URL}/detective/saves/${slotId}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ data: JSON.parse(json) }) // Double wrap/unwrap to ensure it's sent as object, not string-in-string
@@ -205,7 +205,7 @@ export const useVNStore = create<VNState>()(
 
             loadFromServer: async (slotId: number) => {
                 try {
-                    const res = await fetch(`http://localhost:3000/detective/saves/${slotId}`);
+                    const res = await fetch(`${API_BASE_URL}/detective/saves/${slotId}`);
                     if (!res.ok) return false;
                     const json = await res.json();
                     if (json.success && json.data) {
