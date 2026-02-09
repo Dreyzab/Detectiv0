@@ -41,6 +41,22 @@ const isOneShotScenarioComplete = (scenarioId: string, flags: Record<string, boo
     return false;
 };
 
+const LEGACY_LOCATION_MAP: Record<string, string> = {
+    'loc_freiburg_bank': 'p_bank',
+    'loc_rathaus': 'p_rathaus',
+    'loc_hbf': 'p_hbf',
+    'loc_munster': 'p_munster',
+    'loc_uni_chem': 'p_uni_chem',
+    'loc_uni_med': 'p_uni_med',
+    'loc_student_house': 'p_student_house',
+    'loc_pub_deutsche': 'p_pub_deutsche',
+    'loc_red_light': 'p_red_light',
+    'loc_freiburg_warehouse': 'p_goods_station',
+    'loc_workers_pub': 'p_workers_pub',
+    'loc_martinstor': 'p_martinstor',
+    'loc_schwabentor': 'p_schwabentor'
+};
+
 export const MapView = () => {
     const mapRef = useRef<MapRef>(null);
     const flags = useDossierStore((state) => state.flags);
@@ -96,6 +112,13 @@ export const MapView = () => {
 
         // Create lookup for LocationID -> PointID
         const locationLookup = new Map<string, string>();
+
+        // 1. Populate with Legacy Mappings (Manual Overrides)
+        Object.entries(LEGACY_LOCATION_MAP).forEach(([locId, pointId]) => {
+            locationLookup.set(locId, pointId);
+        });
+
+        // 2. Populate with Data-driven Mappings (if available)
         points.forEach(p => {
             locationLookup.set(p.id, p.id);
             const locId = getStableLocationId(p);
@@ -127,7 +150,13 @@ export const MapView = () => {
                     const resolvedId = locationLookup.get(obj.targetPointId) ?? obj.targetPointId;
 
                     logger.debug(`Found active target: ${obj.targetPointId} -> ${resolvedId} (Quest: ${uq.questId}, Obj: ${obj.id})`);
-                    ids.add(resolvedId);
+
+                    // Only add if it maps to a real point we have
+                    if (points.some(p => p.id === resolvedId)) {
+                        ids.add(resolvedId);
+                    } else {
+                        logger.warn(`Active target ${obj.targetPointId} resolved to ${resolvedId} but point not found in map data.`);
+                    }
                 }
             });
         });
