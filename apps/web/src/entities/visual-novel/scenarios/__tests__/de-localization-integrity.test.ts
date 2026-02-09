@@ -17,64 +17,72 @@ function flattenKeys(value: unknown, prefix = ''): string[] {
     });
 }
 
-describe('German Locale Integrity', () => {
-    it('keeps DE JSON locale files aligned with EN keys', () => {
+describe('Locale Integrity', () => {
+    it('keeps DE/RU JSON locale files aligned with EN keys', () => {
         const localesRoot = fileURLToPath(new URL('../../../../locales', import.meta.url));
         const enDir = path.join(localesRoot, 'en');
-        const deDir = path.join(localesRoot, 'de');
         const issues: string[] = [];
 
         for (const file of fs.readdirSync(enDir).filter((entry) => entry.endsWith('.json'))) {
             const enPath = path.join(enDir, file);
-            const dePath = path.join(deDir, file);
-
-            if (!fs.existsSync(dePath)) {
-                issues.push(`Missing DE locale file: ${file}`);
-                continue;
-            }
-
             const enJson = JSON.parse(fs.readFileSync(enPath, 'utf8'));
-            const deJson = JSON.parse(fs.readFileSync(dePath, 'utf8'));
             const enKeys = flattenKeys(enJson).sort();
-            const deKeys = flattenKeys(deJson).sort();
 
-            const missingInDe = enKeys.filter((key) => !deKeys.includes(key));
-            const extraInDe = deKeys.filter((key) => !enKeys.includes(key));
+            for (const locale of ['de', 'ru'] as const) {
+                const localePath = path.join(localesRoot, locale, file);
+                if (!fs.existsSync(localePath)) {
+                    issues.push(`Missing ${locale.toUpperCase()} locale file: ${file}`);
+                    continue;
+                }
 
-            missingInDe.forEach((key) => issues.push(`${file}: missing key '${key}' in DE`));
-            extraInDe.forEach((key) => issues.push(`${file}: extra key '${key}' in DE`));
+                const localeJson = JSON.parse(fs.readFileSync(localePath, 'utf8'));
+                const localeKeys = flattenKeys(localeJson).sort();
+
+                const missing = enKeys.filter((key) => !localeKeys.includes(key));
+                const extra = localeKeys.filter((key) => !enKeys.includes(key));
+
+                missing.forEach((key) => issues.push(`${file}: missing key '${key}' in ${locale.toUpperCase()}`));
+                extra.forEach((key) => issues.push(`${file}: extra key '${key}' in ${locale.toUpperCase()}`));
+            }
         }
 
         expect(issues).toEqual([]);
     });
 
-    it('provides DE content packs for every VN scenario and keeps logic keys complete', () => {
+    it('provides DE/RU content packs for every VN scenario and keeps logic keys complete', () => {
         const issues: string[] = [];
 
         for (const [scenarioId, bundle] of Object.entries(CONTENT_PACKS)) {
             const logic = bundle.logic as VNScenarioLogic;
-            const dePack = bundle.de as VNContentPack | undefined;
 
-            if (!dePack) {
-                issues.push(`Scenario '${scenarioId}' is missing DE content pack`);
-                continue;
-            }
+            for (const locale of ['de', 'ru'] as const) {
+                const pack = bundle[locale] as VNContentPack | undefined;
 
-            if (dePack.locale !== 'de') {
-                issues.push(`Scenario '${scenarioId}' has DE file with locale='${dePack.locale}'`);
-            }
-
-            for (const sceneLogic of Object.values(logic.scenes)) {
-                const sceneContent = dePack.scenes?.[sceneLogic.id];
-                if (!sceneContent?.text) {
-                    issues.push(`Scenario '${scenarioId}' scene '${sceneLogic.id}' missing DE text`);
+                if (!pack) {
+                    issues.push(`Scenario '${scenarioId}' is missing ${locale.toUpperCase()} content pack`);
+                    continue;
                 }
 
-                for (const choiceLogic of sceneLogic.choices ?? []) {
-                    if (!sceneContent?.choices?.[choiceLogic.id]) {
+                if (pack.locale !== locale) {
+                    issues.push(
+                        `Scenario '${scenarioId}' has ${locale.toUpperCase()} file with locale='${pack.locale}'`
+                    );
+                }
+
+                for (const sceneLogic of Object.values(logic.scenes)) {
+                    const sceneContent = pack.scenes?.[sceneLogic.id];
+                    if (!sceneContent?.text) {
                         issues.push(
-                            `Scenario '${scenarioId}' scene '${sceneLogic.id}' missing DE choice '${choiceLogic.id}'`
+                            `Scenario '${scenarioId}' scene '${sceneLogic.id}' missing ${locale.toUpperCase()} text`
                         );
+                    }
+
+                    for (const choiceLogic of sceneLogic.choices ?? []) {
+                        if (!sceneContent?.choices?.[choiceLogic.id]) {
+                            issues.push(
+                                `Scenario '${scenarioId}' scene '${sceneLogic.id}' missing ${locale.toUpperCase()} choice '${choiceLogic.id}'`
+                            );
+                        }
                     }
                 }
             }

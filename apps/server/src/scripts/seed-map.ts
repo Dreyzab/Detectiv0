@@ -101,6 +101,7 @@ const main = async () => {
     }
 
     console.log(`Seed complete. Upserted ${upsertedCount} map points.`);
+    process.exit(0);
 };
 
 if (import.meta.main) {
