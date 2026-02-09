@@ -145,11 +145,35 @@ export const CASE1_BANK_DE: VNContentPack = {
         'vault_sender_match_fail': {
             text: 'Plausible Verbindung, aber unzureichende Sicherheit. Benötigt Bestätigung.'
         },
+        'vault_occult_discovery': {
+            text: 'Unter den Rückständen entdeckst du Kreidesymbole: absichtlich gesetzt, nicht zufällig verschmiert.'
+        },
+        'vault_occult_victoria': {
+            text: 'Clara kniet bei den Symbolen. "Strukturiert, wiederkehrend, absichtlich. Das hat jemand bewusst hinterlassen."',
+            choices: {
+                'occult_shivers_check': '[Okkultismus] Spüre nach, was dieses Muster bedeuten soll.',
+                'dismiss_occult': 'Theater ignorieren. Bei harten Beweisen bleiben.',
+                'ask_victoria_occult': 'Geben Sie mir Ihre technische Einschätzung, Clara.'
+            }
+        },
+        'vault_shivers_success': {
+            text: 'Die Zeichen wirken wie eine Signatur, nicht wie Einschüchterung. Warnung, Ritual oder Botschaft.'
+        },
+        'vault_shivers_fail': {
+            text: 'Nichts bleibt außer Kreide und Vermutung.'
+        },
+        'vault_dismiss_theatrics': {
+            text: 'Du blendest die symbolische Ebene aus und konzentrierst dich wieder auf die Spurensicherung.'
+        },
+        'vault_victoria_analysis': {
+            text: 'Clara markiert mehrere alchemistische Verweise und notiert eine unbekannte Formel für die spätere Entschlüsselung.'
+        },
         'vault_continue': {
             text: 'Der Tresor birgt noch Geheimnisse. Was möchten Sie noch untersuchen?',
             choices: {
                 'examine_lock_logic': '[Logik] Den Schließmechanismus analysieren.',
                 'sense_atmosphere_intuition': '[Intuition] Auf die Atmosphäre konzentrieren.',
+                'compare_chemical_sender': '[Logik] Absenderhinweis und Rückstandsprofil erneut abgleichen.',
                 'return_to_hub': 'Das reicht fürs Erste.'
             }
         },

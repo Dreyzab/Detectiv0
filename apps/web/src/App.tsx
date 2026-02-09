@@ -11,15 +11,15 @@ import { BattlePage } from '@/pages/BattlePage';
 import { VisualNovelOverlay } from '@/widgets/visual-novel/VisualNovelOverlay';
 import { Navbar } from '@/widgets/navbar/Navbar';
 
-import { useQuestEngine } from "./features/quests/engine";
 import { QuestLog } from "./features/quests/QuestLog";
 import { QuestJournalPage } from "./features/quests/QuestJournalPage";
 import { QuestNotification } from "./features/quests/QuestNotification";
 import { useInventoryStore } from '@/entities/inventory/model/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
+import { GameRuntime } from '@/widgets/GameRuntime';
 
 function App() {
-  useQuestEngine(); // Initialize Quest System
+
   const hydrateInventory = useInventoryStore((state) => state.hydrateFromServer);
   const hydrateDossier = useDossierStore((state) => state.hydrateFromServer);
   useEffect(() => {
@@ -32,6 +32,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <GameRuntime />
       {/* Global Overlays */}
       <QuestLog />
       <QuestNotification />

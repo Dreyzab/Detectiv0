@@ -5,7 +5,8 @@ import { useVNStore } from '@/entities/visual-novel/model/store';
 import { EVIDENCE_REGISTRY } from '../registries';
 import { useQuestStore } from '@/features/quests/store';
 import { useMerchantUiStore } from '@/features/merchant/model/store';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 
 export const useMapActionHandler = () => {
     const {
@@ -20,7 +21,8 @@ export const useMapActionHandler = () => {
     const setQuestStage = useQuestStore((state) => state.setQuestStage);
     const openMerchant = useMerchantUiStore((state) => state.openMerchant);
     const startScenario = useVNStore(state => state.startScenario);
-    // const navigate = useNavigate();
+    const locale = useVNStore(state => state.locale);
+    const navigate = useNavigate();
 
     const isOneShotScenarioAlreadyComplete = (scenarioId: string): boolean => {
         if (scenarioId === 'detective_case1_hbf_arrival') {
@@ -41,8 +43,15 @@ export const useMapActionHandler = () => {
                     console.log('[MapAction] Skipping one-shot VN replay:', action.scenarioId);
                     break;
                 }
-                // Pass scenario ID to the store, not the scenario object
+
                 startScenario(action.scenarioId);
+
+                // Check if we need to navigate (Fullscreen mode)
+                const scenario = getScenarioById(action.scenarioId, locale);
+                if (scenario?.mode === 'fullscreen') {
+                    navigate(`/vn/${action.scenarioId}`);
+                }
+                // Otherwise, VisualNovelOverlay will pick it up on the current page
                 break;
             }
             case 'unlock_point': {

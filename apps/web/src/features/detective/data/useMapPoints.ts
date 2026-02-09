@@ -102,7 +102,7 @@ export interface UseMapPointsParams {
 }
 
 export const useMapPoints = ({ packId, caseId }: UseMapPointsParams = {}) => {
-    const { pointStates } = useDossierStore(); // Local override/optimistic state
+    const pointStates = useDossierStore((state) => state.pointStates);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['map-points', packId, caseId],

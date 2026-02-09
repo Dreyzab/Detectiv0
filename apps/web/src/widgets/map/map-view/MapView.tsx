@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import Map, { NavigationControl, type MapRef, Marker } from 'react-map-gl/mapbox';
+import MapGL, { NavigationControl, type MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { REGIONS } from '@/shared/hexmap/regions';
 import { DetectiveModeLayer } from './DetectiveModeLayer';
@@ -74,16 +74,36 @@ export const MapView = () => {
     const userQuests = useQuestStore(state => state.userQuests);
     const questStages = useMemo(() => {
         const stages: Record<string, string> = {};
-        Object.entries(userQuests).forEach(([questId, quest]) => {
+        Object.values(userQuests).forEach((quest) => {
             if (quest.stage) {
-                stages[questId] = quest.stage;
+                stages[quest.questId] = quest.stage;
             }
         });
         return stages;
     }, [userQuests]);
 
+    // Unified Map Hook
+    const { points, pointStates } = useMapPoints({
+        caseId: activeCaseId ?? undefined
+    });
+
+    const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
+    const [availableActions, setAvailableActions] = useState<ResolverOption[]>([]);
+    const [isMapLoaded, setIsMapLoaded] = useState(false);
+
     const activePointIds = useMemo(() => {
         const ids = new Set<string>();
+
+        // Create lookup for LocationID -> PointID
+        const locationLookup = new Map<string, string>();
+        points.forEach(p => {
+            locationLookup.set(p.id, p.id);
+            const locId = getStableLocationId(p);
+            if (locId && locId !== p.id) {
+                locationLookup.set(locId, p.id);
+            }
+        });
+
         // Debug active quests state
         const activeQuests = Object.values(userQuests).filter(q => q.status === 'active');
         logger.debug("Recalculating Active Points", {
@@ -103,14 +123,17 @@ export const MapView = () => {
                 // Check if objective is NOT completed and has a target point
                 const objectiveVisibleInStage = !obj.stage || obj.stage === uq.stage;
                 if (!uq.completedObjectiveIds.includes(obj.id) && obj.targetPointId && objectiveVisibleInStage) {
-                    logger.debug(`Found active target: ${obj.targetPointId} (Quest: ${uq.questId}, Obj: ${obj.id})`);
-                    ids.add(obj.targetPointId);
+                    // Resolve the target (which might be a locationId) to a pointId
+                    const resolvedId = locationLookup.get(obj.targetPointId) ?? obj.targetPointId;
+
+                    logger.debug(`Found active target: ${obj.targetPointId} -> ${resolvedId} (Quest: ${uq.questId}, Obj: ${obj.id})`);
+                    ids.add(resolvedId);
                 }
             });
         });
         logger.debug("Final Active Point IDs", { ids: Array.from(ids) });
         return ids;
-    }, [userQuests, quests]);
+    }, [userQuests, quests, points]);
 
     useEffect(() => {
         logger.debug("Active Points Updated Effect", { count: activePointIds.size, ids: Array.from(activePointIds) });
@@ -121,15 +144,6 @@ export const MapView = () => {
             caseId: worldCaseId
         });
     }, [worldCaseId, hydrateWorld]);
-
-    // Unified Map Hook
-    const { points, pointStates } = useMapPoints({
-        caseId: activeCaseId ?? undefined
-    });
-
-    const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
-    const [availableActions, setAvailableActions] = useState<ResolverOption[]>([]);
-    const [isMapLoaded, setIsMapLoaded] = useState(false);
 
     // TODO: move inventory to a unified context
     const inventory = useMemo<Record<string, number>>(() => ({}), []);
@@ -324,7 +338,7 @@ export const MapView = () => {
                 />
 
                 <div className={cn('absolute inset-0 z-(--z-map-base)', isVintage && 'sepia-[.3] contrast-[1.05] brightness-95 saturate-[.9]')}>
-                    <Map
+                    <MapGL
                         ref={mapRef}
                         initialViewState={{
                             longitude: INITIAL_REGION.geoCenterLng,
@@ -372,7 +386,7 @@ export const MapView = () => {
                                 </Marker>
                             )
                         })}
-                    </Map>
+                    </MapGL>
                 </div>
             </div>
 

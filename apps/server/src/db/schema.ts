@@ -95,7 +95,7 @@ export const userQuests = pgTable("user_quests", {
 
 // --- VN / DETECTIVE PERSISTENCE ---
 export const detectiveSaves = pgTable("detective_saves", {
-    id: text("id").primaryKey(),
+    id: text("id"),
     userId: text("user_id").references(() => users.id).notNull(),
     slotId: integer("slot_id").notNull(), // 0=Auto, 1-9=Manual
     data: jsonb("data").notNull(), // JSON blob of creating Store state

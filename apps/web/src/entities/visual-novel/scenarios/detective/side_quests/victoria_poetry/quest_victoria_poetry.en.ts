@@ -61,6 +61,12 @@ export const QUEST_VICTORIA_POETRY_EN: VNContentPack = {
         },
         'success_loud': {
             text: 'You clap. A few heads turn, eyeing your clothes suspiciously. A hush falls over the nearby tables. Victoria grabs your arm, exhilarated but terrified. "We should run," she laughs, pulling you out the door.'
+        },
+        'END_SUCCESS': {
+            text: 'Night closes over Freiburg as Victoria leaves with a steadier voice and a sharper gaze.'
+        },
+        'END_FAIL': {
+            text: 'The doors remain closed tonight. Victoria says little on the walk back, but she keeps thinking.'
         }
     }
 };

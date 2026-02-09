@@ -1,13 +1,10 @@
 import type { VNContentPack } from '../../../../../model/types';
-import { CASE1_MAYOR_FOLLOWUP_EN } from './case1_mayor_followup.en';
 
 export const CASE1_MAYOR_FOLLOWUP_DE: VNContentPack = {
-    ...CASE1_MAYOR_FOLLOWUP_EN,
     locale: 'de',
     scenes: {
-        ...CASE1_MAYOR_FOLLOWUP_EN.scenes,
         'entry_after_bank': {
-            text: 'Burgermeister Thoma faltet die Hande. "Sie haben Clara zuerst in der Bank getroffen und erst dann das Rathaus besucht. Nicht ideal, aber wir arbeiten damit."',
+            text: 'Burgermeister Thoma faltet die Hande. "Sie haben Clara zuerst in der Bank getroffen und erst danach das Rathaus besucht. Nicht ideal, aber wir arbeiten damit."',
             choices: {
                 'mayor_after_bank_ack': '"Ich bin der starksten Spur zuerst gefolgt. Jetzt koordinieren wir."',
                 'mayor_after_bank_pressure': '"Ihr Amt hat Zeit gekostet. Ich brauche Zugriff, keine Reden."'
