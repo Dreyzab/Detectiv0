@@ -67,6 +67,29 @@ describe('TypedText Component', () => {
         }), expect.anything());
     });
 
+    it('parses multiline legacy interactive span markup', () => {
+        const handleInteract = vi.fn();
+        render(
+            <TypedText
+                text={`Die <span tabindex="0" class="
+                        inline-block font-semibold transition-colors px-1 rounded-sm
+                        cursor-pointer
+                        text-primary font-bold hover:bg-primary/10 border-b border-primary/30 hover:border-primary
+                    " title="Note" style="opacity: 1; transform: scale(1.05);" role="button" data-vn-interactive="true">große Halle</span> ist still.`}
+                speed={0}
+                onInteract={handleInteract}
+            />
+        );
+
+        const note = screen.getByText('große Halle');
+        expect(note).toBeDefined();
+        fireEvent.click(note);
+        expect(handleInteract).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'note',
+            text: 'große Halle'
+        }), expect.anything());
+    });
+
     it('parses legacy interactive span evidence markup', () => {
         const handleInteract = vi.fn();
         render(

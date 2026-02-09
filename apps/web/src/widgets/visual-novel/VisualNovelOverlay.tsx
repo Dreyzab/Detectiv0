@@ -18,33 +18,12 @@ import { MindPalaceOverlay } from '@/features/detective/mind-palace/MindPalaceOv
 import { choiceIsAvailable, filterAvailableChoices, resolveAccessibleSceneId } from '@/entities/visual-novel/lib/runtime';
 import type { VoiceId } from '@/features/detective/lib/parliament';
 import { isQuestAtStage as checkQuestAtStage, isQuestPastStage as checkQuestPastStage } from '@repo/shared/data/quests';
+import { buildNotebookEntryId, resolveTooltipKeyword } from '@/entities/visual-novel/lib/interactiveToken';
 
 const ONE_SHOT_SCENARIO_COMPLETION_FLAGS: Record<string, string> = {
     intro_char_creation: 'char_creation_complete',
     detective_case1_hbf_arrival: 'arrived_at_hbf',
     detective_case1_map_first_exploration: 'case01_map_exploration_intro_done'
-};
-
-const buildNotebookEntryId = (scenarioId: string, sceneId: string, tokenText: string): string => {
-    const normalizedToken = tokenText
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/ß/g, 'ss')
-        .toLowerCase()
-        .replace(/[^\p{L}\p{N}]+/gu, '_')
-        .replace(/^_+|_+$/g, '');
-
-    return `${scenarioId}_${sceneId}_${normalizedToken || 'entry'}`;
-};
-
-const resolveTooltipKeyword = (token: TextToken): string | null => {
-    if (getTooltipContent(token.text)) {
-        return token.text;
-    }
-    if (token.payload && getTooltipContent(token.payload)) {
-        return token.payload;
-    }
-    return null;
 };
 
 export const VisualNovelOverlay = () => {
@@ -177,7 +156,7 @@ const VisualNovelOverlayInner = () => {
             return;
         }
 
-        const tooltipKeyword = resolveTooltipKeyword(token);
+        const tooltipKeyword = resolveTooltipKeyword(token, getTooltipContent);
 
         if (token.type === 'clue' && token.payload) {
             // It's a Clue -> Add to Evidence Inventory

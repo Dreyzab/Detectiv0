@@ -16,6 +16,15 @@ import { useTranslation } from 'react-i18next';
 // Tabs for the Dossier
 type TabType = 'profile' | 'skills' | 'psyche' | 'equipment';
 
+const CHARACTER_PORTRAITS = [
+    'apothecary.png', 'assistant.png', 'bank_manager.png', 'blacksmith.png',
+    'boss.png', 'clara_altenburg.png', 'coroner.png', 'enforcer.png',
+    'gendarm.png', 'innkeeper.png', 'inspector.png', 'journalist.png',
+    'librarian.png', 'mayor.png', 'operator.png', 'pawnbroker.png',
+    'police_group.png', 'priest.png', 'smuggler.png', 'socialist.png',
+    'stationmaster.png', 'tailor.png', 'worker.png'
+];
+
 export function CharacterPage() {
     const { voiceStats, devPoints, xp, level: charLevel, flags, checkStates, traits } = useDossierStore();
     const factions = useWorldEngineStore((state) => state.factions);
@@ -23,6 +32,7 @@ export function CharacterPage() {
     const characters = useCharacterStore((state) => state.characters);
     const { t } = useTranslation('detective');
     const [activeTab, setActiveTab] = useState<TabType>('profile');
+    const [customPortrait, setCustomPortrait] = useState<string | null>(null);
 
     // Prepare data for Radar Chart (aggregating by Group)
     // We calculate average level of voices in each group
@@ -137,7 +147,10 @@ export function CharacterPage() {
                     <div className="p-6 md:p-8 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-stone-700 scrollbar-track-transparent">
                         <AnimatePresence mode="wait">
                             {activeTab === 'profile' && (
-                                <ProfileView />
+                                <ProfileView
+                                    customPortrait={customPortrait}
+                                    onSelectPortrait={setCustomPortrait}
+                                />
                             )}
                             {activeTab === 'skills' && (
                                 <SkillsView radarData={radarData} />
@@ -180,7 +193,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
     </button>
 );
 
-const ProfileView = () => {
+const ProfileView = ({ customPortrait, onSelectPortrait }: { customPortrait: string | null, onSelectPortrait: (val: string) => void }) => {
     const { t } = useTranslation('detective');
     return (
         <motion.div
@@ -192,11 +205,45 @@ const ProfileView = () => {
         >
             <div className="flex flex-col md:flex-row gap-8 items-start">
                 {/* Portrait */}
-                <div className="w-40 h-52 bg-stone-950 border-2 border-stone-800 flex items-center justify-center shrink-0 relative group self-center md:self-start rotate-1 shadow-lg transform transition-transform hover:rotate-0">
-                    <div className="absolute inset-0 bg-stone-800 opacity-20 bg-[url('/noise.png')]" />
-                    <span className="text-stone-700 font-display text-4xl opacity-50">?</span>
+                <div className="w-40 h-52 bg-stone-950 border-2 border-stone-800 flex items-center justify-center shrink-0 relative group self-center md:self-start rotate-1 shadow-lg transform transition-transform hover:rotate-0 overflow-hidden">
+                    {/* Background Image if selected */}
+                    {customPortrait && (
+                        <div
+                            className="absolute inset-0 bg-cover bg-center grayscale opacity-70 transition-opacity group-hover:opacity-100"
+                            style={{ backgroundImage: `url('/images/characters/${customPortrait}')` }}
+                        />
+                    )}
+
+                    {/* Noise Overlay */}
+                    <div className="absolute inset-0 bg-stone-800 opacity-20 bg-[url('/noise.png')] pointer-events-none" />
+
+                    {/* Placeholder Question Mark (only if no portrait) */}
+                    {!customPortrait && (
+                        <span className="text-stone-700 font-display text-4xl opacity-50 select-none">?</span>
+                    )}
+
                     {/* Tape effect */}
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-[#d4d4d4] opacity-80 -rotate-2 mix-blend-overlay shadow-sm" />
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-[#d4d4d4] opacity-80 -rotate-2 mix-blend-overlay shadow-sm pointer-events-none" />
+
+                    {/* Hidden Select for Interaction */}
+                    <select
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                        value={customPortrait || ''}
+                        onChange={(e) => onSelectPortrait(e.target.value)}
+                        title="Select Portrait"
+                    >
+                        <option value="">No Portrait</option>
+                        {CHARACTER_PORTRAITS.map(file => (
+                            <option key={file} value={file}>
+                                {file.replace('.png', '').replace(/_/g, ' ').toUpperCase()}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Hover Hint */}
+                    <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[9px] text-stone-300 text-center py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        CHANGE PHOTO
+                    </div>
                 </div>
 
                 <div className="space-y-4">

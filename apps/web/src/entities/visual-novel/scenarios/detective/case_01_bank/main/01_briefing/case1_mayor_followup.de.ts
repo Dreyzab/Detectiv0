@@ -4,30 +4,30 @@ export const CASE1_MAYOR_FOLLOWUP_DE: VNContentPack = {
     locale: 'de',
     scenes: {
         'entry_after_bank': {
-            text: 'Burgermeister Thoma faltet die Hande. "Sie haben Clara zuerst in der Bank getroffen und erst danach das Rathaus besucht. Nicht ideal, aber wir arbeiten damit."',
+            text: 'Burgermeister Thoma bleibt stehen, als Sie eintreten. Er verschrankt die Hande so fest, dass die Knochel hell werden.\n\n"Sie waren zuerst in der Bank und erst danach hier. Nicht ideal, Inspektor, aber wir konnen uns jetzt keine gekrankte Etikette leisten."',
             choices: {
-                'mayor_after_bank_ack': '"Ich bin der starksten Spur zuerst gefolgt. Jetzt koordinieren wir."',
-                'mayor_after_bank_pressure': '"Ihr Amt hat Zeit gekostet. Ich brauche Zugriff, keine Reden."'
+                'mayor_after_bank_ack': '"Ich bin der starksten Spur gefolgt. Jetzt synchronisieren wir Befehl und Beweise."',
+                'mayor_after_bank_pressure': '"Ihr Amt hat Tempo gekostet. Ich brauche Zugriff und Unterschriften, keine Reden."'
             }
         },
         'entry_after_mayor_first': {
-            text: 'Burgermeister Thoma blickt in einen Stapel Aussagen. "Sie hatten bereits Ihr offizielles Briefing. Halten wir es kurz."'
+            text: 'Burgermeister Thoma uberfliegt Aussagen, ohne aufzusehen. "Sie hatten das formale Briefing bereits. Gut. Dann nur noch das, was heute den Verlauf verandert."'
         },
         'clara_after_bank': {
-            text: 'Clara tritt vom Fenster zuruck. "In der Bank hatten wir nur Fragmente. Hier konnen wir Zeitlinien und Druckpunkte sauber abgleichen."',
+            text: 'Clara kommt vom Fenster an den Tisch und legt zwei Mappen ab: Widerspruche in Zeugenaussagen links, politische Drucklinien rechts.\n\n"In der Bank hatten wir Fragmente. Hier legen wir Zeitlinie, Motivdruck und Nutzen aus Verzogerung ubereinander."',
             choices: {
-                'clara_after_bank_share': '"Gut. Sagen Sie mir, was Ihr Vater verschweigt."',
-                'clara_after_bank_distance': '"Ich folge meiner eigenen Spur. Geben Sie mir nur belastbare Fakten."'
+                'clara_after_bank_share': '"Gut. Beginnen Sie mit dem, was Ihr Vater zuruckhalt und warum."',
+                'clara_after_bank_distance': '"Ich fahre meine eigene Linie. Geben Sie mir nur belastbare Punkte mit Quelle."'
             }
         },
         'clara_after_mayor_first': {
-            text: 'Clara nickt knapp. "Gleiches Ziel, engerer Rahmen. Politik raus, Beweise rein."',
+            text: 'Clara nickt kurz und prazise. "Gleiches Ziel, engerer Rahmen. Politik raus aus der Bewertung, Beweise rein in die Taktung."',
             choices: {
-                'clara_after_mayor_first_sync': '"Verstanden. Geben Sie mir das Update, dann gehen wir weiter."'
+                'clara_after_mayor_first_sync': '"Verstanden. Geben Sie mir das Update-Paket, ich gehe sofort weiter."'
             }
         },
         'followup_finalize': {
-            text: 'Rathaus-Abgleich abgeschlossen. Clara und der Burgermeister sind mit Ihrer aktuellen Route synchronisiert.'
+            text: 'Rathaus-Follow-up abgeschlossen. Kanale sind synchronisiert, Freigaben gesetzt, und Clara sowie der Burgermeister sind an Ihre aktive Einsatzroute gebunden.'
         }
     }
 };
