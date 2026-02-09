@@ -9,9 +9,10 @@ const LOCALES: { code: Locale; flag: string }[] = [
 ];
 
 export const LanguageSwitcher = () => {
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation('common');
     const setLocale = useVNStore(state => state.setLocale);
-    const currentLocale = i18n.language as Locale;
+    const rawLocale = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0] as Locale;
+    const currentLocale = LOCALES.some((entry) => entry.code === rawLocale) ? rawLocale : 'en';
 
     const handleChange = (locale: Locale) => {
         setLocale(locale);
@@ -27,7 +28,7 @@ export const LanguageSwitcher = () => {
                         ? 'bg-amber-600/30 scale-110'
                         : 'opacity-60 hover:opacity-100 hover:bg-stone-800'
                         }`}
-                    aria-label={`Switch to ${code}`}
+                    aria-label={t('language.switchTo', { language: t(`language.${code}`) })}
                 >
                     {flag}
                 </button>

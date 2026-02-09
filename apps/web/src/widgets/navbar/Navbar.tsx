@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Map, QrCode, Settings, Terminal, User } from 'lucide-react';
+import { Home, Map, QrCode, Settings, Terminal, User, type LucideIcon } from 'lucide-react';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 // Checking imports in HomePage: no 'cn' or 'clsx' used.
 // I will standard className strings for safety or check if standard/shared/lib/css exists.
@@ -8,7 +9,7 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 // "import { Button } from '../shared/ui/Button';" is used.
 // Let's stick to standard Tailwind classes.
 
-const NavItem = ({ to, icon: Icon, label, isActive }: { to: string; icon: any; label: string; isActive: boolean }) => (
+const NavItem = ({ to, icon: Icon, label, isActive }: { to: string; icon: LucideIcon; label: string; isActive: boolean }) => (
     <Link
         to={to}
         className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${isActive ? 'text-amber-500' : 'text-stone-500 hover:text-stone-300'
@@ -20,6 +21,7 @@ const NavItem = ({ to, icon: Icon, label, isActive }: { to: string; icon: any; l
 );
 
 export const Navbar = () => {
+    const { t } = useTranslation('common');
     const location = useLocation();
     const pathname = location.pathname;
 
@@ -43,11 +45,11 @@ export const Navbar = () => {
                    I will make it a bottom bar for mobile (default) and valid for desktop too for now.
                */}
                 <div className="flex items-center justify-around w-full max-w-md mx-auto h-full">
-                    <NavItem to="/" icon={Home} label="Home" isActive={pathname === '/'} />
-                    <NavItem to="/map" icon={Map} label="Map" isActive={pathname === '/map'} />
-                    <NavItem to="/character" icon={User} label="Dossier" isActive={pathname === '/character'} />
-                    <NavItem to="/scanner" icon={QrCode} label="Scan" isActive={pathname === '/scanner'} />
-                    <NavItem to="/settings" icon={Settings} label="Config" isActive={pathname === '/settings'} />
+                    <NavItem to="/" icon={Home} label={t('nav.home')} isActive={pathname === '/'} />
+                    <NavItem to="/map" icon={Map} label={t('nav.map')} isActive={pathname === '/map'} />
+                    <NavItem to="/character" icon={User} label={t('nav.dossier')} isActive={pathname === '/character'} />
+                    <NavItem to="/scanner" icon={QrCode} label={t('nav.scanner')} isActive={pathname === '/scanner'} />
+                    <NavItem to="/settings" icon={Settings} label={t('nav.settings')} isActive={pathname === '/settings'} />
                 </div>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                     <LanguageSwitcher />
@@ -57,10 +59,10 @@ export const Navbar = () => {
             {/* Mobile Bottom Navigation - default visible */}
             <nav className="fixed bottom-0 left-0 right-0 z-50 h-[safe-area-inset-bottom+4rem] pb-[safe-area-inset-bottom] bg-stone-950/95 backdrop-blur-md border-t border-stone-800 flex md:hidden items-center px-2">
                 <div className="flex items-center justify-between w-full h-16">
-                    <NavItem to="/" icon={Home} label="Home" isActive={pathname === '/'} />
-                    <NavItem to="/map" icon={Map} label="Map" isActive={pathname === '/map'} />
-                    <NavItem to="/character" icon={User} label="Dossier" isActive={pathname === '/character'} />
-                    <NavItem to="/scanner" icon={QrCode} label="Scan" isActive={pathname === '/scanner'} />
+                    <NavItem to="/" icon={Home} label={t('nav.home')} isActive={pathname === '/'} />
+                    <NavItem to="/map" icon={Map} label={t('nav.map')} isActive={pathname === '/map'} />
+                    <NavItem to="/character" icon={User} label={t('nav.dossier')} isActive={pathname === '/character'} />
+                    <NavItem to="/scanner" icon={QrCode} label={t('nav.scanner')} isActive={pathname === '/scanner'} />
                     {/* <NavItem to="/developer" icon={Terminal} label="Debug" isActive={pathname === '/developer'} /> */}
                     {/* Only show debug if enabled? Or just put it there. User asked for it. */}
                     <Link
@@ -69,7 +71,7 @@ export const Navbar = () => {
                             }`}
                     >
                         <Terminal size={24} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Debug</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider">{t('nav.devTools')}</span>
                     </Link>
                 </div>
             </nav>

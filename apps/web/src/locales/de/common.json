@@ -18,6 +18,17 @@
         "devTools": "Entwickler"
     },
     "nav": {
-        "home": "Hauptmenü"
+        "home": "Start",
+        "map": "Karte",
+        "dossier": "Akte",
+        "scanner": "Scan",
+        "settings": "Einstellungen",
+        "devTools": "Debug"
+    },
+    "language": {
+        "switchTo": "Zu {{language}} wechseln",
+        "en": "Englisch",
+        "de": "Deutsch",
+        "ru": "Russisch"
     }
 }

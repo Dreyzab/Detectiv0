@@ -1,7 +1,9 @@
 {
     "titleMain": "Grezwanderer 4",
+    "subtitle": "Schatten des Schwarzwalds",
     "card": {
         "title": "Archiv: Freiburg 1905",
+        "location": "Freiburg im Breisgau",
         "subtitle": "Untersuchen Sie die ungelösten Fälle der Vergangenheit."
     },
     "btn": {
@@ -13,6 +15,7 @@
         "resetConfirm": "Sind Sie sicher? Alle Fortschritte gehen verloren."
     },
     "debug": {
+        "title": "Debug-Uberschreibung",
         "jumpBank": "[DEBUG] Zum Bank-Fall springen"
     }
 }

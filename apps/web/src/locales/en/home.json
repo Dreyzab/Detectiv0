@@ -1,7 +1,9 @@
 {
     "titleMain": "Grezwanderer 4",
+    "subtitle": "Shadows of the Black Forest",
     "card": {
         "title": "Archive: Freiburg 1905",
+        "location": "Freiburg im Breisgau",
         "subtitle": "Investigate the cold cases of the past. Logic is your weapon."
     },
     "btn": {
@@ -13,6 +15,7 @@
         "resetConfirm": "Are you sure? All progress will be lost."
     },
     "debug": {
+        "title": "Debug Override",
         "jumpBank": "[DEBUG] Jump to Bank Case"
     }
 }

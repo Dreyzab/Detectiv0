@@ -9,6 +9,7 @@ import { getScenarioById } from '../entities/visual-novel/scenarios/registry';
 import { preloadManager, extractScenarioAssets, toPreloadQueue } from '../shared/lib/preload';
 import { Archive, Play, RefreshCw, Terminal } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const isOneShotScenarioComplete = (scenarioId: string, flags: Record<string, boolean>): boolean => {
     if (scenarioId === 'intro_char_creation') {
@@ -24,6 +25,7 @@ const isOneShotScenarioComplete = (scenarioId: string, flags: Record<string, boo
 };
 
 export const HomePage = () => {
+    const { t } = useTranslation('home');
     const navigate = useNavigate();
     const setGameMode = useInventoryStore(state => state.setGameMode);
     const setPlayerName = useInventoryStore(state => state.setPlayerName); // Used by debug jump action.
@@ -68,7 +70,7 @@ export const HomePage = () => {
     };
 
     const handleNewGame = () => {
-        if (confirm("Are you sure you want to start a new game? All progress will be lost.")) {
+        if (confirm(`${t('modal.resetTitle')}\n${t('modal.resetConfirm')}`)) {
             useInventoryStore.getState().resetAll();
             useDossierStore.getState().resetDossier();
             useQuestStore.getState().resetQuests();
@@ -98,7 +100,7 @@ export const HomePage = () => {
                 >
                     <div className="relative inline-block">
                         <h1 className="text-5xl md:text-7xl font-heading text-amber-600 tracking-tighter drop-shadow-lg relative z-10">
-                            Grezwanderer
+                            {t('titleMain')}
                         </h1>
                         <div className="absolute -inset-4 bg-amber-600/10 blur-3xl rounded-full -z-10" />
                     </div>
@@ -106,7 +108,7 @@ export const HomePage = () => {
                     <div className="h-[2px] w-16 bg-gradient-to-r from-transparent via-amber-800 to-transparent mx-auto opacity-70" />
 
                     <p className="text-stone-500 font-serif italic text-base md:text-lg tracking-wide">
-                        Shadows of the Black Forest
+                        {t('subtitle')}
                     </p>
                 </motion.div>
 
@@ -135,10 +137,10 @@ export const HomePage = () => {
                                 </div>
                                 <div>
                                     <h2 className="text-2xl font-heading text-amber-500/90">
-                                        Case File: 1905
+                                        {t('card.title')}
                                     </h2>
                                     <p className="text-stone-500 text-xs uppercase tracking-widest mt-1 font-bold">
-                                        Freiburg im Breisgau
+                                        {t('card.location')}
                                     </p>
                                 </div>
                             </div>
@@ -152,7 +154,7 @@ export const HomePage = () => {
                                     className="w-full h-14 bg-amber-700 hover:bg-amber-600 text-stone-100 font-heading text-xl tracking-wide border-t border-amber-500/20 shadow-lg shadow-amber-900/30 flex items-center justify-center gap-3 transition-all active:scale-[0.98] rounded-lg"
                                 >
                                     <Play size={22} fill="currentColor" className="opacity-80" />
-                                    Resume
+                                    {t('btn.continue')}
                                 </Button>
 
                                 <Button
@@ -160,7 +162,7 @@ export const HomePage = () => {
                                     className="w-full h-12 bg-stone-950/50 hover:bg-stone-900 text-stone-400 hover:text-stone-200 font-serif border border-stone-800 flex items-center justify-center gap-2 transition-colors rounded-lg group/btn"
                                 >
                                     <RefreshCw size={16} className="group-hover/btn:rotate-180 transition-transform duration-500" />
-                                    New Investigation
+                                    {t('btn.newGame')}
                                 </Button>
                             </div>
                         </div>
@@ -176,7 +178,7 @@ export const HomePage = () => {
                     >
                         <h3 className="text-xs text-red-500 font-mono font-bold uppercase mb-3 flex items-center gap-2">
                             <Terminal size={12} />
-                            Debug Override
+                            {t('debug.title')}
                         </h3>
                         <Button
                             onClick={() => {
@@ -192,7 +194,7 @@ export const HomePage = () => {
                             }}
                             className="w-full h-10 bg-red-900/20 hover:bg-red-900/40 text-red-400 font-mono text-xs border border-red-900/40 flex items-center justify-center gap-2"
                         >
-                            JUMP TO BANK CASE
+                            {t('debug.jumpBank')}
                         </Button>
                     </motion.div>
                 )}

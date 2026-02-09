@@ -18,6 +18,17 @@
         "devTools": "Dev Tools"
     },
     "nav": {
-        "home": "Home"
+        "home": "Home",
+        "map": "Map",
+        "dossier": "Dossier",
+        "scanner": "Scan",
+        "settings": "Settings",
+        "devTools": "Debug"
+    },
+    "language": {
+        "switchTo": "Switch to {{language}}",
+        "en": "English",
+        "de": "German",
+        "ru": "Russian"
     }
 }
