@@ -31,6 +31,76 @@ interface TypedTextProps {
 
 // Default speed: 10ms (3x faster than original 30ms)
 const DEFAULT_SPEED = 10;
+const LEGACY_SPAN_CLOSE_TAG = '</span>';
+
+const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const getAttributeValue = (tag: string, attrName: string): string | null => {
+    const escapedName = escapeRegex(attrName);
+    const match = tag.match(new RegExp(`${escapedName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'));
+    if (!match) {
+        return null;
+    }
+    return (match[1] ?? match[2] ?? match[3] ?? '').trim();
+};
+
+interface LegacyInteractiveSpan {
+    type: TokenType;
+    text: string;
+    payload?: string;
+    original: string;
+    nextPos: number;
+}
+
+const parseLegacyInteractiveSpan = (source: string, start: number): LegacyInteractiveSpan | null => {
+    if (!source.startsWith('<span', start)) {
+        return null;
+    }
+
+    const openTagEnd = source.indexOf('>', start + 5);
+    if (openTagEnd === -1) {
+        return null;
+    }
+
+    const closeTagStart = source.indexOf(LEGACY_SPAN_CLOSE_TAG, openTagEnd + 1);
+    if (closeTagStart === -1) {
+        return null;
+    }
+
+    const openTag = source.slice(start, openTagEnd + 1);
+    const hasInteractiveRole = /\brole\s*=\s*["']button["']/i.test(openTag);
+    const hasInteractiveMarker = /\bdata-vn-interactive(?:\s*=\s*(?:"true"|'true'|true))?\b/i.test(openTag);
+
+    if (!hasInteractiveRole && !hasInteractiveMarker) {
+        return null;
+    }
+
+    const innerRaw = source.slice(openTagEnd + 1, closeTagStart);
+    const visibleText = innerRaw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!visibleText) {
+        return null;
+    }
+
+    const title = (getAttributeValue(openTag, 'title') ?? '').toLowerCase();
+    const className = (getAttributeValue(openTag, 'class') ?? '').toLowerCase();
+    const payload = getAttributeValue(openTag, 'data-vn-payload')
+        ?? getAttributeValue(openTag, 'data-vn-id')
+        ?? getAttributeValue(openTag, 'data-vn-token')
+        ?? getAttributeValue(openTag, 'data-vn-evidence-id')
+        ?? undefined;
+
+    const isClue = title === 'evidence' || className.includes('text-accent') || className.includes('border-accent');
+    const type: TokenType = isClue ? 'clue' : 'note';
+
+    const nextPos = closeTagStart + LEGACY_SPAN_CLOSE_TAG.length;
+    return {
+        type,
+        text: visibleText,
+        payload: payload ?? (type === 'note' ? visibleText : undefined),
+        original: source.slice(start, nextPos),
+        nextPos
+    };
+};
 
 export const TypedText = forwardRef<TypedTextHandle, TypedTextProps>(({ text, speed = DEFAULT_SPEED, onInteract, onComplete, onTypingChange, highlightedTerms = [] }, ref) => {
     const [visibleChars, setVisibleChars] = useState(0);
@@ -93,11 +163,35 @@ export const TypedText = forwardRef<TypedTextHandle, TypedTextProps>(({ text, sp
                 }
             }
 
-            // Regular text: collect until next [[ or end
-            let nextBracket = text.indexOf('[[', currentPos);
-            if (nextBracket === -1) nextBracket = text.length;
+            if (text.startsWith('<span', currentPos)) {
+                const legacySpan = parseLegacyInteractiveSpan(text, currentPos);
+                if (legacySpan) {
+                    result.push({
+                        type: legacySpan.type,
+                        text: legacySpan.text,
+                        payload: legacySpan.payload,
+                        original: legacySpan.original,
+                        start: totalLength,
+                        end: totalLength + legacySpan.text.length
+                    });
+                    totalLength += legacySpan.text.length;
+                    currentPos = legacySpan.nextPos;
+                    continue;
+                }
+            }
 
-            const sub = text.substring(currentPos, nextBracket);
+            // Regular text: collect until next [[ or legacy <span ...> token
+            const nextBracket = text.indexOf('[[', currentPos);
+            const nextLegacySpan = text.indexOf('<span', currentPos);
+            const nextCandidates = [nextBracket, nextLegacySpan].filter((index) => index !== -1);
+            let nextTokenStart = nextCandidates.length > 0 ? Math.min(...nextCandidates) : text.length;
+
+            // Prevent stalling on malformed markup that starts at currentPos
+            if (nextTokenStart === currentPos) {
+                nextTokenStart = currentPos + 1;
+            }
+
+            const sub = text.substring(currentPos, nextTokenStart);
             if (sub.length > 0) {
                 result.push({
                     type: 'text',
@@ -108,7 +202,7 @@ export const TypedText = forwardRef<TypedTextHandle, TypedTextProps>(({ text, sp
                 });
                 totalLength += sub.length;
             }
-            currentPos = nextBracket;
+            currentPos = nextTokenStart;
         }
 
         return { tokens: result, fullTextLength: totalLength };

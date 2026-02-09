@@ -25,6 +25,28 @@ const ONE_SHOT_SCENARIO_COMPLETION_FLAGS: Record<string, string> = {
     detective_case1_map_first_exploration: 'case01_map_exploration_intro_done'
 };
 
+const buildNotebookEntryId = (scenarioId: string, sceneId: string, tokenText: string): string => {
+    const normalizedToken = tokenText
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/ß/g, 'ss')
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, '_')
+        .replace(/^_+|_+$/g, '');
+
+    return `${scenarioId}_${sceneId}_${normalizedToken || 'entry'}`;
+};
+
+const resolveTooltipKeyword = (token: TextToken): string | null => {
+    if (getTooltipContent(token.text)) {
+        return token.text;
+    }
+    if (token.payload && getTooltipContent(token.payload)) {
+        return token.payload;
+    }
+    return null;
+};
+
 export const VisualNovelOverlay = () => {
     const location = useLocation();
 
@@ -155,6 +177,8 @@ const VisualNovelOverlayInner = () => {
             return;
         }
 
+        const tooltipKeyword = resolveTooltipKeyword(token);
+
         if (token.type === 'clue' && token.payload) {
             // It's a Clue -> Add to Evidence Inventory
             const evidenceItem = EVIDENCE_REGISTRY[token.payload];
@@ -163,36 +187,35 @@ const VisualNovelOverlayInner = () => {
                 setFlag(token.payload, true); // Sync: Enable logic checks for this item
                 showToast(evidenceItem.name, 'evidence');
                 console.log("Toast: Evidence Collected:", evidenceItem.name);
-            } else {
-                console.warn(`Evidence ID ${token.payload} not found in registry`);
-            }
-        } else {
-            // Check if it's a Parliament Tooltip keyword
-            const tooltipContent = getTooltipContent(token.text);
-            if (tooltipContent) {
-                const rect = element ? element.getBoundingClientRect() : new DOMRect(0, 0, 0, 0);
-                setActiveTooltip({ keyword: token.text, rect });
                 return;
-            }
-
-            // It's a Note -> Add to Notebook Entries
-            const id = `${scenario.id}_${effectiveSceneId}_${token.text.replace(/\s+/g, '_').toLowerCase()}`;
-
-            const result = addEntry({
-                id,
-                type: 'note',
-                title: token.text,
-                content: `Observed in ${scenario.title}`,
-                isLocked: false,
-                packId: 'case_01'
-            });
-
-            if (result === 'added') {
-                showToast(token.text, 'note');
-                console.log("Toast: Note Added:", token.text);
             } else {
-                console.log("Toast: Note already in notebook");
+                console.warn(`Evidence ID ${token.payload} not found in registry, falling back to tooltip/note handling`);
             }
+        }
+
+        if (tooltipKeyword) {
+            const rect = element ? element.getBoundingClientRect() : new DOMRect(0, 0, 0, 0);
+            setActiveTooltip({ keyword: tooltipKeyword, rect });
+            return;
+        }
+
+        // Fallback: save as notebook note to avoid losing interactive content.
+        const id = buildNotebookEntryId(scenario.id, effectiveSceneId, token.text);
+        const result = addEntry({
+            id,
+            type: 'note',
+            title: token.text,
+            content: `Observed in ${scenario.title}`,
+            isLocked: false,
+            packId: 'case_01',
+            refId: token.type === 'clue' ? token.payload : undefined
+        });
+
+        if (result === 'added') {
+            showToast(token.text, 'note');
+            console.log("Toast: Note Added:", token.text);
+        } else {
+            console.log("Toast: Note already in notebook");
         }
     };
 

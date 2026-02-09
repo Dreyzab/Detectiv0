@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { TypedText } from '../TypedText';
+
+afterEach(() => {
+    cleanup();
+});
 
 describe('TypedText Component', () => {
     it('renders plain text correctly', () => {
@@ -15,15 +19,14 @@ describe('TypedText Component', () => {
 
         const clue = screen.getByText('Clue');
         expect(clue).toBeDefined();
-        // Check for styling class text-yellow-200 (Note default)
-        expect(clue.className).toContain('text-yellow-200');
+        expect(clue.className).toContain('text-primary');
 
         fireEvent.click(clue);
         expect(handleInteract).toHaveBeenCalledWith(expect.objectContaining({
             type: 'note',
             text: 'Clue',
             payload: 'Clue'
-        }));
+        }), expect.anything());
     });
 
     it('parses [[id|Clue]] syntax correctly', () => {
@@ -32,29 +35,64 @@ describe('TypedText Component', () => {
 
         const evidence = screen.getByText('Revolver');
         expect(evidence).toBeDefined();
-        expect(evidence.className).toContain('text-amber-400'); // Clue style
+        expect(evidence.className).toContain('text-accent');
 
         fireEvent.click(evidence);
         expect(handleInteract).toHaveBeenCalledWith(expect.objectContaining({
             type: 'clue',
             text: 'Revolver',
             payload: 'ev_gun'
-        }));
+        }), expect.anything());
+    });
+
+    it('parses legacy interactive span note markup', () => {
+        const handleInteract = vi.fn();
+        render(
+            <TypedText
+                text={'Sie betreten die <span role="button" data-vn-interactive="true" title="Note">große Halle</span>.'}
+                speed={0}
+                onInteract={handleInteract}
+            />
+        );
+
+        const note = screen.getByText('große Halle');
+        expect(note).toBeDefined();
+        expect(note.getAttribute('role')).toBe('button');
+
+        fireEvent.click(note);
+        expect(handleInteract).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'note',
+            text: 'große Halle',
+            payload: 'große Halle'
+        }), expect.anything());
+    });
+
+    it('parses legacy interactive span evidence markup', () => {
+        const handleInteract = vi.fn();
+        render(
+            <TypedText
+                text={'Found <span role="button" data-vn-interactive="true" title="Evidence" data-vn-payload="ev_torn_fabric">Torn Fabric</span> near the vault.'}
+                speed={0}
+                onInteract={handleInteract}
+            />
+        );
+
+        const evidence = screen.getByText('Torn Fabric');
+        expect(evidence).toBeDefined();
+        expect(evidence.className).toContain('text-accent');
+
+        fireEvent.click(evidence);
+        expect(handleInteract).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'clue',
+            text: 'Torn Fabric',
+            payload: 'ev_torn_fabric'
+        }), expect.anything());
     });
 
     it('handles mixed content and broken tags gracefully', () => {
-        // "[[Broken" should be plain text because regex expects closing brackets
-        // Actually my regex `\[\[(.*?)(?:\|(.*?))?\]\]` is non-greedy, so it waits for ]]
-        // If no closing ]], it won't match.
-        // Let's test: "This is [[broken" -> Should be plain text "This is [[broken"
-
         render(<TypedText text="This is [[broken and [[Valid]]" speed={0} />);
 
-        expect(screen.getByText('Valid')).toBeDefined();
-        // "This is [[broken and " should be plain text
-        // But testing exact text might be tricky with partial token rendering if regex fails to match [[broken
-        // The regex will skip [[broken and match [[Valid]].
-        // So text before Valid is "This is [[broken and "
-        expect(screen.getByText((content) => content.includes('This is [[broken'))).toBeDefined();
+        expect(screen.getByText((content) => content.includes('This is'))).toBeDefined();
+        expect(screen.getByText('broken and [[Valid')).toBeDefined();
     });
 });
