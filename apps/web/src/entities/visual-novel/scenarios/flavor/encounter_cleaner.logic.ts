@@ -4,7 +4,7 @@ import type { VNScenarioLogic } from '../../model/types';
 export const encounterCleanerLogic: VNScenarioLogic = {
     id: 'encounter_cleaner',
     title: 'Encounter: The Bächleputzer',
-    defaultBackgroundUrl: '/images/scenarios/street_morning.png',
+    defaultBackgroundUrl: '/images/scenarios/street_morning.webp',
     initialSceneId: 'start',
     musicUrl: '/audio/ambient_city_morning.mp3',
     scenes: {

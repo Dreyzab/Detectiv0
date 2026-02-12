@@ -3,7 +3,8 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { eventCodes, mapPoints, userMapPointStates } from '../db/schema';
 import type { MapAction, MapPointBinding, PointStateEnum } from '@repo/shared/lib/detective_map_types';
-import { MapPointBindingSchema, PointStateSchema } from '@repo/shared/lib/map-validators';
+import { MapActionSchema, MapPointBindingSchema, PointStateSchema } from '@repo/shared/lib/map-validators';
+import { getRegionMeta, isRegionId, type RegionMeta } from '@repo/shared/data/regions';
 import { resolveUserId } from '../lib/user-id';
 import { ensureUserExists as ensureDbUserExists } from '../db/user-utils';
 
@@ -52,11 +53,32 @@ export interface UpsertUserPointStateInput {
 export interface MapRepository {
     getPoints: (packId?: string) => Promise<MapPointRow[]>;
     getUserStates: (userId: string) => Promise<UserPointStateRow[]>;
+    getUserPointState: (userId: string, pointId: string) => Promise<UserPointStateRow | null>;
     findActiveEventCode: (code: string) => Promise<EventCodeRow | null>;
-    findPointByQrCode: (code: string) => Promise<MapPointRow | null>;
+    findActivePointByQrCode: (code: string) => Promise<MapPointRow | null>;
     upsertUserPointState: (input: UpsertUserPointStateInput) => Promise<void>;
     ensureUserExists: (userId: string) => Promise<void>;
 }
+
+const POINT_STATE_PRIORITY: Record<PointStateEnum, number> = {
+    locked: 0,
+    discovered: 1,
+    visited: 2,
+    completed: 3
+};
+
+const keepMonotonicState = (
+    currentState: PointStateEnum | null | undefined,
+    requestedState: PointStateEnum
+): PointStateEnum => {
+    if (!currentState) {
+        return requestedState;
+    }
+
+    return POINT_STATE_PRIORITY[currentState] >= POINT_STATE_PRIORITY[requestedState]
+        ? currentState
+        : requestedState;
+};
 
 const normalizeScope = (scope: string | null | undefined): PointScope => {
     if (scope === 'global' || scope === 'case' || scope === 'progression') {
@@ -70,6 +92,37 @@ const normalizeRetentionPolicy = (policy: string | null | undefined): PointReten
         return policy;
     }
     return 'temporary';
+};
+
+const toCoordinate = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+    if (typeof value === 'string' && value.trim().length > 0) {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+    return null;
+};
+
+const haversineDistanceKm = (
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+): number => {
+    const toRadians = (value: number): number => value * (Math.PI / 180);
+    const earthRadiusKm = 6371;
+    const dLat = toRadians(lat2 - lat1);
+    const dLng = toRadians(lng2 - lng1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
 };
 
 const parsePointBindings = (point: MapPointRow): MapPointBinding[] => {
@@ -95,6 +148,38 @@ const parsePointBindings = (point: MapPointRow): MapPointBinding[] => {
     } catch (error) {
         console.error('Binding parse error', error);
         return [];
+    }
+};
+
+const parseActions = (
+    rawActions: unknown,
+    sourceLabel: string
+): MapAction[] | null => {
+    try {
+        const source = typeof rawActions === 'string'
+            ? JSON.parse(rawActions)
+            : rawActions;
+
+        if (!Array.isArray(source)) {
+            console.warn(`Invalid actions for '${sourceLabel}': expected array`);
+            return null;
+        }
+
+        const actions: MapAction[] = [];
+        for (let index = 0; index < source.length; index++) {
+            const candidate = source[index];
+            const parsed = MapActionSchema.safeParse(candidate);
+            if (!parsed.success) {
+                console.warn(`Invalid action at index ${index} for '${sourceLabel}', rejecting payload`);
+                return null;
+            }
+            actions.push(parsed.data);
+        }
+
+        return actions;
+    } catch (error) {
+        console.warn(`Failed to parse actions for '${sourceLabel}'`, error);
+        return null;
     }
 };
 
@@ -153,6 +238,27 @@ const filterVisiblePoints = (
     });
 };
 
+const filterPointsByRegionRadius = (
+    points: MapPointRow[],
+    regionMeta: RegionMeta
+): MapPointRow[] =>
+    points.filter((point) => {
+        const pointLat = toCoordinate(point.lat);
+        const pointLng = toCoordinate(point.lng);
+        if (pointLat === null || pointLng === null) {
+            return false;
+        }
+
+        const distanceKm = haversineDistanceKm(
+            pointLat,
+            pointLng,
+            regionMeta.geoCenterLat,
+            regionMeta.geoCenterLng
+        );
+
+        return distanceKm <= regionMeta.radiusKm;
+    });
+
 export const createDrizzleMapRepository = (): MapRepository => ({
     getPoints: async (packId) =>
         db.select().from(mapPoints).where(packId ? eq(mapPoints.packId, packId) : undefined),
@@ -160,14 +266,22 @@ export const createDrizzleMapRepository = (): MapRepository => ({
     getUserStates: async (userId) =>
         db.select().from(userMapPointStates).where(eq(userMapPointStates.userId, userId)),
 
+    getUserPointState: async (userId, pointId) =>
+        (await db.query.userMapPointStates.findFirst({
+            where: and(
+                eq(userMapPointStates.userId, userId),
+                eq(userMapPointStates.pointId, pointId)
+            )
+        })) ?? null,
+
     findActiveEventCode: async (code) =>
         (await db.query.eventCodes.findFirst({
             where: and(eq(eventCodes.code, code), eq(eventCodes.active, true))
         })) ?? null,
 
-    findPointByQrCode: async (code) =>
+    findActivePointByQrCode: async (code) =>
         (await db.query.mapPoints.findFirst({
-            where: eq(mapPoints.qrCode, code)
+            where: and(eq(mapPoints.qrCode, code), eq(mapPoints.active, true))
         })) ?? null,
 
     upsertUserPointState: async (input) => {
@@ -196,61 +310,63 @@ export const createDrizzleMapRepository = (): MapRepository => ({
     }
 });
 
-export const createMapModule = (repository: MapRepository = createDrizzleMapRepository()) =>
-    new Elysia({ prefix: '/map' })
-        .get('/points', async (context) => {
-            const { query, set, request } = context;
-            try {
-                const packId = typeof query.packId === 'string' ? query.packId : undefined;
-                const activeCaseId = typeof query.caseId === 'string' ? query.caseId : undefined;
-                const userId = resolveUserId({
-                    request,
-                    auth: (context as { auth?: (options?: unknown) => { userId?: string | null } }).auth
-                });
-                await repository.ensureUserExists(userId);
+export const createMapModule = (repository: MapRepository = createDrizzleMapRepository()) => {
+    const resolveCodeResponseSchema = t.Object({
+        success: t.Boolean(),
+        type: t.Optional(t.Union([t.Literal('event'), t.Literal('map_point')])),
+        pointId: t.Optional(t.String()),
+        error: t.Optional(t.String()),
+        actions: t.Optional(t.Array(t.Any()))
+    });
 
-                const points = await repository.getPoints(packId);
-                const states = await repository.getUserStates(userId);
+    const resolveCode = async (
+        codeRaw: string | undefined,
+        context: {
+            request: Request;
+            set: { status?: number | string };
+            auth?: (options?: unknown) => { userId?: string | null };
+        }
+    ) => {
+        const code = typeof codeRaw === 'string' ? codeRaw.trim() : '';
+        if (!code) {
+            context.set.status = 400;
+            return { success: false as const, error: 'Code is required' };
+        }
 
-                const visiblePoints = filterVisiblePoints(points, states, activeCaseId);
-                const stateMap = toStateMap(states);
-
-                return { points: visiblePoints, userStates: stateMap };
-            } catch (error) {
-                console.error('CRITICAL: Failed to fetch map points from repository', error);
-                set.status = 500;
-                return {
-                    error: 'Database connection failed',
-                    details: (error as Error).message,
-                    stack: (error as Error).stack,
-                    points: [],
-                    userStates: {}
-                };
-            }
-        })
-        .get('/resolve-code/:code', async (context) => {
-            const { params, set, request } = context;
-            const { code } = params;
+        try {
             const userId = resolveUserId({
-                request,
-                auth: (context as { auth?: (options?: unknown) => { userId?: string | null } }).auth
+                request: context.request,
+                auth: context.auth
             });
             await repository.ensureUserExists(userId);
 
             const eventCode = await repository.findActiveEventCode(code);
             if (eventCode) {
+                const eventActions = parseActions(eventCode.actions, `event_code:${code}`);
+                if (!eventActions) {
+                    context.set.status = 500;
+                    return { success: false as const, error: 'Invalid event configuration' };
+                }
+
                 return {
-                    success: true,
+                    success: true as const,
                     type: 'event' as const,
-                    actions: eventCode.actions as MapAction[]
+                    actions: eventActions
                 };
             }
 
-            const point = await repository.findPointByQrCode(code);
+            const point = await repository.findActivePointByQrCode(code);
             if (!point) {
-                set.status = 404;
-                return { error: 'Invalid Code', success: false };
+                context.set.status = 404;
+                return { success: false as const, error: 'Invalid Code' };
             }
+
+            const existingStateRow = await repository.getUserPointState(userId, point.id);
+            const parsedCurrentState = PointStateSchema.safeParse(existingStateRow?.state);
+            const nextState = keepMonotonicState(
+                parsedCurrentState.success ? parsedCurrentState.data : null,
+                'discovered'
+            );
 
             const retentionPolicy = normalizeRetentionPolicy(point.retentionPolicy);
             const shouldPersistUnlock =
@@ -260,7 +376,7 @@ export const createMapModule = (repository: MapRepository = createDrizzleMapRepo
             await repository.upsertUserPointState({
                 userId,
                 pointId: point.id,
-                state: 'discovered',
+                state: nextState,
                 persistentUnlock: shouldPersistUnlock,
                 unlockedByCaseId: shouldPersistUnlock ? (point.caseId ?? null) : null,
                 data: unlockMeta,
@@ -269,23 +385,107 @@ export const createMapModule = (repository: MapRepository = createDrizzleMapRepo
 
             const bindings = parsePointBindings(point);
             const qrBinding = bindings.find((binding) => binding.trigger === 'qr_scan');
+            const actions = qrBinding
+                ? qrBinding.actions
+                : [{ type: 'unlock_point', pointId: point.id } as MapAction];
 
             return {
-                success: true,
+                success: true as const,
                 type: 'map_point' as const,
                 pointId: point.id,
-                actions: (qrBinding
-                    ? qrBinding.actions
-                    : [{ type: 'unlock_point', pointId: point.id }]) as MapAction[]
+                actions
             };
-        }, {
-            response: t.Object({
-                success: t.Boolean(),
-                type: t.Optional(t.Union([t.Literal('event'), t.Literal('map_point')])),
-                pointId: t.Optional(t.String()),
-                error: t.Optional(t.String()),
-                actions: t.Optional(t.Array(t.Any()))
-            })
+        } catch (error) {
+            const traceId = crypto.randomUUID();
+            console.error(`[Map][${traceId}] Failed to resolve code`, error);
+            context.set.status = 500;
+            return {
+                success: false as const,
+                error: `Internal Server Error (traceId: ${traceId})`
+            };
+        }
+    };
+
+    return new Elysia({ prefix: '/map' })
+        .get('/points', async (context) => {
+            const { query, set, request } = context;
+            try {
+                const packIdFromQuery = typeof query.packId === 'string' ? query.packId : undefined;
+                const activeCaseId = typeof query.caseId === 'string' ? query.caseId : undefined;
+                const regionIdRaw = typeof query.regionId === 'string' ? query.regionId.trim() : undefined;
+
+                let resolvedPackId = packIdFromQuery;
+                let regionMeta: RegionMeta | null = null;
+                if (regionIdRaw) {
+                    if (!isRegionId(regionIdRaw)) {
+                        set.status = 400;
+                        return {
+                            error: `Unknown regionId '${regionIdRaw}'`,
+                            points: [],
+                            userStates: {}
+                        };
+                    }
+
+                    regionMeta = getRegionMeta(regionIdRaw);
+                    if (packIdFromQuery && packIdFromQuery !== regionMeta.packId) {
+                        set.status = 400;
+                        return {
+                            error: `packId '${packIdFromQuery}' conflicts with regionId '${regionIdRaw}'`,
+                            points: [],
+                            userStates: {}
+                        };
+                    }
+
+                    resolvedPackId = packIdFromQuery ?? regionMeta.packId;
+                }
+
+                const userId = resolveUserId({
+                    request,
+                    auth: (context as { auth?: (options?: unknown) => { userId?: string | null } }).auth
+                });
+                await repository.ensureUserExists(userId);
+
+                const points = await repository.getPoints(resolvedPackId);
+                const states = await repository.getUserStates(userId);
+
+                const visiblePoints = filterVisiblePoints(points, states, activeCaseId);
+                const regionFilteredPoints = regionMeta
+                    ? filterPointsByRegionRadius(visiblePoints, regionMeta)
+                    : visiblePoints;
+                const stateMap = toStateMap(states);
+
+                return { points: regionFilteredPoints, userStates: stateMap };
+            } catch (error) {
+                const traceId = crypto.randomUUID();
+                console.error(`[Map][${traceId}] CRITICAL: Failed to fetch map points from repository`, error);
+                set.status = 500;
+                return {
+                    error: 'Database connection failed',
+                    traceId,
+                    points: [],
+                    userStates: {}
+                };
+            }
+        })
+        .post('/resolve-code', (context) =>
+            resolveCode(context.body.code, {
+                request: context.request,
+                set: context.set,
+                auth: (context as { auth?: (options?: unknown) => { userId?: string | null } }).auth
+            }), {
+            body: t.Object({
+                code: t.String()
+            }),
+            response: resolveCodeResponseSchema
+        })
+        .get('/resolve-code/:code', (context) =>
+            resolveCode(context.params.code, {
+                request: context.request,
+                set: context.set,
+                auth: (context as { auth?: (options?: unknown) => { userId?: string | null } }).auth
+            }), {
+            response: resolveCodeResponseSchema
         });
+};
 
 export const mapModule = createMapModule();

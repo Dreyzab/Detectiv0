@@ -9,8 +9,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
     id: 'lead_tailor',
+    packId: 'fbg1905',
     title: 'Schneider\'s Workshop',
-    defaultBackgroundUrl: '/images/scenarios/tailor_shop_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/tailor_shop_1905.webp',
     initialSceneId: 'entrance',
     mode: 'fullscreen',
     scenes: {
@@ -176,4 +177,3 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
 };
 
 export default LEAD_TAILOR_LOGIC;
-

@@ -122,7 +122,7 @@ export const useWorldEngineStore = create<WorldEngineState>((set, get) => ({
             evidence: data.evidence,
             objectives: data.objectives ?? [],
             activeCase: data.activeCase ?? null,
-            currentLocationId: state.currentLocationId ?? DEFAULT_LOCATION_ID
+            currentLocationId: data.currentLocationId ?? state.currentLocationId ?? DEFAULT_LOCATION_ID
         }));
 
         return data;

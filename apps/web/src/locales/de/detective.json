@@ -56,5 +56,16 @@
         "telegramTitle": "Telegramm - Kaiserliches Telegraphenamt",
         "telegramMessage": "STOPP. SOFORT IN FREIBURG MELDEN. STOPP. LOKALE POLIZEI BENÖTIGT UNTERSTÜTZUNG. STOPP. RAUB BANKHAUS KREBS. STOPP. ENTTÄUSCHEN SIE UNS NICHT. STOPP.",
         "ack": "Bestätigen"
+    },
+    "mindPalace": {
+        "title": "Deduktion",
+        "hint": "Wählen Sie zwei Beweisstücke zum Kombinieren.",
+        "selectSecond": "Wählen Sie nun ein zweites Beweisstück...",
+        "noConnection": "Keine sinnvolle Verbindung gefunden.",
+        "empty": "Noch keine Beweise gesammelt...",
+        "emptyHint": "Untersuchen Sie Orte, um Hinweise zu sammeln.",
+        "progress": "{{solved}}/{{total}} Deduktionen gelöst",
+        "dossierPrompt": "Verbinden Sie Beweise zu Schlussfolgerungen.",
+        "openButton": "Gedächtnispalast öffnen"
     }
 }

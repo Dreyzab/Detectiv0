@@ -9,8 +9,9 @@ import type { VNScenarioLogic } from '../../../model/types';
 
 export const INTRO_CHAR_CREATION_LOGIC: VNScenarioLogic = {
     id: 'intro_char_creation',
+    packId: 'fbg1905',
     title: 'Case 01 Onboarding',
-    defaultBackgroundUrl: '/images/scenarios/inspector_office_night.png', // Placeholder: dark room or mirror
+    defaultBackgroundUrl: '/images/scenarios/inspector_office_night.webp', // Placeholder: dark room or mirror
     initialSceneId: 'start_game',
     mode: 'fullscreen',
     scenes: {

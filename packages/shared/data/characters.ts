@@ -121,7 +121,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 32,
         origin: 'Berlin',
         description: 'A private investigator operating in the grey zones of Freiburg. Hired to solve the bank robbery.',
-        avatarUrl: '/images/characters/inspector.png',
+        avatarUrl: '/images/characters/inspector.webp',
         // Base stats (before origin modifiers)
         voiceStats: { logic: 2, volition: 2, empathy: 2 }
     },
@@ -134,7 +134,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 23,
         origin: 'University of Freiburg',
         description: '"The Woman in the Iron Lab Coat". A chemistry student driven by the mysterious death of her fiancé. Combines scientific genius with buried rage.',
-        avatarUrl: '/images/characters/assistant.png',
+        avatarUrl: '/images/characters/assistant.webp',
         tags: ['companion', 'senses', 'chemistry', 'vengeful'],
         voiceStats: { logic: 6, senses: 8, authority: 4 },
         secrets: [
@@ -156,7 +156,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 24,
         origin: 'Freiburg (Police HQ)',
         description: '"The Spider in the Wire". Uses her position as switchboard operator to trade secrets and protect her family.',
-        avatarUrl: '/images/characters/operator.png',
+        avatarUrl: '/images/characters/operator.webp',
         tags: ['companion', 'information', 'broker'],
         voiceStats: { encyclopaedia: 6, perception: 5, suggestion: 4 },
         secrets: [
@@ -174,7 +174,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 55,
         origin: 'Freiburg',
         description: '"The Architect of Greed". A portly pillar of society hiding a massive embezzlement scheme.',
-        avatarUrl: '/images/characters/bank_manager.png',
+        avatarUrl: '/images/characters/bank_manager.webp',
         tags: ['client', 'antagonist', 'corrupt'],
         voiceStats: { authority: 8, logic: 6, rhetoric: 7 },
         secrets: [
@@ -192,12 +192,12 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 50,
         origin: 'Schneckenvorstadt (Brewery Tunnels)',
         description: '"The King of the Tunnels". Controls the illicit Saccharin trade. Desperate for social legitimacy.',
-        avatarUrl: '/images/characters/boss.png',
+        avatarUrl: '/images/characters/boss.webp',
         tags: ['underworld', 'antagonist', 'crime_lord'],
         secrets: [
             'Wants to buy his way into the City Council',
             'Robbery is actually bad for his business',
-            'Saccharin is smuggled via Höllental railway'
+            'Saccharin is smuggled via Höllentalbahn'
         ]
     },
     mayor: {
@@ -209,7 +209,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 58,
         origin: 'Freiburg (Zentrumspartei)',
         description: 'Victoria\'s father. Trying to hold the city together. Wants the robbery solved quietly.',
-        avatarUrl: '/images/characters/mayor.png',
+        avatarUrl: '/images/characters/mayor.webp',
         tags: ['politician', 'obstructor']
     },
     corrupt_cop: {
@@ -255,7 +255,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 28,
         origin: 'Freiburg',
         description: 'Junior clerk at Bankhaus Krebs. Nervous, meticulous. Was on night duty during the robbery. Knows more than he dares to say.',
-        avatarUrl: '/images/characters/clerk.png',
+        avatarUrl: '/images/characters/clerk.webp',
         tags: ['witness', 'bank', 'scared'],
         locationId: 'bank_krebs'
     },
@@ -268,7 +268,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 48,
         origin: 'Prussia (War Veteran)',
         description: 'Former military surgeon obsessed with Bertillonage. Dismisses fingerprints as "French nonsense". Hates Victoria Sterling.',
-        avatarUrl: '/images/characters/coroner.png',
+        avatarUrl: '/images/characters/coroner.webp',
         tags: ['senses', 'bertillonage', 'obstructionist'],
         serviceType: 'autopsy'
     },
@@ -281,7 +281,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 30,
         origin: 'Vienna → Freiburg',
         description: 'Cynical reporter seeking the "Big Scoop". Wants to expose the hypocrisy of the Freiburg elite.',
-        avatarUrl: '/images/characters/journalist.png',
+        avatarUrl: '/images/characters/journalist.webp',
         tags: ['information', 'wildcard', 'press'],
         serviceType: 'information_broker'
     },
@@ -294,7 +294,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 26,
         origin: 'Freiburg (Bürgermeisterfamilie)',
         description: 'Tochter des Bürgermeisters, verwitwete Medizinstudentin. Eine scharfe Beobachterin mit Faszination für Kriminologie, angetrieben vom ungelösten Tod ihres Mannes.',
-        avatarUrl: '/images/characters/clara_altenburg.png',
+        avatarUrl: '/images/characters/clara_altenburg.webp',
         tags: ['companion', 'criminology', 'medicine', 'widow', 'nobility'],
         voiceStats: { empathy: 6, perception: 7, logic: 5, tradition: 4 },
         secrets: [
@@ -317,7 +317,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 52,
         origin: 'Altstadt',
         description: 'Runs the Löwen-Apotheke. Nervous fence for chemical goods (ether/alcohol) used by smugglers.',
-        avatarUrl: '/images/characters/apothecary.png',
+        avatarUrl: '/images/characters/apothecary.webp',
         tags: ['merchant', 'medicine', 'fence', 'scared'],
         locationId: 'loewen_apotheke',
         serviceType: 'pharmacy'
@@ -331,7 +331,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 45,
         origin: 'Stühlinger',
         description: 'Industrial mechanic ("Schlosser"). Works on locomotive parts. Can pick any lock and fix any machine.',
-        avatarUrl: '/images/characters/blacksmith.png',
+        avatarUrl: '/images/characters/blacksmith.webp',
         tags: ['merchant', 'mechanic', 'locksmith'],
         serviceType: 'locksmith'
     },
@@ -344,7 +344,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 48,
         origin: 'Vienna → Freiburg',
         description: 'Jewish tailor. Creates disguises for theater... or other purposes. Discretion guaranteed.',
-        avatarUrl: '/images/characters/tailor.png',
+        avatarUrl: '/images/characters/tailor.webp',
         tags: ['merchant', 'clothing', 'disguise'],
         serviceType: 'tailor'
     },
@@ -357,7 +357,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 55,
         origin: 'Schneckenvorstadt',
         description: 'Runs Zum Goldenen Hirschen. Hears every rumor. Rents rooms, no questions asked.',
-        avatarUrl: '/images/characters/innkeeper.png',
+        avatarUrl: '/images/characters/innkeeper.webp',
         tags: ['merchant', 'information', 'lodging'],
         serviceType: 'inn'
     },
@@ -370,7 +370,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 60,
         origin: 'Schneckenvorstadt',
         description: 'Runs a pawnshop. Buys anything, sells everything. Knows the value of secrets.',
-        avatarUrl: '/images/characters/pawnbroker.png',
+        avatarUrl: '/images/characters/pawnbroker.webp',
         tags: ['merchant', 'fence', 'evidence'],
         serviceType: 'pawnshop'
     },
@@ -383,7 +383,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 65,
         origin: 'Münsterplatz',
         description: 'Catholic priest at the Freiburg Münster. Hears confessions. Knows sins.',
-        avatarUrl: '/images/characters/priest.png',
+        avatarUrl: '/images/characters/priest.webp',
         tags: ['information', 'sanctuary', 'church'],
         serviceType: 'confessional'
     },
@@ -396,7 +396,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 42,
         origin: 'University of Freiburg',
         description: 'Spinster librarian. Has access to restricted archives. Loves puzzles and mysteries.',
-        avatarUrl: '/images/characters/librarian.png',
+        avatarUrl: '/images/characters/librarian.webp',
         tags: ['research', 'archives', 'academic'],
         serviceType: 'archives'
     },
@@ -409,7 +409,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 50,
         origin: 'Hauptbahnhof',
         description: 'Controls the Freiburg Hauptbahnhof. Knows who comes and goes. Höllentalbahn runs on his schedule.',
-        avatarUrl: '/images/characters/stationmaster.png',
+        avatarUrl: '/images/characters/stationmaster.webp',
         tags: ['transport', 'information', 'travel'],
         serviceType: 'transport'
     },
@@ -422,7 +422,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 38,
         origin: 'Alsace (Ex-Legionnaire)',
         description: 'Kessler\'s right hand. A scarred brute with a twisted code of honor. Prefers a knife to a gun.',
-        avatarUrl: '/images/characters/enforcer.png',
+        avatarUrl: '/images/characters/enforcer.webp',
         tags: ['muscle', 'violence', 'loyal'],
         serviceType: 'mercenary' // Stretch, but fits structure
     },
@@ -435,7 +435,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 29,
         origin: 'Höllentalbahn',
         description: 'Charming, slippery, and runs the saccharin smuggling route. Impossible to catch, easy to bribe.',
-        avatarUrl: '/images/characters/smuggler.png',
+        avatarUrl: '/images/characters/smuggler.webp',
         tags: ['contraband', 'transport', 'charming'],
         serviceType: 'smuggler'
     },
@@ -476,7 +476,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 35,
         origin: 'Freiburg',
         description: 'Schutzmann in a Pickelhaube helmet. Represents the visible arm of the law. Follows orders without question.',
-        avatarUrl: '/images/characters/gendarm.png',
+        avatarUrl: '/images/characters/gendarm.webp',
         tags: ['police', 'obstacle'],
         archetypeId: 'schutzmann_01'
     },
@@ -488,8 +488,8 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         role: 'npc',
         age: 42,
         origin: 'Stühlinger',
-        description: 'Construction worker from the Haus Kapferer renovation. Knows about the scaffolding access.',
-        avatarUrl: '/images/characters/worker.png',
+        description: 'Construction worker from the Haus Kapferer renovation. Knows the scaffolding access.',
+        avatarUrl: '/images/characters/worker.webp',
         tags: ['witness', 'labor'],
         archetypeId: 'worker_01'
     },
@@ -502,7 +502,7 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         age: 40,
         origin: 'Stühlinger',
         description: 'Union organizer. Writes for Volkswacht. Blamed for every crime by conservatives.',
-        avatarUrl: '/images/characters/socialist.png',
+        avatarUrl: '/images/characters/socialist.webp',
         tags: ['suspect', 'informant', 'red_herring'],
         archetypeId: 'socialist_agitator'
     },
@@ -588,4 +588,3 @@ export const getCharacter = (id: CharacterId): VNCharacter => CHARACTERS[id];
 export const getCharactersByTier = (tier: CharacterTier): VNCharacter[] => {
     return Object.values(CHARACTERS).filter(char => char.tier === tier);
 };
-

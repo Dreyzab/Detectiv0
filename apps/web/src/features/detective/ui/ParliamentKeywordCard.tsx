@@ -9,6 +9,7 @@ import { cn } from '@/shared/lib/utils';
 
 interface ParliamentKeywordCardProps {
     keyword: string;
+    packId?: string;
     anchorRect?: DOMRect;
     onClose: () => void;
 }
@@ -22,9 +23,9 @@ const GROUP_ICONS: Record<VoiceGroup, string> = {
     spirit: '/images/voice-groups/spirit.png'
 };
 
-export const ParliamentKeywordCard = ({ keyword, anchorRect, onClose }: ParliamentKeywordCardProps) => {
+export const ParliamentKeywordCard = ({ keyword, packId, anchorRect, onClose }: ParliamentKeywordCardProps) => {
     const { voiceStats } = useDossierStore();
-    const content = getTooltipContent(keyword);
+    const content = getTooltipContent(keyword, packId);
     const containerRef = useRef<HTMLDivElement>(null);
     const [style, setStyle] = useState<React.CSSProperties>({});
 

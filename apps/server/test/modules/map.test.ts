@@ -38,10 +38,16 @@ const createMockRepository = (): MockRepositoryContext => {
         },
         getUserStates: async (userId) =>
             states.filter((state) => (state.userId ?? DEMO_USER_ID) === userId),
+        getUserPointState: async (userId, pointId) =>
+            states.find(
+                (state) =>
+                    (state.userId ?? DEMO_USER_ID) === userId &&
+                    state.pointId === pointId
+            ) ?? null,
         findActiveEventCode: async (code) =>
             eventCodes.find((eventCode) => eventCode.code === code && eventCode.active !== false) ?? null,
-        findPointByQrCode: async (code) =>
-            points.find((point) => point.qrCode === code) ?? null,
+        findActivePointByQrCode: async (code) =>
+            points.find((point) => point.qrCode === code && point.active !== false) ?? null,
         ensureUserExists: async (userId) => {
             ensuredUsers.push(userId);
         },
@@ -219,7 +225,64 @@ describe('Map Module (Controlled Integration)', () => {
         expect(context.ensuredUsers.includes('user_case_alt')).toBe(true);
     });
 
-    it('GET /map/resolve-code/:code returns event action without upsert', async () => {
+    it('GET /map/points filters points by region radius when regionId is provided', async () => {
+        context.points.push(
+            {
+                id: 'p_freiburg_near',
+                packId: 'fbg1905',
+                title: 'Near Freiburg Center',
+                lat: 47.9962,
+                lng: 7.8519,
+                category: 'INTEREST',
+                bindings: [],
+                scope: 'global',
+                retentionPolicy: 'permanent',
+                active: true
+            },
+            {
+                id: 'p_freiburg_far',
+                packId: 'fbg1905',
+                title: 'Far from Freiburg',
+                lat: 49.0092,
+                lng: 8.4037,
+                category: 'INTEREST',
+                bindings: [],
+                scope: 'global',
+                retentionPolicy: 'permanent',
+                active: true
+            }
+        );
+
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/points?regionId=FREIBURG_1905`)
+        );
+
+        expect(response.status).toBe(200);
+        const data = await response.json() as { points: Array<{ id: string }> };
+        expect(data.points.map((point) => point.id)).toEqual(['p_freiburg_near']);
+    });
+
+    it('GET /map/points rejects conflicting packId and regionId', async () => {
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/points?packId=ka1905&regionId=FREIBURG_1905`)
+        );
+
+        expect(response.status).toBe(400);
+        const data = await response.json() as { error?: string };
+        expect(data.error).toContain('conflicts');
+    });
+
+    it('GET /map/points rejects unknown regionId', async () => {
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/points?regionId=UNKNOWN_REGION`)
+        );
+
+        expect(response.status).toBe(400);
+        const data = await response.json() as { error?: string };
+        expect(data.error).toContain('Unknown regionId');
+    });
+
+    it('POST /map/resolve-code returns event action without upsert', async () => {
         const eventActions: MapAction[] = [
             { type: 'add_flags', flags: ['case01_started'] }
         ];
@@ -231,7 +294,13 @@ describe('Map Module (Controlled Integration)', () => {
         });
 
         const response = await app.handle(
-            new Request(`${BASE_URL}/map/resolve-code/TEST_EVENT`)
+            new Request(`${BASE_URL}/map/resolve-code`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: 'TEST_EVENT' })
+            })
         );
 
         expect(response.status).toBe(200);
@@ -247,7 +316,7 @@ describe('Map Module (Controlled Integration)', () => {
         expect(context.upserts.length).toBe(0);
     });
 
-    it('GET /map/resolve-code/:code resolves map point and persists unlock lifecycle flags', async () => {
+    it('POST /map/resolve-code resolves map point and persists unlock lifecycle flags', async () => {
         context.points.push({
             id: 'p_case_unlock',
             packId: 'fbg1905',
@@ -271,7 +340,13 @@ describe('Map Module (Controlled Integration)', () => {
         });
 
         const response = await app.handle(
-            new Request(`${BASE_URL}/map/resolve-code/QR_CASE_UNLOCK`)
+            new Request(`${BASE_URL}/map/resolve-code`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: 'QR_CASE_UNLOCK' })
+            })
         );
 
         expect(response.status).toBe(200);
@@ -291,6 +366,98 @@ describe('Map Module (Controlled Integration)', () => {
         expect(context.upserts[0]?.unlockedByCaseId).toBe('case_01_bank');
     });
 
+    it('POST /map/resolve-code keeps existing higher state (no downgrade)', async () => {
+        context.points.push({
+            id: 'p_case_unlock',
+            packId: 'fbg1905',
+            title: 'Unlock Point',
+            lat: 0,
+            lng: 0,
+            category: 'CRIME_SCENE',
+            qrCode: 'QR_CASE_UNLOCK',
+            bindings: [],
+            scope: 'progression',
+            caseId: 'case_01_bank',
+            retentionPolicy: 'persistent_on_unlock',
+            active: true
+        });
+        context.states.push({
+            userId: DEMO_USER_ID,
+            pointId: 'p_case_unlock',
+            state: 'visited',
+            persistentUnlock: true
+        });
+
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/resolve-code`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: 'QR_CASE_UNLOCK' })
+            })
+        );
+
+        expect(response.status).toBe(200);
+        expect(context.upserts.length).toBe(1);
+        expect(context.upserts[0]?.state).toBe('visited');
+    });
+
+    it('POST /map/resolve-code rejects invalid event action payload', async () => {
+        context.eventCodes.push({
+            code: 'TEST_BAD_EVENT',
+            actions: [{ type: 'invalid_action' }],
+            active: true
+        });
+
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/resolve-code`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: 'TEST_BAD_EVENT' })
+            })
+        );
+
+        expect(response.status).toBe(500);
+        const data = await response.json() as { success: boolean; error: string };
+        expect(data.success).toBe(false);
+        expect(data.error).toBe('Invalid event configuration');
+    });
+
+    it('POST /map/resolve-code ignores inactive QR points', async () => {
+        context.points.push({
+            id: 'p_inactive_qr',
+            packId: 'fbg1905',
+            title: 'Inactive QR Point',
+            lat: 0,
+            lng: 0,
+            category: 'EVENT',
+            qrCode: 'QR_INACTIVE',
+            bindings: [],
+            scope: 'case',
+            caseId: 'case_01_bank',
+            retentionPolicy: 'temporary',
+            active: false
+        });
+
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/resolve-code`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: 'QR_INACTIVE' })
+            })
+        );
+
+        expect(response.status).toBe(404);
+        const data = await response.json() as { success: boolean; error: string };
+        expect(data.success).toBe(false);
+        expect(data.error).toBe('Invalid Code');
+    });
+
     it('GET /map/resolve-code/:code returns 404 for unknown code', async () => {
         const response = await app.handle(
             new Request(`${BASE_URL}/map/resolve-code/UNKNOWN_CODE`)
@@ -300,5 +467,27 @@ describe('Map Module (Controlled Integration)', () => {
         const data = await response.json() as { success: boolean; error: string };
         expect(data.success).toBe(false);
         expect(data.error).toBe('Invalid Code');
+    });
+
+    it('GET /map/resolve-code/:code remains available as deprecated alias', async () => {
+        context.eventCodes.push({
+            code: 'TEST_EVENT',
+            actions: [{ type: 'add_flags', flags: ['case01_started'] }],
+            active: true
+        });
+
+        const response = await app.handle(
+            new Request(`${BASE_URL}/map/resolve-code/TEST_EVENT`)
+        );
+
+        expect(response.status).toBe(200);
+        const data = await response.json() as {
+            success: boolean;
+            type: string;
+            actions: MapAction[];
+        };
+        expect(data.success).toBe(true);
+        expect(data.type).toBe('event');
+        expect(data.actions.length).toBe(1);
     });
 });

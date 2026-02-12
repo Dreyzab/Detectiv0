@@ -3,14 +3,18 @@ import type { MapAction, MapPoint, PointStateEnum } from '@repo/shared';
 export interface MapPointsQuery {
     packId?: string;
     caseId?: string;
+    regionId?: string;
 }
 
 export interface MapPointsResponse {
     points: MapPoint[];
     userStates: Record<string, PointStateEnum>;
     error?: string;
-    details?: string;
-    stack?: string;
+    traceId?: string;
+}
+
+export interface ResolveCodeRequest {
+    code: string;
 }
 
 export interface ResolveCodeEventResponse {

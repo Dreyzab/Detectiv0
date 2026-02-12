@@ -1,4 +1,5 @@
 import type { VoiceId } from '@/features/detective/lib/parliament';
+import { DEFAULT_PACK_ID } from '@repo/shared/data/pack-meta';
 
 export interface VoiceCommentary {
     voiceId: VoiceId;
@@ -177,18 +178,85 @@ export const PARLIAMENT_TOOLTIP_REGISTRY: Record<string, KeywordTooltip> = {
     }
 };
 
+export const TOOLTIP_SETS: Record<string, Record<string, KeywordTooltip>> = {
+    fbg1905: PARLIAMENT_TOOLTIP_REGISTRY,
+    ka1905: {
+        // ── Karlsruhe Sandbox Keywords ────────────────────
+        'kw_kaiserstrasse': {
+            id: 'kw_kaiserstrasse',
+            title: 'Kaiserstraße',
+            fact: 'The grand boulevard of Karlsruhe, stretching from the Schloss gardens to the Durlacher Tor. By 1905, electric trams run its length, and the gaslights are being replaced with modern electric lamps.',
+            voices: [
+                { voiceId: 'logic', threshold: 0, text: 'A key commercial artery. Many suspects will frequent this street.' },
+                { voiceId: 'empathy', threshold: 0, text: 'The heart of the city. People reveal themselves in how they walk it — hurried, leisurely, or furtive.' }
+            ]
+        },
+        'kw_gambling_culture': {
+            id: 'kw_gambling_culture',
+            title: 'Spielkultur',
+            fact: 'Gambling in Baden has a long tradition, from the grand Casino in Baden-Baden to underground card rooms. By 1905, many young men of means are drawn to discreet establishments.',
+            voices: [
+                { voiceId: 'logic', threshold: 0, text: 'Where there is gambling, there is debt. Debt creates leverage — and suspects.' },
+                { voiceId: 'empathy', threshold: 0, text: 'Addiction is a powerful force. Understanding it may be key to understanding the son\'s behavior.' }
+            ]
+        },
+        'kw_ectoplasm': {
+            id: 'kw_ectoplasm',
+            title: 'Ektoplasma',
+            fact: 'A term coined by Charles Richet in 1894. Claimed to be a substance produced by mediums during séances. By 1905, both believers and skeptics debate its existence fiercely.',
+            voices: [
+                { voiceId: 'logic', threshold: 0, text: 'Science has no consensus. We must gather our own evidence before drawing conclusions.' },
+                { voiceId: 'empathy', threshold: 0, text: 'Whether real or not, the fear it causes is genuine. The estate staff are terrified.' }
+            ]
+        },
+        'kw_guild': {
+            id: 'kw_guild',
+            title: 'Ermittlergilde',
+            fact: 'The regional Investigators Guild maintains a network of seasoned detectives and retired police officers. Membership grants access to forensic tools, informants, and case archives.',
+            voices: [
+                { voiceId: 'logic', threshold: 0, text: 'The Guild Master has decades of experience. His counsel will be invaluable for complex cases.' },
+                { voiceId: 'empathy', threshold: 0, text: 'A mentor can see what we miss. His perspective may reveal blind spots in our approach.' }
+            ]
+        },
+        'kw_schlossgarten': {
+            id: 'kw_schlossgarten',
+            title: 'Schlossgarten',
+            fact: 'The palace gardens of Karlsruhe, radiating from the Schloss in a fan-shaped design. A popular retreat for citizens, with ancient oaks and winding paths.',
+            voices: [
+                { voiceId: 'logic', threshold: 0, text: 'A large area with many hiding spots. Useful for discreet meetings — or missing dogs.' },
+                { voiceId: 'empathy', threshold: 0, text: 'Nature soothes the troubled mind. Perhaps there is a reason the dog comes here.' }
+            ]
+        }
+    }
+};
+
+export const getTooltipSet = (packId?: string): Record<string, KeywordTooltip> =>
+    TOOLTIP_SETS[packId ?? DEFAULT_PACK_ID] ?? TOOLTIP_SETS[DEFAULT_PACK_ID];
+
 
 /**
  * Helper to normalize keys (case insensitive lookup)
  */
 
-export function getTooltipContent(key: string): KeywordTooltip | null {
+export function getTooltipContent(key: string, packId?: string): KeywordTooltip | null {
+    const set = getTooltipSet(packId);
+
     // 1. Try exact match
-    if (PARLIAMENT_TOOLTIP_REGISTRY[key]) return PARLIAMENT_TOOLTIP_REGISTRY[key];
+    if (set[key]) return set[key];
 
     // 2. Try lower case
     const lower = key.toLowerCase();
-    const entry = Object.entries(PARLIAMENT_TOOLTIP_REGISTRY).find(([k]) => k.toLowerCase() === lower);
-    return entry ? entry[1] : null;
+    const entry = Object.entries(set).find(([k]) => k.toLowerCase() === lower);
+
+    if (entry) {
+        return entry[1];
+    }
+
+    // 3. If not found in a non-default set, fallback to default pack set.
+    if (packId && packId !== DEFAULT_PACK_ID) {
+        return getTooltipContent(key, DEFAULT_PACK_ID);
+    }
+
+    return null;
 }
 

@@ -4,7 +4,7 @@ import type { VNScenarioLogic } from '../../model/types';
 export const encounterTouristLogic: VNScenarioLogic = {
     id: 'encounter_tourist',
     title: 'Encounter: The Lost Tourist',
-    defaultBackgroundUrl: '/images/scenarios/train_station_outside.png',
+    defaultBackgroundUrl: '/images/scenarios/train_station_outside.webp',
     initialSceneId: 'start',
     musicUrl: '/audio/ambient_city_day.mp3',
     scenes: {

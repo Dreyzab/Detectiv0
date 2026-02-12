@@ -21,6 +21,7 @@ const hasStrongArchivePacket = (flags: Record<string, boolean>): boolean => {
 
 export const CASE1_ARCHIVE_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_archive_search',
+    packId: 'fbg1905',
     title: 'City Archive Search',
     defaultBackgroundUrl: '/images/scenarios/archive_1905.jpg',
     initialSceneId: 'archive_entry',

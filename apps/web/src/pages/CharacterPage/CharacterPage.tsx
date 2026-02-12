@@ -17,12 +17,12 @@ import { useTranslation } from 'react-i18next';
 type TabType = 'profile' | 'skills' | 'psyche' | 'equipment';
 
 const CHARACTER_PORTRAITS = [
-    'apothecary.png', 'assistant.png', 'bank_manager.png', 'blacksmith.png',
-    'boss.png', 'clara_altenburg.png', 'coroner.png', 'enforcer.png',
-    'gendarm.png', 'innkeeper.png', 'inspector.png', 'journalist.png',
-    'librarian.png', 'mayor.png', 'operator.png', 'pawnbroker.png',
-    'police_group.png', 'priest.png', 'smuggler.png', 'socialist.png',
-    'stationmaster.png', 'tailor.png', 'worker.png'
+    'apothecary.webp', 'assistant.webp', 'bank_manager.webp', 'blacksmith.webp',
+    'boss.webp', 'clara_altenburg.webp', 'coroner.webp', 'enforcer.webp',
+    'gendarm.webp', 'innkeeper.webp', 'inspector.webp', 'journalist.webp',
+    'librarian.webp', 'mayor.webp', 'operator.webp', 'pawnbroker.webp',
+    'police_group.webp', 'priest.webp', 'smuggler.webp', 'socialist.webp',
+    'stationmaster.webp', 'tailor.webp', 'worker.webp'
 ];
 
 export function CharacterPage() {
@@ -235,7 +235,7 @@ const ProfileView = ({ customPortrait, onSelectPortrait }: { customPortrait: str
                         <option value="">No Portrait</option>
                         {CHARACTER_PORTRAITS.map(file => (
                             <option key={file} value={file}>
-                                {file.replace('.png', '').replace(/_/g, ' ').toUpperCase()}
+                                {file.replace('.webp', '').replace(/_/g, ' ').toUpperCase()}
                             </option>
                         ))}
                     </select>

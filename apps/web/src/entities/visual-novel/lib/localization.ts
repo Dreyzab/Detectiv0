@@ -1,4 +1,5 @@
 import type { VNScenario, VNScenarioLogic, VNContentPack, VNScene, VNChoice } from '../model/types';
+import { DEFAULT_PACK_ID } from '@repo/shared/data/pack-meta';
 
 /**
  * Merges a Logic Graph with a Content Pack to produce a runnable VNScenario.
@@ -81,6 +82,7 @@ export const mergeScenario = (
 
     return {
         id: logic.id,
+        packId: logic.packId ?? DEFAULT_PACK_ID,
         title: logic.title,
         defaultBackgroundUrl: logic.defaultBackgroundUrl,
         musicUrl: logic.musicUrl,

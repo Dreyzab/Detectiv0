@@ -13,8 +13,9 @@ import type { VNScenarioLogic } from '../../../../model/types';
 
 export const QUEST_VICTORIA_POETRY_LOGIC: VNScenarioLogic = {
     id: 'quest_victoria_poetry',
+    packId: 'fbg1905',
     title: 'Quest: The Golden Cage',
-    defaultBackgroundUrl: '/images/scenarios/pub_interior_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/pub_interior_1905.webp',
     initialSceneId: 'arrival',
     mode: 'fullscreen',
     scenes: {
@@ -199,4 +200,3 @@ export const QUEST_VICTORIA_POETRY_LOGIC: VNScenarioLogic = {
 };
 
 export default QUEST_VICTORIA_POETRY_LOGIC;
-

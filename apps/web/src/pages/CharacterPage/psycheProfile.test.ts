@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { buildPsycheProfile, type PsycheProfileInput } from './psycheProfile';
 
 const baseInput = (): PsycheProfileInput => ({

@@ -1,0 +1,31 @@
+{
+    "meta": {
+        "step": "Step {{current}} of {{total}}"
+    },
+    "language": {
+        "title": "Choose your language",
+        "subtitle": "Set the language for Karlsruhe onboarding.",
+        "continue": "Continue",
+        "en": "English",
+        "de": "German",
+        "ru": "Russian"
+    },
+    "origin": {
+        "title": "Choose your origin",
+        "subtitle": "This sets your starting profile in Karlsruhe.",
+        "scholar": "Local Scholar",
+        "scholarDesc": "You know the institutions, archives, and social circles of the city.",
+        "journalist": "Foreign Journalist",
+        "journalistDesc": "You are an outsider with sharp questions and fast access to rumors.",
+        "doctor": "Travelling Doctor",
+        "doctorDesc": "You move between classes and districts under the cover of medical duty.",
+        "back": "Back",
+        "continue": "Continue"
+    },
+    "start": {
+        "title": "Karlsruhe, 1905",
+        "subtitle": "Profile selected: {{origin}}. Your file is ready.",
+        "back": "Back",
+        "enter": "Enter Karlsruhe"
+    }
+}

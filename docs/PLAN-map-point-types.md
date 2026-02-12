@@ -1,7 +1,7 @@
 # PLAN: MapPoint — элементы карты и логика взаимодействия
 
 Цель: привести точки на карте к единой, расширяемой системе для **Detective Mode** и “investigation engine” (мульти-шаговые триггеры, динамическая видимость, нарративные переходы состояний).
-План опирается на принципы из [Detectiv.md](../Detectiv.md): **Core vs Pack**, “Hardlink = источник истины” для детектива, отсутствие софтлоков по навыкам и BBox-подгрузка точек.
+План опирается на принципы из [Detectiv.md](../Detectiv.md): **Core vs Pack**, “Hardlink = источник истины” для детектива, отсутствие софтлоков по навыкам и региональную подгрузку точек (`regionId` + радиус) с legacy-fallback.
 
 ---
 
@@ -102,7 +102,7 @@
 
 Базовая логика из [Detectiv.md](../Detectiv.md):
 - Точки не открываются по GPS; открытие через `qr_scan` → `unlock_point`.
-- Прогресс в `Dossier`, карта рисует `unlockedPoints`.
+- Прогресс в `Dossier` (`pointStates`) + серверные `userStates`; карта рисует точки по lifecycle-правилам и активному региону.
 - `marker_click` открывает карточку (title/description/state + действия).
 - `arrive` может запускать VN.
 
@@ -121,8 +121,9 @@
 - `user_map_point_state`: состояния игрока (`PointState`) и одноразовые флаги (lootedOnce, cooldownUntil, …).
 
 ### 4.3 API
-- `GET /map/points?packId=...&bbox=...` → точки + state игрока.
-- `POST /map/activate-qr` → “QR/Hardlink → actions” (возвращает `MapAction[]`).
+- `GET /map/points?packId=...&caseId=...&regionId=...` → точки + state игрока (при `regionId` включается серверный фильтр радиуса).
+- `POST /map/resolve-code` → “QR/Event code → actions” (возвращает `MapAction[]`).
+- `GET /map/resolve-code/:code` → legacy-совместимый read entrypoint для старых клиентов.
 - (опционально) `POST /map/interact` → сервер-авторитетный интеракт (если решим, что клиент не должен сам вычислять actions).
 
 ---
@@ -150,7 +151,8 @@
   - `user_map_point_state`
 - **[NEW]** `apps/server/src/modules/map.ts`
   - `GET /map/points`
-  - `POST /map/activate-qr`
+  - `POST /map/resolve-code`
+  - `GET /map/resolve-code/:code` (legacy)
 - **[MODIFY]** `apps/server/src/index.ts`
   - подключить `mapModule`
 
@@ -176,9 +178,9 @@
 - `arrive` переводит в `visited`.
 
 ### Case #1 Flow Test (Freiburg 1905)
-1) Открыть `/map` в Detective Mode.
+1) Открыть `/`, выбрать Freiburg в Home и перейти на `/city/fbg1905/map`.
 2) Убедиться, что видна только стартовая точка (или ни одной — если старт делается через hardlink).
-3) Просканировать/ввести `CASE01_BRIEFING_01`.
+3) Просканировать/ввести `GW4_GATE_FR_HBF` (или legacy код кейса при наличии в seed).
 4) Проверить: появилась точка банка `munsterplatz_bank`.
 5) Клик по банку → карточка показывает “Examine crime scene” / “Start scene”.
 6) Выбор действия → запускается VN сцена.

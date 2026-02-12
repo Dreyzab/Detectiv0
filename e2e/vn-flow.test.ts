@@ -1,37 +1,42 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
-/**
- * Visual Novel Flow E2E Test
- * Note: Requires @playwright/test to be installed in the root or apps/web.
- */
+const SCENARIO_ROUTE = '/vn/intro_journalist';
+const CHOICE_TEST_ID = 'vn-choice-selective_excavation';
+
+async function ensureChoicesVisible(page: import('@playwright/test').Page) {
+    const root = page.getByTestId('vn-fullscreen-root');
+    const choices = page.getByTestId('vn-choices');
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+        if (await choices.isVisible()) {
+            return;
+        }
+        await root.click({ position: { x: 24, y: 24 } });
+    }
+
+    await expect(choices).toBeVisible();
+}
+
 test.describe('Visual Novel Flow', () => {
-    test('should navigate through a scenario', async ({ page }: { page: Page }) => {
-        // 1. Start App
-        await page.goto('/');
+    test('moves from intro scene to next scene after choosing an option', async ({ page }) => {
+        await page.goto(SCENARIO_ROUTE);
 
-        // 2. Open Map (Assume we can click a map point or trigger VN)
-        // For this test, we might need to strictly target a known interactable element
-        // Or we use the new /detective/saves API to inject a state? 
-        // Let's assume we can click "City Hall" or "Bank" if it's visible.
+        const root = page.getByTestId('vn-fullscreen-root');
+        const sceneText = page.getByTestId('vn-scene-text');
 
-        // Using a known test ID or text would be best. 
-        // Assuming "Bankhaus Krebs" map point exists.
-        // await page.getByText('Bankhaus Krebs').click();
+        await expect(root).toBeVisible();
+        await expect(sceneText).toBeVisible();
+        await expect(sceneText).not.toHaveText('', { timeout: 15000 });
 
-        // 3. Verify VN Overlay Opens
-        // await expect(page.locator('[data-testid="vn-overlay"]')).toBeVisible();
+        const firstSceneText = ((await sceneText.textContent()) ?? '').trim();
+        expect(firstSceneText.length).toBeGreaterThan(0);
 
-        // 4. Verify Scene Text
-        // await expect(page.locator('[data-testid="vn-text"]')).not.toBeEmpty();
+        await ensureChoicesVisible(page);
 
-        // 5. Make a Choice
-        // await page.locator('button', { hasText: 'Enter' }).click();
+        const choice = page.getByTestId(CHOICE_TEST_ID);
+        await expect(choice).toBeVisible();
+        await choice.click();
 
-        // 6. Verify Next Scene
-        // await expect(page.locator('[data-testid="vn-text"]')).toContainText('You enter the bank');
-
-        // Note: Since E2E setup might not be fully configured in this environment (browsers etc),
-        // this is a template to be expanded when Playwright is fully integrated.
-        console.log('E2E Test Template Created');
+        await expect.poll(async () => ((await sceneText.textContent()) ?? '').trim(), { timeout: 15000 }).not.toBe(firstSceneText);
     });
 });

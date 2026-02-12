@@ -48,7 +48,7 @@ export const MapPointCard = ({ point, actions, onExecute, onClose }: MapPointCar
                     {/* Image / Visual */}
                     <div className="relative w-full h-40 bg-zinc-900 overflow-hidden shadow-inner border border-[#4a3b2a]/50">
                         <img
-                            src={(point.data?.image as string) || (point as { image?: string }).image || "/images/detective/location_placeholder.png"} // Fallback to root image if legacy
+                            src={(point.data?.image as string) || (point as { image?: string }).image || "/images/detective/location_placeholder.webp"} // Fallback to root image if legacy
                             alt={point.title}
                             className="w-full h-full object-cover opacity-80 sepia hover:sepia-0 transition-all duration-700 hover:scale-105"
                         />

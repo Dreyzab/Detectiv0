@@ -9,8 +9,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const LEAD_PUB_LOGIC: VNScenarioLogic = {
     id: 'lead_pub',
+    packId: 'fbg1905',
     title: 'Gasthaus "Zum Schlappen"',
-    defaultBackgroundUrl: '/images/scenarios/pub_interior_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/pub_interior_1905.webp',
     initialSceneId: 'entrance',
     mode: 'fullscreen',
     scenes: {
@@ -209,4 +210,3 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
 };
 
 export default LEAD_PUB_LOGIC;
-

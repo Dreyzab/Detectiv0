@@ -9,8 +9,9 @@ import type { VNScenarioLogic } from '../../../model/types';
 
 export const INTRO_JOURNALIST_LOGIC: VNScenarioLogic = {
     id: 'intro_journalist',
+    packId: 'fbg1905',
     title: 'Cafe Riegler - News & Nerves',
-    defaultBackgroundUrl: '/images/scenarios/pub_interior_1905.png', // Temporary placeholder for Cafe Riegler
+    defaultBackgroundUrl: '/images/scenarios/pub_interior_1905.webp', // Temporary placeholder for Cafe Riegler
     initialSceneId: 'start',
     mode: 'fullscreen',
     scenes: {

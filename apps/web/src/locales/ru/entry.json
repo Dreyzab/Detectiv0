@@ -1,0 +1,31 @@
+{
+    "meta": {
+        "step": "Shag {{current}} iz {{total}}"
+    },
+    "language": {
+        "title": "Vyberite yazyk",
+        "subtitle": "Nastroyte yazyk dlya vkhoda v Karlsruhe.",
+        "continue": "Prodolzhit",
+        "en": "Angliyskiy",
+        "de": "Nemetskiy",
+        "ru": "Russkiy"
+    },
+    "origin": {
+        "title": "Vyberite proiskhozhdenie",
+        "subtitle": "Eto opredelit startovyy profil v Karlsruhe.",
+        "scholar": "Mestnyy uchenyy",
+        "scholarDesc": "Vy znaete arkhivy, uchrezhdeniya i sotsialnye krugi goroda.",
+        "journalist": "Inostrannyy zhurnalist",
+        "journalistDesc": "Vy autsayder s ostrymi voprosami i bystrym dostupom k slukham.",
+        "doctor": "Puteshestvuyushchiy vrach",
+        "doctorDesc": "Vy peremeshchayetes mezhdu rayonami i sloyami obshchestva pod meditsinskoy roleyu.",
+        "back": "Nazad",
+        "continue": "Prodolzhit"
+    },
+    "start": {
+        "title": "Karlsruhe, 1905",
+        "subtitle": "Vybrannyy profil: {{origin}}. Vashe dosye gotovo.",
+        "back": "Nazad",
+        "enter": "Voyti v Karlsruhe"
+    }
+}

@@ -19,12 +19,10 @@ import { choiceIsAvailable, filterAvailableChoices, resolveAccessibleSceneId } f
 import type { VoiceId } from '@/features/detective/lib/parliament';
 import { isQuestAtStage as checkQuestAtStage, isQuestPastStage as checkQuestPastStage } from '@repo/shared/data/quests';
 import { buildNotebookEntryId, resolveTooltipKeyword } from '@/entities/visual-novel/lib/interactiveToken';
-
-const ONE_SHOT_SCENARIO_COMPLETION_FLAGS: Record<string, string> = {
-    intro_char_creation: 'char_creation_complete',
-    detective_case1_hbf_arrival: 'arrived_at_hbf',
-    detective_case1_map_first_exploration: 'case01_map_exploration_intro_done'
-};
+import { DEFAULT_PACK_ID } from '@repo/shared/data/pack-meta';
+import { isOneShotScenarioComplete } from '@/entities/visual-novel/lib/oneShotScenarios';
+import { AnimatePresence, motion } from 'framer-motion';
+import { resolveUnlockGroupPointIds } from '@/features/detective/lib/unlock-group';
 
 export const VisualNovelOverlay = () => {
     const location = useLocation();
@@ -58,6 +56,9 @@ const VisualNovelOverlayInner = () => {
     const toastTimeoutRef = useRef<number | null>(null);
     const [activeTooltip, setActiveTooltip] = useState<{ keyword: string; rect: DOMRect } | null>(null);
 
+    // Typing State for Animation Control
+    const [isTyping, setIsTyping] = useState(true);
+
     const showToast = useCallback((message: string, type: 'evidence' | 'note') => {
         setToast({ message, type });
         if (toastTimeoutRef.current) {
@@ -68,6 +69,7 @@ const VisualNovelOverlayInner = () => {
 
     // 1. Resolve Scenario dynamically from ID + Locale
     const activeScenario = activeScenarioId ? getScenarioById(activeScenarioId, locale) : null;
+    const activePackId = activeScenario?.packId ?? DEFAULT_PACK_ID;
     const evidenceIds = useMemo(() => new Set(evidence.map((item) => item.id)), [evidence]);
     const questStages = useMemo(() => {
         const stages: Record<string, string> = {};
@@ -96,8 +98,7 @@ const VisualNovelOverlayInner = () => {
             return;
         }
 
-        const completionFlag = ONE_SHOT_SCENARIO_COMPLETION_FLAGS[activeScenarioId];
-        if (completionFlag && flags[completionFlag]) {
+        if (isOneShotScenarioComplete(activeScenarioId, flags)) {
             endScenario();
         }
     }, [activeScenarioId, flags, endScenario]);
@@ -149,6 +150,12 @@ const VisualNovelOverlayInner = () => {
         };
     }, []);
 
+    // Reset typing state on scene change
+    useEffect(() => {
+        // We set to true whenever scene changes so choices hide and text types
+        setIsTyping(true);
+    }, [activeScenarioId, effectiveSceneId]);
+
     // --- Actions ---
     const handleInteract = (token: TextToken, element?: HTMLElement) => {
         const scenario = activeScenario;
@@ -156,7 +163,10 @@ const VisualNovelOverlayInner = () => {
             return;
         }
 
-        const tooltipKeyword = resolveTooltipKeyword(token, getTooltipContent);
+        const tooltipKeyword = resolveTooltipKeyword(
+            token,
+            (lookupKey) => getTooltipContent(lookupKey, activePackId)
+        );
 
         if (token.type === 'clue' && token.payload) {
             // It's a Clue -> Add to Evidence Inventory
@@ -186,7 +196,7 @@ const VisualNovelOverlayInner = () => {
             title: token.text,
             content: `Observed in ${scenario.title}`,
             isLocked: false,
-            packId: 'case_01',
+            packId: activePackId,
             refId: token.type === 'clue' ? token.payload : undefined
         });
 
@@ -208,6 +218,16 @@ const VisualNovelOverlayInner = () => {
                 case 'unlock_point':
                     setPointState(action.payload, 'discovered');
                     break;
+                case 'unlock_group': {
+                    const pointIds = resolveUnlockGroupPointIds(action.payload, activePackId);
+                    if (pointIds.length === 0) {
+                        console.warn(`[VN Action] unlock_group matched no points: ${action.payload}`);
+                        break;
+                    }
+
+                    pointIds.forEach((pointId) => setPointState(pointId, 'discovered'));
+                    break;
+                }
                 case 'add_flag':
                     Object.entries(action.payload).forEach(([k, v]) => setFlag(k, v));
                     break;
@@ -216,7 +236,19 @@ const VisualNovelOverlayInner = () => {
                     break;
                 case 'start_battle': {
                     endScenario();
-                    navigate(`/battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
+                    const params = new URLSearchParams({
+                        scenarioId: action.payload.scenarioId
+                    });
+                    if (activeScenarioId) {
+                        params.set('returnScenarioId', activeScenarioId);
+                    }
+                    if (activeScenario?.packId) {
+                        params.set('returnPackId', activeScenario.packId);
+                    }
+                    if (action.payload.deckType) {
+                        params.set('deckType', action.payload.deckType);
+                    }
+                    navigate(`/battle?${params.toString()}`);
                     break;
                 }
                 case 'modify_relationship':
@@ -405,8 +437,10 @@ const VisualNovelOverlayInner = () => {
         >
             <div className="flex-1" />
             <div className="pointer-events-auto p-0 max-w-4xl mx-auto w-full z-10 mb-8 px-4 cursor-default">
-                <div
-                    ref={overlayCardRef}
+                <motion.div
+                    layout
+                    transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                    ref={overlayCardRef as any}
                     className="relative bg-linear-to-b from-stone-950/30 to-black/60 border-l border-l-white/10 rounded-tr-[3rem] p-8 shadow-2xl backdrop-blur-xl min-h-[200px] flex flex-col gap-4"
                 >
 
@@ -443,46 +477,63 @@ const VisualNovelOverlayInner = () => {
                         <span>14:00</span>
                     </div>
 
-                    <div className="font-serif text-lg md:text-xl leading-relaxed text-gray-100 relative z-10 pt-4 cursor-text">
+                    <motion.div
+                        layout="position"
+                        className="font-serif text-lg md:text-xl leading-relaxed text-gray-100 relative z-10 pt-4 cursor-text"
+                    >
                         <TypedText
                             ref={typedTextRef}
                             text={scene.text}
                             onInteract={handleInteract}
+                            onTypingChange={setIsTyping}
                         />
-                    </div>
+                    </motion.div>
 
-                    <Choices choiceList={sceneChoices} />
-                </div>
+                    <Choices choiceList={sceneChoices} isVisible={!isTyping} />
+                </motion.div>
             </div>
         </div>
     );
 
-    const Choices = ({ choiceList }: { choiceList?: VNChoice[] }) => (
-        <div className="flex flex-col gap-2 mt-4 relative z-10">
-            {choiceList && choiceList.length > 0 && (
-                choiceList.map((choice, index) => {
-                    const isVisited = activeScenarioId && effectiveSceneId
-                        ? isChoiceVisited(activeScenarioId, effectiveSceneId, choice.id)
-                        : false;
+    const Choices = ({ choiceList, isVisible }: { choiceList?: VNChoice[], isVisible: boolean }) => (
+        <AnimatePresence mode="wait">
+            {isVisible && (
+                <motion.div
+                    initial={{ opacity: 0, y: 30, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: 10, height: 0 }}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    className="flex flex-col gap-2 relative z-10 overflow-hidden"
+                >
+                    {/* Add top spacing inside motion div to animate it cleanly */}
+                    <div className="h-4" />
 
-                    return (
-                        <ChoiceButton
-                            key={choice.id}
-                            choice={choice}
-                            index={index}
-                            isVisited={isVisited}
-                            onClick={() => handleChoice(choice)}
-                        />
-                    );
-                })
+                    {choiceList && choiceList.length > 0 && (
+                        choiceList.map((choice, index) => {
+                            const isVisited = activeScenarioId && effectiveSceneId
+                                ? isChoiceVisited(activeScenarioId, effectiveSceneId, choice.id)
+                                : false;
+
+                            return (
+                                <ChoiceButton
+                                    key={choice.id}
+                                    choice={choice}
+                                    index={index}
+                                    isVisited={isVisited}
+                                    onClick={() => handleChoice(choice)}
+                                />
+                            );
+                        })
+                    )}
+                    {/* Standard "Continue" prompt when no choices */}
+                    {(!choiceList || choiceList.length === 0) && (
+                        <div className="h-6 animate-pulse mt-2 flex justify-center opacity-50">
+                            <span className="text-[10px] font-mono tracking-widest text-stone-500">CLICK TO CONTINUE ▼</span>
+                        </div>
+                    )}
+                </motion.div>
             )}
-            {/* Standard "Continue" prompt when no choices */}
-            {(!choiceList || choiceList.length === 0) && (
-                <div className="h-6 animate-pulse mt-2 flex justify-center opacity-50">
-                    <span className="text-[10px] font-mono tracking-widest text-stone-500">CLICK TO CONTINUE ▼</span>
-                </div>
-            )}
-        </div>
+        </AnimatePresence>
     );
 
     return (
@@ -511,6 +562,7 @@ const VisualNovelOverlayInner = () => {
             {activeTooltip && (
                 <ParliamentKeywordCard
                     keyword={activeTooltip.keyword}
+                    packId={activePackId}
                     anchorRect={activeTooltip.rect}
                     onClose={() => setActiveTooltip(null)}
                 />

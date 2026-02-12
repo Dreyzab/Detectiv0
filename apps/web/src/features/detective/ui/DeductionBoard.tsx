@@ -43,7 +43,7 @@ export const DeductionBoard = () => {
         <div className="relative w-full h-full bg-[#1a1814] overflow-hidden flex flex-col items-center p-8">
             {/* Background Pattern - Corkboard feel */}
             <div className="absolute inset-0 z-0 bg-cover bg-center opacity-80 pointer-events-none"
-                style={{ backgroundImage: 'url(/images/detective/deduction_board_bg.png)' }}
+                style={{ backgroundImage: 'url(/images/detective/deduction_board_bg.webp)' }}
             />
 
             <div className="z-10 w-full max-w-4xl grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

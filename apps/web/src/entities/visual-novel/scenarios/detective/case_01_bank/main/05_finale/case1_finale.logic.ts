@@ -15,8 +15,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_FINALE_LOGIC: VNScenarioLogic = {
     id: 'case1_finale',
+    packId: 'fbg1905',
     title: 'Finale: The Warehouse',
-    defaultBackgroundUrl: '/images/scenarios/warehouse_exterior_night.png',
+    defaultBackgroundUrl: '/images/scenarios/warehouse_exterior_night.webp',
     initialSceneId: 'deduction_start',
     mode: 'fullscreen',
     scenes: {
@@ -136,5 +137,4 @@ export const CASE1_FINALE_LOGIC: VNScenarioLogic = {
 };
 
 export default CASE1_FINALE_LOGIC;
-
 

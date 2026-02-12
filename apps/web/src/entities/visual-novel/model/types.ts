@@ -23,6 +23,7 @@ export interface DialogueEntry {
 export type VNAction =
     | { type: 'grant_evidence'; payload: Evidence }
     | { type: 'unlock_point'; payload: string }
+    | { type: 'unlock_group'; payload: string }
     | { type: 'add_flag'; payload: Record<string, boolean> }
     | { type: 'set_quest_stage'; payload: { questId: string; stage: string } }
     | { type: 'add_heat'; payload: number }
@@ -94,6 +95,7 @@ export interface VNScene {
 
 export interface VNScenario {
     id: string;
+    packId?: string;
     title: string;
     defaultBackgroundUrl: string;
     musicUrl?: string; // Ambient track
@@ -131,6 +133,7 @@ export interface VNSceneLogic {
 
 export interface VNScenarioLogic {
     id: string;
+    packId?: string;
     title: string; // Internal title or fallback
     defaultBackgroundUrl: string;
     musicUrl?: string;

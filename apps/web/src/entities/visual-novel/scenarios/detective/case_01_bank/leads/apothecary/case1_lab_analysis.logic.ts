@@ -2,8 +2,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_LAB_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_lab_analysis',
+    packId: 'fbg1905',
     title: 'University Lab Analysis',
-    defaultBackgroundUrl: '/images/scenarios/lab_bg.png',
+    defaultBackgroundUrl: '/images/scenarios/lab_bg.webp',
     initialSceneId: 'start',
     mode: 'overlay',
     scenes: {

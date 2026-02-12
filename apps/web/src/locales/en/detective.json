@@ -56,5 +56,16 @@
         "telegramTitle": "Telegram - Imperial Telegraph Office",
         "telegramMessage": "STOP. REPORT TO FREIBURG IMMEDIATELY. STOP. LOCAL POLICE REQUIRES ASSISTANCE. STOP. BANKHAUS KREBS ROBBERY. STOP. DO NOT FAIL US. STOP.",
         "ack": "Acknowledge"
+    },
+    "mindPalace": {
+        "title": "Deduction",
+        "hint": "Select two pieces of evidence to combine.",
+        "selectSecond": "Now select a second piece of evidence...",
+        "noConnection": "No meaningful connection found.",
+        "empty": "No evidence collected yet...",
+        "emptyHint": "Investigate locations to gather clues.",
+        "progress": "{{solved}}/{{total}} Deductions Solved",
+        "dossierPrompt": "Connect evidence to form deductions.",
+        "openButton": "Open Mind Palace"
     }
 }

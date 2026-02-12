@@ -54,7 +54,7 @@ interface BattleState {
 const INITIAL_PLAYER: PlayerEntity = {
     id: 'player',
     name: 'Detective',
-    avatar: '/images/detective/player_avatar.png',
+    avatar: '/images/detective/player_avatar.webp',
     currentResolve: 30,
     maxResolve: 30,
     block: 0,

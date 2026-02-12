@@ -22,7 +22,7 @@ Follows FSD (Feature-Sliced Design):
 ### `apps/server` (Backend: ElysiaJS + Bun + Supabase/PostgreSQL)
 - **db/**: Drizzle schema (`schema.ts` — `map_points`, `event_codes`, `quests`, `detective_saves`, etc.) and migrations.
 - **modules/**: API endpoints:
-  - `map.ts`: `GET /map/points` (DB-backed), `GET /map/resolve-code/:code` (event codes + QR).
+  - `map.ts`: `GET /map/points` (DB-backed, `packId/caseId/regionId`), `POST /map/resolve-code` (primary QR/event entry), `GET /map/resolve-code/:code` (legacy compatibility).
   - `detective.ts`: Save/load system.
   - `inventory.ts`: `GET/POST /inventory/snapshot` for persisted inventory snapshots.
   - `quests.ts`: `GET/POST /quests/snapshot` for persisted quest-state snapshots.
@@ -40,19 +40,59 @@ Follows FSD (Feature-Sliced Design):
 
 ## 🕵️ Detective Mode Architecture
 ## Game Modes
-Currently the project focuses on **Detective Mode** (Freiburg 1905).
+Currently the project focuses on **Detective Mode**.
 -   **Detective Mode**: Narrative-heavy exploration of historical settings.
-- **Content Pack**: Data specific to a case (e.g., *Freiburg 1905*). Includes POIs (Points of Interest), Scenario scripts (VN), Evidence data, and region-specific assets.
+- **Content Pack**: Data specific to a city/case context (for example, `fbg1905`, `ka1905`). Includes POIs, VN scenarios, tooltip set, region settings, and pack-specific defaults.
+
+### Multi-City Runtime (Option A, C-ready)
+- Active city context is explicit and persisted via `apps/web/src/features/region/model/store.ts`:
+  - `activeRegionId: RegionId | null`
+  - persist key: `gw4-region-storage`
+- Canonical region metadata is shared in `packages/shared/data/regions.ts`:
+  - `FREIBURG_1905` -> `fbg1905`
+  - `karlsruhe_default` -> `ka1905`
+  - default radius: `DEFAULT_REGION_RADIUS_KM = 10`
+- City/pack metadata remains centralized in `packages/shared/data/pack-meta.ts` (`PACK_META`, `DEFAULT_PACK_ID`, `getPackMeta`).
+- Frontend routing is city-aware:
+  - `/city/:packId/map`
+  - `/city/:packId/vn/:scenarioId`
+  - `/map` acts as a compatibility route and redirects to `/` if `activeRegionId` is not set.
+- `/city/:packId/map` synchronizes `activeRegion` from route `packId` (source: `route`) to keep URL/store aligned.
+- Contract remains backward-compatible: if `regionId` is omitted in map query, backend keeps legacy behavior without distance filtering.
+
+### QR Entry Architecture (Option A+)
+- Dedicated QR entry route:
+  - `/entry/:packId`
+- Dispatcher page:
+  - `apps/web/src/pages/EntryPage.tsx`
+  - known `fbg1905` -> redirect to `/`
+  - known `ka1905` -> render Karlsruhe onboarding
+  - unknown pack -> redirect to `/`
+- Karlsruhe onboarding page:
+  - `apps/web/src/pages/KarlsruheEntryPage.tsx`
+  - step 1: language selection (`useVNStore.setLocale`)
+  - step 2: origin selection (mutually exclusive `ka_origin_*` flags)
+  - step 3: start and redirect to `/city/ka1905/map`
+- State and persistence:
+  - language in `useVNStore.locale`
+  - onboarding and origin state in dossier flags (`ka_onboarding_complete`, `ka_origin_*`)
+  - uses existing persisted + server-synced dossier infrastructure
+- Guard behavior:
+  - waits for dossier hydration before route decision
+  - skips onboarding when `ka_onboarding_complete` already exists
+- Implementation hardening:
+  - selected origin in Karlsruhe onboarding uses derived state (`selectedOrigin ?? initialOrigin`) instead of effect-driven sync to avoid cascading renders.
 
 ### Key Data Flows
 1. **The Investigation Loop**:
    `Map Point (DB) → Binding Trigger → VN Scenario → Evidence/Flag Unlock → Progression`.
 2. **QR/Event Code Resolution**:
-   `QR Scan / Manual Code → GET /map/resolve-code/:code → Server checks event_codes (stateless) → then map_points QR (stateful unlock) → Returns typed MapAction[]`.
+   `QR Scan / Manual Code → POST /map/resolve-code → Server checks event_codes (stateless) → then map_points QR (stateful unlock) → Returns typed MapAction[]`.
+   Gateway codes may execute chained actions such as `set_region → set_active_case → start_vn`.
 3. **Mind Palace (Passive Checks)**:
    `Scene Enter → passiveChecks[] evaluated → performSkillCheck(voiceLevel, difficulty) → Success: VoiceOrb + ThoughtCloud overlay → Auto-dismiss 6s`.
 4. **Persistence**:
-   Uses Zustand `persist` middleware with localStorage for offline-first investigation progress (Dossier Store, 5 persisted stores).
+   Uses Zustand `persist` middleware with localStorage for offline-first investigation progress (Dossier + region-aware stores, 6 persisted stores).
 5. **Visual Effects**:
    Dynamic CSS filters (`sepia`, `contrast`) paired with high-resolution grain/paper textures to create historical immersion.
 
@@ -62,7 +102,7 @@ Currently the project focuses on **Detective Mode** (Freiburg 1905).
 |--------|--------|--------|
 | **Map Points** | Supabase (`map_points`) with JSON `bindings` | ✅ Migrated |
 | **Event Codes** | Supabase (`event_codes`) — QR/manual codes | ✅ Migrated |
-| **User Progress** | Supabase (`user_map_point_user_states`) | ✅ Migrated |
+| **User Progress** | Supabase (`user_map_point_states`) | ✅ Migrated |
 | **Quests** | Supabase (`quests`, `user_quests`) | ✅ Migrated |
 | **Parliament** | `packages/shared/data/parliament.ts` (consolidated) | ✅ Single Source |
 | **Characters** | `packages/shared/data/characters.ts` | Static |
@@ -76,10 +116,10 @@ Currently the project focuses on **Detective Mode** (Freiburg 1905).
 
 ## 🔄 State Management
 
-- **Global UI/Game State**: Zustand (5 persisted stores: `inventory` (Slots + Money), `dossier`, `quest`, `vn`, `character`).
+- **Global UI/Game State**: Zustand (6 persisted stores: `inventory` (Slots + Money), `dossier`, `quest`, `vn`, `character`, `region`).
 - **Server Sync**: Contract-driven API client (`apps/web/src/shared/api/client.ts`) with typed API calls. Used in map, engine, and inventory snapshot flows.
-- **Server State Cache**: React Query (`@tanstack/react-query`, staleTime 5min) wrapping Eden Treaty calls.
-- **Persistence**: LocalStorage keys: `gw4-inventory-storage`, `gw4-detective-dossier`, `gw4-quest-store`, `gw4-vn-store`, `character-storage`.
+- **Server State Cache**: React Query (`@tanstack/react-query`, staleTime 5min) wrapping contract-driven API calls.
+- **Persistence**: LocalStorage keys: `gw4-inventory-storage`, `gw4-detective-dossier`, `gw4-quest-store`, `gw4-vn-store`, `character-storage`, `gw4-region-storage`.
 - **Inventory persistence model**: local snapshot in Zustand + backend snapshot in `user_inventory_snapshots` via `/inventory/snapshot`.
 - **Quest persistence model**: local snapshot in Zustand + backend snapshot in `user_quests` via `/quests/snapshot`.
 - **Dossier persistence model**: local snapshot in Zustand + backend snapshot in `user_dossier_snapshots` via `/dossier/snapshot`.
@@ -150,8 +190,9 @@ passiveFailText?: string;   // Optional, for future use
 - Route logic is decoupled from Drizzle queries via `MapRepository`, so integration tests can run against deterministic in-memory data.
 
 ### Covered integration behavior
-- `GET /map/points`: visibility filtering by `scope`, `retention_policy`, `active`, and active case (`caseId`).
-- `GET /map/resolve-code/:code`: event-code resolution path (`event_codes`) and QR map-point path with lifecycle upsert.
+- `GET /map/points`: visibility filtering by `scope`, `retention_policy`, `active`, active case (`caseId`), and optional region radius filtering (`regionId`).
+- `GET /map/points` returns `400` for unknown `regionId` and for `packId`/`regionId` conflicts.
+- `POST /map/resolve-code` (and legacy `GET /map/resolve-code/:code`): event-code resolution path (`event_codes`) and QR map-point path with lifecycle upsert.
 - Unknown codes return `404` with a stable error payload.
 
 ### Validation commands
@@ -253,3 +294,125 @@ passiveFailText?: string;   // Optional, for future use
 - Added server-side dossier snapshot persistence (`/dossier/snapshot`) with sanitized flags/evidence/check-state payloads.
 - Dossier store now hydrates/syncs server state with debounced write-back for gameplay mutations.
 - Added additive migration `apps/server/drizzle/0006_magenta_satana.sql` for `user_dossier_snapshots`.
+
+## One-Shot Scenario Guardrail (2026-02-10)
+
+- One-shot completion flags are centralized in:
+  - `apps/web/src/entities/visual-novel/lib/oneShotScenarios.ts`
+- This removed duplicated logic from multiple entry points and aligned behavior for:
+  - homepage resume flow
+  - map-triggered VN launches
+  - fullscreen VN route boot
+  - overlay VN runtime checks
+- Result:
+  - one-shot scenarios are skipped consistently after completion, regardless of where they are triggered.
+
+## Karlsruhe Sandbox Infrastructure (2026-02-10)
+
+### Overview
+Tutorial sandbox (`ka1905`) introducing core detective mechanics across 3 mini-cases: card duels, evidence combining, and NPC navigation. 12 map points, 4 quest logic files, 4 evidence items, 2 deduction recipes, 1 battle scenario, 1 VN intro scenario (3 locales).
+
+### Data Layer
+
+| Component | Files | Count |
+|-----------|-------|-------|
+| Quest Stages | `packages/shared/data/quests.ts` | 4 IDs |
+| Map Points | `apps/server/src/scripts/data/sandbox_ka_points.ts` | 12 points |
+| Point Lifecycle | `apps/server/src/scripts/data/sandbox_ka_lifecycle.ts` | 3 visibility rules |
+| Quest Logic | `apps/web/src/features/quests/sandbox_*.logic.ts` | 4 files |
+| Evidence | `apps/web/src/features/detective/registries.ts` | 4 items |
+| Deductions | `apps/web/src/features/detective/lib/deductions.ts` | 2 recipes |
+| Battle | `packages/shared/data/battle.ts` → `sandbox_son_duel` | 1 scenario |
+| VN Intro | `apps/web/src/entities/visual-novel/scenarios/detective/sandbox/` | logic + DE/EN/RU |
+| Tooltips | `apps/web/src/features/detective/lib/tooltipRegistry.ts` → `ka1905` | 5 keywords |
+
+### Quest Architecture
+- **sandbox_karlsruhe** (meta): 4 stages, gated by sub-quest completion
+- **sandbox_banker**: 4 stages, linear → card duel at casino
+- **sandbox_dog**: 4 stages, optional breadcrumb chain (NPC → NPC → NPC → dog)
+- **sandbox_ghost**: 6 stages, dual deduction path (true/false trail), guild master tutorial
+
+### Deduction System (Ghost Case)
+- **True Trail**: `ev_cold_draft` + `ev_ectoplasm_residue` → supernatural verdict
+- **False Trail**: `ev_hidden_passage` + `ev_servant_testimony` → contrabandist verdict
+- Both paths advance the quest but produce different narrative outcomes
+
+### Obsidian Integration
+- 12 location notes in `obsidian/Detectiv/00_Map_Room/loc_ka_*.md`
+- 4 quest notes in `obsidian/Detectiv/00_Map_Room/qst_sandbox_*.md`
+- `MOC_Locations` and `MOC_Quests` updated with Karlsruhe sections
+- Flow graph in `obsidian/StoryDetective/40_GameViewer/Sandbox_KA/Sandbox_KA_Flow.md`
+
+### Status
+- ✅ Data infrastructure complete (quests, points, evidence, deductions, battle, tooltips)
+- ✅ VN intro scenario (logic + 3 locales)
+- ⏳ Remaining VN scenarios per case (banker_client, ghost_investigate, etc.)
+- ⏳ Quest registration in runtime merge (`data.ts`)
+- ⏳ Server seed script integration (`seed-map.ts`)
+
+## Karlsruhe Sandbox Runtime Slice (2026-02-11)
+
+### Runtime contracts now in use
+- **Pack default case contract**:
+  - `packages/shared/data/pack-meta.ts`
+  - `ka1905.defaultCaseId = 'sandbox_karlsruhe'`.
+- **Battle routing contract**:
+  - `/battle?scenarioId=...&returnScenarioId=...&returnPackId=...`
+  - return logic in `BattlePage` applies scenario outcome actions and uses `resumeSceneId` for VN continuation.
+- **VN battle action wiring**:
+  - `VisualNovelPage` and `VisualNovelOverlay` forward active scenario and pack context into battle query params.
+- **Map return contract**:
+  - VN and battle returns are pack-aware (`/city/:packId/map`) with `/map` fallback.
+
+### Karlsruhe map/runtime integration
+- `apps/server/src/scripts/seed-map.ts` now composes two point sets:
+  - `CASE_01_POINTS`
+  - `SANDBOX_KA_POINTS`
+- Pack-specific lifecycle resolution:
+  - Freiburg flow uses `resolvePointLifecycle`.
+  - Karlsruhe flow uses `resolveSandboxPointLifecycle`.
+- Sandbox map points route banker progression through VN entries:
+  - bank -> `sandbox_banker_client`
+  - son house -> `sandbox_banker_son_house`
+  - tavern -> `sandbox_banker_tavern`
+  - casino -> `sandbox_banker_casino`
+
+### Scenario architecture status
+- New sandbox VN scenarios are runtime-registered through existing dynamic registry (`import.meta.glob` + default exports):
+  - banker: `sandbox_banker_client`, `sandbox_banker_son_house`, `sandbox_banker_tavern`, `sandbox_banker_casino`
+  - compatibility stubs: `sandbox_dog_mayor`, `sandbox_ghost_investigate`, `sandbox_ghost_guild`, `sandbox_ghost_conclude`
+- `sandbox_son_duel` now resumes to `casino_fallout` on both win and loss.
+
+### Progress status
+- **Implemented in runtime**: `01_Banker` full vertical slice.
+- **Compatibility only**: `02_Dog` and `03_Ghost` (stubbed but non-breaking).
+
+## Unified Home + Region Zoning v1 (2026-02-12)
+
+### Implemented scope
+- Home page now works in region-driven mode:
+  - no region selected -> city chooser + scanner CTA
+  - selected region -> region-themed card + pack-aware continue routing
+- Region bootstrap is centralized in `apps/web/src/widgets/GameRuntime.tsx`:
+  - infer KA from `sandbox_*` active case
+  - infer FR from legacy progress
+  - keep `null` for fresh users until explicit selection/scan
+
+### Map/query contract
+- `MapPointsQuery` now accepts `regionId?: string` (`packages/contracts/map.ts`).
+- Frontend map hook uses `buildMapPointsQuery` and includes `regionId` in React Query key:
+  - `['map-points', packId, caseId, regionId]`
+- Server applies region filter as an explicit post-visibility step:
+  - lifecycle visibility filtering first
+  - then optional haversine radius filter (`distance <= 10km`)
+
+### QR gateway pipeline
+- `MapActionSchema` supports `set_region`.
+- Scanner and map actions execute through a unified action handler:
+  - `set_region` updates region store, sets default case, and navigates to `/city/:packId/map`
+- Gateway event codes are seeded via:
+  - `apps/server/src/scripts/seed-event-codes.ts`
+  - script: `bun run --filter server seed:event-codes`
+
+### Engine alignment
+- `apps/server/src/modules/engine.ts` now resolves default location per active case (`DEFAULT_LOCATION_BY_CASE`) to prevent cross-city default spawn on first map load.

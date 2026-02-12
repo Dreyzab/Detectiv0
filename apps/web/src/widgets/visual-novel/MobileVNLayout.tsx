@@ -18,6 +18,12 @@ interface MobileVNLayoutProps {
     onChoice: (choice: VNChoice) => void;
     onTapAdvance: () => void;
     highlightedTerms?: string[];
+    isInteractionLocked?: boolean;
+    testIds?: {
+        root?: string;
+        sceneText?: string;
+        choices?: string;
+    };
 }
 
 /**
@@ -44,11 +50,15 @@ export function MobileVNLayout({
     onInteract,
     onChoice,
     onTapAdvance,
-    highlightedTerms = []
+    highlightedTerms = [],
+    isInteractionLocked = false,
+    testIds
 }: MobileVNLayoutProps) {
     const [isTyping, setIsTyping] = useState(true);
     const typedTextRef = useRef<TypedTextHandle>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const lastTypingFinishTimeRef = useRef<number>(0); // Cooldown guard
+    const wasTypingRef = useRef(true);
     const hasChoices = scene.choices && scene.choices.length > 0;
     const renderCountRef = useRef(0);
     const shouldLog = import.meta.env.DEV;
@@ -128,6 +138,10 @@ export function MobileVNLayout({
     }, [scene.text, dialogueHistory.length]);
 
     const handleTypingChange = useCallback((typing: boolean) => {
+        if (wasTypingRef.current && !typing) {
+            lastTypingFinishTimeRef.current = Date.now();
+        }
+        wasTypingRef.current = typing;
         setIsTyping(typing);
         if (shouldLog) {
             if (shouldLog) {
@@ -142,9 +156,17 @@ export function MobileVNLayout({
             return;
         }
 
+        if (isInteractionLocked) return;
+
         // 1. If typing -> Finish instantly
         if (isTyping) {
             typedTextRef.current?.finish();
+            lastTypingFinishTimeRef.current = Date.now();
+            return;
+        }
+
+        // COOLDOWN: Prevent accidental double-tap right after typing finishes
+        if (Date.now() - lastTypingFinishTimeRef.current < 150) {
             return;
         }
 
@@ -170,6 +192,7 @@ export function MobileVNLayout({
 
     return (
         <div
+            data-testid={testIds?.root}
             className="fixed inset-0 z-[200] overflow-hidden bg-black select-none"
             style={{ height: '100dvh' }}
             onClick={handleTapAnywhere}
@@ -310,7 +333,10 @@ export function MobileVNLayout({
                     ))}
 
                     {/* Current text (bright) */}
-                    <div className="font-body text-base sm:text-lg leading-relaxed text-stone-200">
+                    <div
+                        data-testid={testIds?.sceneText}
+                        className="font-body text-base sm:text-lg leading-relaxed text-stone-200"
+                    >
                         <TypedText
                             ref={typedTextRef}
                             key={scene.id}
@@ -341,6 +367,7 @@ export function MobileVNLayout({
                                     opacity: 0
                                 }
                             }}
+                            data-testid={testIds?.choices}
                             className="flex-shrink-0 bg-stone-950/90 backdrop-blur-xl border-t border-white/10 px-4 sm:px-6 py-2 sm:py-3 space-y-1 max-h-[50vh] overflow-y-auto shadow-inner"
                         >
                             {/* "What will you say?" Header/Context could go here */}
@@ -350,7 +377,9 @@ export function MobileVNLayout({
                                     choice={choice}
                                     index={index}
                                     isVisited={visitedChoices.has(choice.id)}
+                                    disabled={isInteractionLocked}
                                     onClick={() => {
+                                        if (isInteractionLocked) return;
                                         setVisitedChoices(prev => new Set(prev).add(choice.id));
                                         onChoice(choice);
                                     }}

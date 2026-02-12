@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 import { mergeScenario } from '../../lib/localization';
 import { filterAvailableChoices } from '../../lib/runtime';
 import type { VNScenarioLogic, VNContentPack, VNChoice, VNConditionContext } from '../types';

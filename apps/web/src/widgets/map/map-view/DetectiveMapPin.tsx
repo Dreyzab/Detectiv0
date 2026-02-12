@@ -66,14 +66,14 @@ export const DetectiveMapPin = ({ point, state, onClick, isActive }: DetectiveMa
         switch (visualType) {
             case 'crime':
                 return {
-                    src: `${ASSET_BASE}/marker_wax_seal.png`,
+                    src: `${ASSET_BASE}/marker_wax_seal.webp`,
                     isPhoto: false,
                     aura: 'shadow-[0_0_15px_rgba(220,38,38,0.6)]', // Red
                     animate: 'animate-pulse' // Heartbeat
                 };
             case 'support':
                 return {
-                    src: `${ASSET_BASE}/marker_mosaic_anvil.png`,
+                    src: `${ASSET_BASE}/marker_mosaic_anvil.webp`,
                     isPhoto: false,
                     aura: 'shadow-[0_0_15px_rgba(22,163,74,0.5)]', // Green
                     animate: ''
@@ -82,7 +82,7 @@ export const DetectiveMapPin = ({ point, state, onClick, isActive }: DetectiveMa
             case 'bureau':
             default:
                 return {
-                    src: `${ASSET_BASE}/marker_inkblot.png`,
+                    src: `${ASSET_BASE}/marker_inkblot.webp`,
                     isPhoto: false,
                     aura: 'shadow-[0_0_15px_rgba(37,99,235,0.5)]', // Blue
                     animate: 'hover:scale-110 duration-300'
@@ -170,7 +170,7 @@ export const DetectiveMapPin = ({ point, state, onClick, isActive }: DetectiveMa
             {/* Investigated Stamp overlay */}
             {isInvestigated && (
                 <img
-                    src={`${ASSET_BASE}/stamp_erledigt.png`}
+                    src={`${ASSET_BASE}/stamp_erledigt.webp`}
                     alt="Erledigt"
                     className="absolute z-[var(--z-map-pin-stamp)] w-16 h-8 -rotate-12 opacity-90 animate-in zoom-in duration-300"
                     style={{ top: '20%' }}

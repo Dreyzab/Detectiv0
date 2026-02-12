@@ -10,18 +10,18 @@ import { resolveAvailableInteractions, type ResolverOption, type MapPoint, type 
 import { DetectiveMapPin } from './DetectiveMapPin';
 import { ThreadLayer } from './ThreadLayer';
 import { CaseCard } from './CaseCard';
-import { useVNStore } from '@/entities/visual-novel/model/store';
-import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
 import { useMapPoints } from '@/features/detective/data/useMapPoints';
 import { useQuestStore } from '@/features/quests/store';
-import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useMapActionHandler } from '@/features/detective/lib/map-action-handler';
 import { useWorldEngineStore } from '@/features/detective/engine/store';
 import { MerchantModal } from '@/features/merchant/ui/MerchantModal';
 import { useMerchantUiStore } from '@/features/merchant/model/store';
+import { DEFAULT_MAPBOX_STYLE, DEFAULT_PACK_ID, getPackMeta } from '@repo/shared/data/pack-meta';
+import { getRegionByPackId, getRegionMeta } from '@repo/shared/data/regions';
+import { useRegionStore } from '@/features/region/model/store';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
-const INITIAL_REGION = REGIONS['FREIBURG_1905'];
 
 const getStableLocationId = (point: MapPoint): string => {
     const rawLocationId = (point.data as Record<string, unknown> | undefined)?.locationId;
@@ -29,16 +29,6 @@ const getStableLocationId = (point: MapPoint): string => {
         return rawLocationId.trim();
     }
     return point.id;
-};
-
-const isOneShotScenarioComplete = (scenarioId: string, flags: Record<string, boolean>): boolean => {
-    if (scenarioId === 'detective_case1_hbf_arrival') {
-        return Boolean(flags['arrived_at_hbf']);
-    }
-    if (scenarioId === 'detective_case1_map_first_exploration') {
-        return Boolean(flags['case01_map_exploration_intro_done']);
-    }
-    return false;
 };
 
 const LEGACY_LOCATION_MAP: Record<string, string> = {
@@ -57,16 +47,28 @@ const LEGACY_LOCATION_MAP: Record<string, string> = {
     'loc_schwabentor': 'p_schwabentor'
 };
 
-export const MapView = () => {
+interface MapViewProps {
+    packId?: string;
+}
+
+export const MapView = ({ packId: packIdProp }: MapViewProps) => {
     const mapRef = useRef<MapRef>(null);
+    const { packId: routePackId } = useParams<{ packId?: string }>();
+    const activeRegionId = useRegionStore((state) => state.activeRegionId);
+    const activeRegionPackId = activeRegionId ? getRegionMeta(activeRegionId).packId : undefined;
+    const resolvedPackId = packIdProp ?? routePackId ?? activeRegionPackId ?? DEFAULT_PACK_ID;
+    const packMeta = getPackMeta(resolvedPackId);
+    const queryRegionId = routePackId ? packMeta.regionId : (activeRegionId ?? packMeta.regionId);
+    const initialRegion = REGIONS[packMeta.regionId] ?? REGIONS[getRegionByPackId(DEFAULT_PACK_ID).id];
+    const legacyLocationMap = useMemo<Record<string, string>>(
+        () => (packMeta.packId === DEFAULT_PACK_ID ? LEGACY_LOCATION_MAP : {}),
+        [packMeta.packId]
+    );
+
     const flags = useDossierStore((state) => state.flags);
     const activeCaseId = useDossierStore((state) => state.activeCaseId);
-    const worldCaseId = activeCaseId ?? 'case_01_bank';
     const setPointState = useDossierStore((state) => state.setPointState);
     const setFlag = useDossierStore((state) => state.setFlag);
-    const startScenario = useVNStore(state => state.startScenario);
-    const locale = useVNStore(state => state.locale);
-    const navigate = useNavigate();
     const { executeAction } = useMapActionHandler();
     const isMerchantOpen = useMerchantUiStore((state) => state.isOpen);
     const activeMerchantId = useMerchantUiStore((state) => state.merchantId);
@@ -77,6 +79,7 @@ export const MapView = () => {
     const locationAvailability = useWorldEngineStore((state) => state.locationAvailability);
     const objectives = useWorldEngineStore((state) => state.objectives);
     const activeCase = useWorldEngineStore((state) => state.activeCase);
+    const worldCaseId = activeCase?.caseId ?? activeCaseId ?? packMeta.defaultCaseId;
     const lastTravelBeat = useWorldEngineStore((state) => state.lastTravelBeat);
     const isWorldHydrating = useWorldEngineStore((state) => state.isHydrating);
     const isTraveling = useWorldEngineStore((state) => state.isTraveling);
@@ -100,7 +103,9 @@ export const MapView = () => {
 
     // Unified Map Hook
     const { points, pointStates } = useMapPoints({
-        caseId: activeCaseId ?? undefined
+        packId: packMeta.packId,
+        caseId: worldCaseId,
+        regionId: queryRegionId
     });
 
     const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
@@ -114,7 +119,7 @@ export const MapView = () => {
         const locationLookup = new Map<string, string>();
 
         // 1. Populate with Legacy Mappings (Manual Overrides)
-        Object.entries(LEGACY_LOCATION_MAP).forEach(([locId, pointId]) => {
+        Object.entries(legacyLocationMap).forEach(([locId, pointId]) => {
             locationLookup.set(locId, pointId);
         });
 
@@ -162,7 +167,7 @@ export const MapView = () => {
         });
         logger.debug("Final Active Point IDs", { ids: Array.from(ids) });
         return ids;
-    }, [userQuests, quests, points]);
+    }, [userQuests, quests, points, legacyLocationMap]);
 
     useEffect(() => {
         logger.debug("Active Points Updated Effect", { count: activePointIds.size, ids: Array.from(activePointIds) });
@@ -230,24 +235,9 @@ export const MapView = () => {
         setFlag(`VISITED_${targetPointId}`, true);
 
         if (binding.actions) {
-            binding.actions.forEach((action) => {
-                if (action.type === 'start_vn') {
-                    const legacyPayload = (action as { payload?: unknown }).payload;
-                    const id = typeof legacyPayload === 'string' ? legacyPayload : action.scenarioId;
-                    if (isOneShotScenarioComplete(id, flags)) {
-                        logger.debug(`Skipping one-shot VN replay from map: ${id} already complete`);
-                        return;
-                    }
-                    startScenario(id);
-                    const scenario = getScenarioById(id, locale);
-                    if (scenario?.mode === 'fullscreen') {
-                        navigate(`/vn/${scenario.id}`);
-                    }
-                    return;
-                }
-
+            for (const action of binding.actions) {
                 executeAction(action);
-            });
+            }
         }
 
         setAvailableActions([]);
@@ -261,10 +251,6 @@ export const MapView = () => {
         worldCaseId,
         setPointState,
         setFlag,
-        flags,
-        startScenario,
-        locale,
-        navigate,
         executeAction
     ]);
 
@@ -320,14 +306,14 @@ export const MapView = () => {
     useEffect(() => {
         if (mapRef.current) {
             mapRef.current.flyTo({
-                center: [INITIAL_REGION.geoCenterLng, INITIAL_REGION.geoCenterLat],
-                zoom: INITIAL_REGION.zoom,
+                center: [initialRegion.geoCenterLng, initialRegion.geoCenterLat],
+                zoom: initialRegion.zoom,
                 duration: 2000
             });
         }
-    }, []);
+    }, [initialRegion.geoCenterLat, initialRegion.geoCenterLng, initialRegion.zoom]);
 
-    const isVintage = INITIAL_REGION.vintageStyle;
+    const isVintage = initialRegion.vintageStyle;
 
     if (!MAPBOX_TOKEN) {
         return <div className="p-10 text-red-500">Error: VITE_MAPBOX_TOKEN is missing in .env</div>;
@@ -370,11 +356,11 @@ export const MapView = () => {
                     <MapGL
                         ref={mapRef}
                         initialViewState={{
-                            longitude: INITIAL_REGION.geoCenterLng,
-                            latitude: INITIAL_REGION.geoCenterLat,
-                            zoom: INITIAL_REGION.zoom,
+                            longitude: initialRegion.geoCenterLng,
+                            latitude: initialRegion.geoCenterLat,
+                            zoom: initialRegion.zoom,
                         }}
-                        mapStyle="mapbox://styles/inoti/cmktqmmks002s01pa3f3gfpll"
+                        mapStyle={packMeta.mapStyle ?? DEFAULT_MAPBOX_STYLE}
                         mapboxAccessToken={MAPBOX_TOKEN}
                         attributionControl={false}
                         onLoad={() => setIsMapLoaded(true)}
@@ -384,12 +370,12 @@ export const MapView = () => {
                         {isMapLoaded && (
                             <>
                                 <DetectiveModeLayer />
-                                <ThreadLayer points={points} />
+                                <ThreadLayer points={points} activeCaseId={worldCaseId} />
                             </>
                         )}
 
                         {points.map((point) => {
-                            const state = (pointStates[point.id] ?? 'discovered') as PointStateEnum;
+                            const state = (pointStates[point.id] ?? point.defaultState ?? 'locked') as PointStateEnum;
                             if (point.isHiddenInitially && state === 'locked') return null;
 
                             const markerState: 'hidden' | 'discovered' | 'unlocked' | 'investigated' | 'locked' =

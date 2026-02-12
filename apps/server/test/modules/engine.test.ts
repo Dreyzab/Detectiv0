@@ -92,6 +92,18 @@ const createMockRepository = (): EngineMockContext => {
         },
         getTravelSession: async (sessionId, userId) =>
             sessions.find((session) => session.id === sessionId && session.userId === userId) ?? null,
+        getLatestCompletedTravelSession: async (userId) => {
+            const completedSessions = sessions
+                .filter((session) => session.userId === userId && session.status === 'completed')
+                .slice()
+                .sort((left, right) => {
+                    const rightTick = right.arrivalTick ?? right.startedTick;
+                    const leftTick = left.arrivalTick ?? left.startedTick;
+                    return rightTick - leftTick;
+                });
+
+            return completedSessions[0] ?? null;
+        },
         completeTravelSession: async (input: CompleteTravelSessionInput) => {
             const session = sessions.find((row) => row.id === input.sessionId && row.userId === input.userId);
             if (!session) return;
@@ -254,15 +266,30 @@ describe('Engine Module (Controlled Integration)', () => {
 
         const payload = await response.json() as {
             success: boolean;
+            currentLocationId: string;
             objectives?: Array<{ id: string; sortOrder: number; locationId: string | null }>;
         };
 
         expect(payload.success).toBe(true);
+        expect(payload.currentLocationId).toBe('loc_hbf');
         expect(payload.objectives?.map((entry) => entry.id)).toEqual([
             'obj_find_clara',
             'obj_search_bank_cell'
         ]);
         expect(payload.objectives?.every((entry) => entry.locationId === 'loc_freiburg_bank')).toBe(true);
+    });
+
+    it('world snapshot uses case-specific default location for Karlsruhe sandbox', async () => {
+        const response = await app.handle(new Request(`${BASE_URL}/engine/world?caseId=sandbox_karlsruhe`));
+        expect(response.status).toBe(200);
+
+        const payload = await response.json() as {
+            success: boolean;
+            currentLocationId: string;
+        };
+
+        expect(payload.success).toBe(true);
+        expect(payload.currentLocationId).toBe('loc_ka_agency');
     });
 
     it('travel flow advances world tick and returns travel beat', async () => {
@@ -312,6 +339,15 @@ describe('Engine Module (Controlled Integration)', () => {
         expect(completed.worldClock.phase).toBe('morning');
         expect(completed.locationAvailability.open).toBe(true);
         expect(context.eventLog.some((event) => event.type === 'travel_completed')).toBe(true);
+
+        const worldResponse = await app.handle(new Request(`${BASE_URL}/engine/world`));
+        expect(worldResponse.status).toBe(200);
+        const worldPayload = await worldResponse.json() as {
+            success: boolean;
+            currentLocationId: string;
+        };
+        expect(worldPayload.success).toBe(true);
+        expect(worldPayload.currentLocationId).toBe('loc_freiburg_bank');
     });
 
     it('marks industrial district as closed at night after travel', async () => {

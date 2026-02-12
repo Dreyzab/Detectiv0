@@ -13,8 +13,9 @@ import type { VNScenarioLogic } from '../../../../model/types';
 
 export const INTERLUDE_VICTORIA_LOGIC: VNScenarioLogic = {
     id: 'interlude_victoria_street',
+    packId: 'fbg1905',
     title: 'Interlude: The Burden',
-    defaultBackgroundUrl: '/images/scenarios/street_day_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/street_day_1905.webp',
     initialSceneId: 'street_encounter',
     mode: 'overlay',
     scenes: {

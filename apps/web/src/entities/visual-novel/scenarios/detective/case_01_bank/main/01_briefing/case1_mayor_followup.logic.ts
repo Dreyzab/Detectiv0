@@ -2,8 +2,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_MAYOR_FOLLOWUP_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_mayor_followup',
+    packId: 'fbg1905',
     title: 'Case 1 Mayor Follow-up',
-    defaultBackgroundUrl: '/images/scenarios/street_day_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/street_day_1905.webp',
     initialSceneId: 'entry_after_bank',
     mode: 'fullscreen',
     scenes: {

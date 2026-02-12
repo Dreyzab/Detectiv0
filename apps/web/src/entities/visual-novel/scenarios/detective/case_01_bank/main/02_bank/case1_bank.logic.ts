@@ -14,8 +14,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_BANK_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_bank_scene',
+    packId: 'fbg1905',
     title: 'Bankhaus Krebs Investigation',
-    defaultBackgroundUrl: '/images/scenarios/bank_hall_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/bank_hall_1905.webp',
     initialSceneId: 'arrival',
     mode: 'fullscreen',
     scenes: {
@@ -316,7 +317,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'vault_inspection': {
             id: 'vault_inspection',
             characterId: 'inspector',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             choices: [
                 {
                     id: 'examine_lock_logic',
@@ -453,13 +454,13 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'vault_occult_discovery': {
             id: 'vault_occult_discovery',
             characterId: 'inspector',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             nextSceneId: 'vault_occult_victoria'
         },
         'vault_occult_victoria': {
             id: 'vault_occult_victoria',
             characterId: 'clara_altenburg',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             choices: [
                 {
                     id: 'occult_shivers_check',
@@ -503,7 +504,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'vault_shivers_success': {
             id: 'vault_shivers_success',
             characterId: 'inspector',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             nextSceneId: 'vault_continue',
             onEnter: [
                 { type: 'add_flag', payload: { 'sensed_presence': true } }
@@ -512,19 +513,19 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'vault_shivers_fail': {
             id: 'vault_shivers_fail',
             characterId: 'inspector',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             nextSceneId: 'vault_continue'
         },
         'vault_dismiss_theatrics': {
             id: 'vault_dismiss_theatrics',
             characterId: 'inspector',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             nextSceneId: 'vault_continue'
         },
         'vault_victoria_analysis': {
             id: 'vault_victoria_analysis',
             characterId: 'clara_altenburg',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.png',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             nextSceneId: 'vault_continue',
             onEnter: [
                 { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 5 } },

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { HomePage } from '@/pages/HomePage';
 import { DetectiveMapPage } from '@/pages/MapPage';
 import { QRScannerPage } from '@/pages/QRScannerPage';
@@ -8,8 +8,11 @@ import { CharacterPage } from '@/pages/CharacterPage/CharacterPage';
 import { DeveloperPage } from '@/pages/DeveloperPage';
 import { VisualNovelPage } from '@/pages/VisualNovelPage';
 import { BattlePage } from '@/pages/BattlePage';
+import { EntryPage } from '@/pages/EntryPage';
 import { VisualNovelOverlay } from '@/widgets/visual-novel/VisualNovelOverlay';
 import { Navbar } from '@/widgets/navbar/Navbar';
+
+const MindPalacePage = lazy(() => import('@/pages/MindPalacePage/MindPalacePage'));
 
 import { QuestLog } from "./features/quests/QuestLog";
 import { QuestJournalPage } from "./features/quests/QuestJournalPage";
@@ -42,14 +45,18 @@ function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/entry/:packId" element={<EntryPage />} />
         <Route path="/map" element={<DetectiveMapPage />} />
+        <Route path="/city/:packId/map" element={<DetectiveMapPage />} />
         <Route path="/scanner" element={<QRScannerPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/character" element={<CharacterPage />} />
         {devDashboardEnabled && <Route path="/developer" element={<DeveloperPage />} />}
         <Route path="/vn/:scenarioId" element={<VisualNovelPage />} />
+        <Route path="/city/:packId/vn/:scenarioId" element={<VisualNovelPage />} />
         <Route path="/battle" element={<BattlePage />} />
         <Route path="/quests" element={<QuestJournalPage />} />
+        <Route path="/mind-palace" element={<Suspense fallback={<div className="fixed inset-0 bg-[#0f0d0a] flex items-center justify-center text-amber-400/50 font-serif">Loading...</div>}><MindPalacePage /></Suspense>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

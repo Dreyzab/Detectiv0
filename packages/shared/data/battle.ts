@@ -475,6 +475,41 @@ export const TEST_BATTLE_SCENARIOS: BattleScenario[] = [
         onLose: {
             resumeSceneId: 'case1_warehouse_defeat'
         }
+    },
+    // ── Karlsruhe Sandbox: Son Duel ───────────────────────
+    {
+        id: 'sandbox_son_duel',
+        title: 'Confrontation with Friedrich',
+        titleRu: 'Противостояние с Фридрихом',
+        difficulty: 'Easy',
+        opponentId: 'npc_friedrich_richter',
+        opponentName: 'Friedrich Richter',
+        opponentNameRu: 'Фридрих Рихтер',
+        opponentAvatar: '/images/detective/npc_merchant.png',
+        opponentResolve: 15,
+        playerStartingResolve: 25,
+        playerActionPoints: 3,
+        cardsPerTurn: 2,
+        opponentDeck: [
+            'card_assertive_stance',
+            'card_assertive_stance',
+            'card_misdirection',
+            'card_gut_feeling',
+            'card_empathic_appeal',
+            'card_steady_nerves'
+        ],
+        onWin: {
+            resumeSceneId: 'casino_fallout',
+            actions: [
+                { type: 'add_flag', payload: { 'SON_DUEL_DONE': true } }
+            ]
+        },
+        onLose: {
+            resumeSceneId: 'casino_fallout',
+            actions: [
+                { type: 'add_flag', payload: { 'SON_DUEL_DONE': true } }
+            ]
+        }
     }
 ];
 

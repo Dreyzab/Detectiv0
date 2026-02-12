@@ -7,6 +7,37 @@ export const QUEST_STAGES = {
         'leads_done',
         'finale',
         'resolved'
+    ],
+    // ── Karlsruhe Sandbox ──────────────────────────────────
+    sandbox_karlsruhe: [
+        'not_started',
+        'intro',
+        'exploring',
+        'guild_unlocked',
+        'completed'
+    ],
+    sandbox_banker: [
+        'not_started',
+        'client_met',
+        'investigating',
+        'duel',
+        'resolved'
+    ],
+    sandbox_dog: [
+        'not_started',
+        'client_met',
+        'searching',
+        'found',
+        'resolved'
+    ],
+    sandbox_ghost: [
+        'not_started',
+        'client_met',
+        'investigating',
+        'evidence_collected',
+        'guild_visit',
+        'accusation',
+        'resolved'
     ]
 } as const;
 

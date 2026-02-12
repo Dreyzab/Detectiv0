@@ -1,5 +1,14 @@
 # Project Assessment & Roadmap: Grezwanderer 4
 
+> [!WARNING]
+> [ARCHIVED] Этот документ зафиксирован как исторический аудит и частично устарел.
+> Для актуального состояния проекта используйте:
+> - `README.md`
+> - `ARCHITECTURE.md`
+> - `update.md`
+> - `Map.md`
+> - `VisualNovel.md`
+
 ## 🏗 Executive Summary
 Grezwanderer 4 is a high-quality, modular monorepo project implementing a deep RPG investigation engine. The project demonstrates strong architectural discipline using **Feature-Sliced Design (FSD)** and modern tech stack (React 19, Vite 7, ElysiaJS, Bun, Supabase). The aesthetic (Art Deco / historical Noir) is consistently applied.
 
@@ -31,7 +40,7 @@ Grezwanderer 4 is a high-quality, modular monorepo project implementing a deep R
 2.  **[Data]** **Critical Migration**: Move `cases`, `hardlinks`, and `deductions` from static files to Supabase.
 3.  **[QA]** **E2E Tests**: Add `test:e2e` script and fix the failing smoke test.
 
-### � Parallel Track: RPG Mechanics
+### ⚙ Parallel Track: RPG Mechanics
 *Can proceed using existing/legacy data.*
 1.  **[Voices]** **Mind Palace Overlay**: Implement using the consolidated `packages/shared` Parliament data.
 2.  **[Battle]** **Battle Polish**: Improve UI/UX using `battle.ts` static data (migrate to DB later).

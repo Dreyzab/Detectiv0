@@ -4,6 +4,7 @@ import { useMapActionHandler } from '../detective/lib/map-action-handler';
 import { useDossierStore } from '../detective/dossier/store';
 import { useQuestStore } from './store';
 import { QUESTS } from './data';
+import type { MapAction } from '@repo/shared';
 
 export const useQuestEngine = () => {
     const flags = useDossierStore(state => state.flags);
@@ -20,7 +21,7 @@ export const useQuestEngine = () => {
     const previousStages = useRef<Record<string, string>>({});
 
     // Parse quest action string to MapAction
-    const parseQuestAction = (actionStr: string): any => {
+    const parseQuestAction = (actionStr: string): MapAction | null => {
         const startVnMatch = actionStr.match(/start_vn\(([^)]+)\)/);
         if (startVnMatch) {
             return { type: 'start_vn', scenarioId: startVnMatch[1] };
@@ -33,7 +34,7 @@ export const useQuestEngine = () => {
 
         const addFlagMatch = actionStr.match(/add_flag\(([^)]+)\)/);
         if (addFlagMatch) {
-            return { type: 'add_flag', payload: { [addFlagMatch[1]]: true } };
+            return { type: 'set_flag', flagId: addFlagMatch[1], value: true };
         }
 
         console.warn(`[QuestEngine] Unknown action format: ${actionStr}`);

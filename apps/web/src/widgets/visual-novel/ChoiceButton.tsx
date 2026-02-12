@@ -11,6 +11,7 @@ export interface ChoiceButtonProps {
     onClick: () => void;
     /** Compact mode for mobile */
     compact?: boolean;
+    disabled?: boolean;
 }
 
 /**
@@ -32,10 +33,12 @@ export function ChoiceButton({
     isVisited = false,
     isLocked = false,
     onClick,
-    compact = false
+    compact = false,
+    disabled = false
 }: ChoiceButtonProps) {
     const hasSkillCheck = !!choice.skillCheck;
     const type = choice.type || 'action';
+    const choiceTestId = `vn-choice-${choice.id}`;
 
     const isAction = type === 'action';
     const isInquiry = type === 'inquiry';
@@ -49,6 +52,7 @@ export function ChoiceButton({
     if (isLocked && hasSkillCheck) {
         return (
             <motion.div
+                data-testid={choiceTestId}
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: index * 0.04, duration: 0.2 }}
@@ -75,15 +79,19 @@ export function ChoiceButton({
 
     return (
         <motion.button
+            data-testid={choiceTestId}
             layout
             variants={{
                 hidden: { x: -20, opacity: 0 },
                 visible: { x: 0, opacity: 1 }
             }}
             // Remove manual transition to let motion handle stagger
+            // Remove manual transition to let motion handle stagger
             onClick={onClick}
+            disabled={disabled}
             className={`w-full ${compact ? 'min-h-[36px] px-3 py-2' : 'min-h-[44px] px-3 py-2'} 
-                       transition-all duration-200 text-left flex items-start gap-3 group cursor-pointer border-l-2 
+                       transition-all duration-200 text-left flex items-start gap-3 group border-l-2 
+                       ${disabled ? 'opacity-50 cursor-not-allowed grayscale pointer-events-none' : 'cursor-pointer'} 
                        ${baseOpacity}
                        ${isAction
                     ? isVisited

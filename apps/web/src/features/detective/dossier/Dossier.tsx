@@ -3,7 +3,6 @@ import { cn } from '../../../shared/lib/utils';
 import { useState } from 'react';
 import { useInventoryStore } from '../../../entities/inventory/model/store';
 import { VOICE_GROUPS, VOICES, GROUP_ORDER } from '../lib/parliament';
-import { DeductionBoard } from '../ui/DeductionBoard';
 import { useTranslation } from 'react-i18next';
 
 export const Dossier = () => {
@@ -132,8 +131,17 @@ export const Dossier = () => {
                 )}
 
                 {activeTab === 'board' && (
-                    <div className="absolute inset-0 z-10 top-12 bottom-8"> {/* Full cover over paper texture */}
-                        <DeductionBoard />
+                    <div className="flex flex-col items-center justify-center gap-4 py-8 animate-in fade-in slide-in-from-right-2 duration-300">
+                        <p className="text-sm text-[#5c4d3c] font-serif text-center italic">
+                            {t('mindPalace.dossierPrompt', { defaultValue: 'Connect evidence to form deductions.' })}
+                        </p>
+                        <a
+                            href="/mind-palace"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#2c1810] text-[#d4c5a3] font-serif text-sm tracking-widest uppercase rounded-sm hover:bg-[#3d2518] transition-colors shadow-md border border-[#d4c5a3]/30"
+                        >
+                            <span>🧠</span>
+                            <span>{t('mindPalace.openButton', { defaultValue: 'Open Mind Palace' })}</span>
+                        </a>
                     </div>
                 )}
             </div>

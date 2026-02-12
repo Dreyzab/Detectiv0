@@ -29,11 +29,13 @@ export const MapConditionSchema: z.ZodType<any> = z.lazy(() =>
 export const MapActionSchema = z.union([
     z.object({ type: z.literal('start_vn'), scenarioId: z.string() }),
     z.object({ type: z.literal('unlock_point'), pointId: z.string(), silent: z.boolean().optional() }),
+    z.object({ type: z.literal('unlock_group'), groupId: z.string() }),
     z.object({ type: z.literal('grant_evidence'), evidenceId: z.string() }),
     z.object({ type: z.literal('add_flags'), flags: z.array(z.string()) }),
     z.object({ type: z.literal('start_battle'), scenarioId: z.string(), deckType: z.string().optional() }),
     z.object({ type: z.literal('unlock_entry'), entryId: z.string() }),
     z.object({ type: z.literal('set_active_case'), caseId: z.string() }),
+    z.object({ type: z.literal('set_region'), regionId: z.string() }),
     z.object({ type: z.literal('set_quest_stage'), questId: z.string(), stage: z.string() }),
     z.object({ type: z.literal('show_toast'), message: z.string(), variant: z.enum(['info', 'success', 'warning']).optional() }),
     // Legacy support
@@ -82,6 +84,7 @@ export const MapPointSchema = z.object({
 
     iconOverride: z.string().optional(),
     isHiddenInitially: z.boolean().optional(),
+    unlockGroup: z.string().optional(),
     data: z.record(z.string(), z.any()).optional()
 });
 

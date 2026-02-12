@@ -5,35 +5,48 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    - cron: '0 3 * * *'
 
 jobs:
-  build-and-test:
+  unit-and-web-tests:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v1
-      with:
-        bun-version: latest
-        
-    - name: Install Dependencies
-      run: bun install
+      - uses: actions/checkout@v4
 
-    - name: Install Playwright Browser
-      run: bun x playwright install --with-deps chromium
-      
-    - name: Lint
-      run: bun run --filter web lint
-      continue-on-error: true # Warning only for now, as agreed
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
-    - name: Type Check
-      run: bun run --filter web build # Typecheck via build
+      - name: Install Dependencies
+        run: bun install
 
-    - name: Security Audit
-      run: bun pm trust --all || echo "Bun audit not available, skipping" # Placeholder until audit tool decided
-      continue-on-error: true
+      - name: Run Bun Unit and Integration Tests
+        run: bun run test:bun
 
-    - name: Test
-      run: bun test
+      - name: Run Web Unit Tests
+        run: bun run test:web
+
+  e2e-smoke:
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Install Playwright Browser
+        run: bun x playwright install --with-deps chromium
+
+      - name: Run E2E Smoke Tests
+        run: bun run test:e2e:smoke

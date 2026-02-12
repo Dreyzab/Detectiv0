@@ -8,6 +8,7 @@ import type {
     DiscoverEvidenceResponse,
     MapPointsQuery,
     MapPointsResponse,
+    ResolveCodeRequest,
     InventorySnapshotResponse,
     ResolveCodeResponse,
     SaveDossierSnapshotRequest,
@@ -138,14 +139,21 @@ export const api = {
                 requestJson<MapPointsResponse>('/map/points', {
                     query: {
                         packId: query?.packId,
-                        caseId: query?.caseId
+                        caseId: query?.caseId,
+                        regionId: query?.regionId
                     }
                 })
         },
-        'resolve-code': ({ code }: { code: string }) => ({
-            get: async (): Promise<ApiResult<ResolveCodeResponse>> =>
+        'resolve-code': {
+            post: async ({ body }: { body: ResolveCodeRequest }): Promise<ApiResult<ResolveCodeResponse>> =>
+                requestJson<ResolveCodeResponse, ResolveCodeRequest>('/map/resolve-code', {
+                    method: 'POST',
+                    body
+                }),
+            // Deprecated alias for backward compatibility.
+            get: async ({ code }: { code: string }): Promise<ApiResult<ResolveCodeResponse>> =>
                 requestJson<ResolveCodeResponse>(`/map/resolve-code/${encodeURIComponent(code)}`)
-        })
+        }
     },
     engine: {
         world: {

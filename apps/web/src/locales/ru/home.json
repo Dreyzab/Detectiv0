@@ -1,21 +1,39 @@
 {
-    "titleMain": "Грецвандерер 4",
-    "subtitle": "Тени Черного Леса",
+    "titleMain": "Grezwanderer 4",
+    "subtitle": "Teni Chernogo Lesa",
+    "regionSelector": {
+        "title": "Vybor goroda",
+        "subtitle": "Vyberite aktivnyi region ili vojdite cherez gateway QR kod.",
+        "freiburg": "Freiburg 1905",
+        "karlsruhe": "Karlsruhe 1905",
+        "scan": "Skanirovat start kod"
+    },
+    "regions": {
+        "FREIBURG_1905": {
+            "cardTitle": "Arkhiv: Freiburg 1905",
+            "location": "Freiburg im Breisgau"
+        },
+        "karlsruhe_default": {
+            "cardTitle": "Arkhiv: Karlsruhe 1905",
+            "location": "Karlsruhe"
+        }
+    },
     "card": {
-        "title": "Архив: Фрайбург 1905",
-        "location": "Фрайбург-им-Брайсгау",
-        "subtitle": "Расследуйте нераскрытые дела прошлого. Логика — ваше оружие."
+        "title": "Arkhiv: Freiburg 1905",
+        "location": "Freiburg-im-Braisgau",
+        "subtitle": "Rassleduite neraskrytye dela proshlogo. Logika vashe oruzhie."
     },
     "btn": {
-        "continue": "Продолжить",
-        "newGame": "Новая Игра"
+        "continue": "Prodolzhit",
+        "newGame": "Novaya igra",
+        "changeRegion": "Vybrat gorod"
     },
     "modal": {
-        "resetTitle": "Начать новую игру?",
-        "resetConfirm": "Вы уверены? Весь прогресс будет утерян."
+        "resetTitle": "Nachat novuyu igru?",
+        "resetConfirm": "Vy uvereny? Ves progress budet uteryan."
     },
     "debug": {
-        "title": "Отладочная команда",
-        "jumpBank": "[DEBUG] Перейти к Делу Банка"
+        "title": "Otladka",
+        "jumpBank": "[DEBUG] Perejti k delu banka"
     }
 }

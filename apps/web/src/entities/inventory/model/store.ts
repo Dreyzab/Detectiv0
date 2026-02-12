@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { type VoiceId, VOICE_ORDER } from '../../../features/detective/lib/parliament';
 import { api } from '../../../shared/api/client';
 import { fromSharedItem, type InventoryItem, type InventorySlot } from './types';
-import { ITEM_REGISTRY, STARTER_ITEM_STACKS, STARTER_MONEY, type ItemStackDefinition } from '@repo/shared/data/items';
+import { ITEM_REGISTRY, STARTER_MONEY, type ItemStackDefinition } from '@repo/shared/data/items';
 
 export type GameMode = 'detective';
 
@@ -241,13 +241,14 @@ export const useInventoryStore = create<InventoryState>()(
                 const { data, error } = await api.inventory.snapshot.get();
 
                 if (error || !data?.success || !data.snapshot) {
-                    set((state) => ({
+                    set({
                         isSyncing: false,
-                        isServerHydrated: true,
+                        isServerHydrated: false, // Keep false to retry later
                         syncError: error?.message ?? data?.error ?? 'Failed to hydrate inventory from server',
-                        items: state.items.length > 0 ? state.items : toInventorySlots(STARTER_ITEM_STACKS),
-                        money: state.money > 0 ? state.money : STARTER_MONEY
-                    }));
+                        // Do NOT grant starter items on error - this fixes BUG-028
+                        // items: state.items, 
+                        // money: state.money  
+                    });
                     return;
                 }
 

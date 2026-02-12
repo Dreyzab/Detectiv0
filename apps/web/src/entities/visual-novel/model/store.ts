@@ -198,7 +198,8 @@ export const useVNStore = create<VNState>()(
                         locale: data.locale,
                         activeScenarioId: data.activeScenarioId,
                         currentSceneId: data.currentSceneId,
-                        history: data.history || []
+                        history: data.history || [],
+                        choiceHistory: data.choiceHistory || []
                     });
                     logger.vn("Save data imported successfully");
                 } catch (e) {

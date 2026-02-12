@@ -3,6 +3,11 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useBattleStore, Card, UnitStatus, FloatingText } from '../../entities/battle';
 import { CARD_REGISTRY, BATTLE_SCENARIOS } from '@repo/shared';
 import { Swords, RotateCcw, Play, ArrowUp } from 'lucide-react';
+import { useVNStore } from '@/entities/visual-novel/model/store';
+import { useDossierStore } from '@/features/detective/dossier/store';
+import { useCharacterStore } from '@/entities/character/model/store';
+import type { CharacterId } from '@repo/shared/data/characters';
+import { resolveBattleReturn } from './returnFlow';
 import './BattlePage.css';
 
 // ================== DRAG STATE ==================
@@ -25,6 +30,10 @@ const PLAY_THRESHOLD_RATIO = 0.6;
 export const BattlePage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { startScenario, advanceScene } = useVNStore();
+    const addEvidence = useDossierStore((state) => state.addEvidence);
+    const addFlags = useDossierStore((state) => state.addFlags);
+    const modifyRelationship = useCharacterStore((state) => state.modifyRelationship);
 
     const {
         scenario,
@@ -125,9 +134,57 @@ export const BattlePage: React.FC = () => {
         }
     };
 
+    const applyReturnActions = (
+        actions: Array<
+            | { type: 'add_flag'; payload: Record<string, boolean> }
+            | { type: 'modify_relationship'; payload: { characterId: string; amount: number } }
+            | { type: 'grant_evidence'; payload: { id: string; name: string; description: string } }
+        > | undefined,
+        packId: string
+    ) => {
+        if (!actions) return;
+
+        actions.forEach((action) => {
+            switch (action.type) {
+                case 'add_flag':
+                    addFlags(action.payload);
+                    break;
+                case 'modify_relationship':
+                    modifyRelationship(action.payload.characterId as CharacterId, action.payload.amount);
+                    break;
+                case 'grant_evidence':
+                    addEvidence({
+                        id: action.payload.id,
+                        name: action.payload.name,
+                        description: action.payload.description,
+                        packId
+                    });
+                    break;
+            }
+        });
+    };
+
     const handleReturn = () => {
+        const returnScenarioId = searchParams.get('returnScenarioId')?.trim() || null;
+        const returnPackId = searchParams.get('returnPackId')?.trim() || null;
+        const resolution = resolveBattleReturn({
+            scenario,
+            turnPhase,
+            returnScenarioId,
+            returnPackId
+        });
+        applyReturnActions(resolution.actions, resolution.fallbackPackId);
+
         resetBattle();
-        navigate('/map');
+
+        if (resolution.resume) {
+            startScenario(resolution.resume.scenarioId);
+            advanceScene(resolution.resume.sceneId);
+            navigate(resolution.resume.route);
+            return;
+        }
+
+        navigate(resolution.mapRoute);
     };
 
     // Scenario Selection Screen

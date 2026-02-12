@@ -9,8 +9,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
     id: 'lead_apothecary',
+    packId: 'fbg1905',
     title: 'Löwen-Apotheke',
-    defaultBackgroundUrl: '/images/scenarios/apothecary_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/apothecary_1905.webp',
     initialSceneId: 'entrance',
     mode: 'fullscreen',
     scenes: {
@@ -211,5 +212,4 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
 };
 
 export default LEAD_APOTHECARY_LOGIC;
-
 

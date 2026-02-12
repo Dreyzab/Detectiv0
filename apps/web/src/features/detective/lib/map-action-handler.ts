@@ -7,6 +7,12 @@ import { useQuestStore } from '@/features/quests/store';
 import { useMerchantUiStore } from '@/features/merchant/model/store';
 import { useNavigate } from 'react-router-dom';
 import { getScenarioById } from '@/entities/visual-novel/scenarios/registry';
+import { useWorldEngineStore } from '../engine/store';
+import { isOneShotScenarioComplete } from '@/entities/visual-novel/lib/oneShotScenarios';
+import { getPackMeta } from '@repo/shared/data/pack-meta';
+import { resolveRegionMeta } from '@repo/shared/data/regions';
+import { useRegionStore } from '@/features/region/model/store';
+import { resolveUnlockGroupPointIds } from './unlock-group';
 
 export const useMapActionHandler = () => {
     const {
@@ -20,26 +26,18 @@ export const useMapActionHandler = () => {
     const flags = useDossierStore((state) => state.flags);
     const setQuestStage = useQuestStore((state) => state.setQuestStage);
     const openMerchant = useMerchantUiStore((state) => state.openMerchant);
+    const setCurrentLocation = useWorldEngineStore((state) => state.setCurrentLocation);
+    const setActiveRegion = useRegionStore((state) => state.setActiveRegion);
     const startScenario = useVNStore(state => state.startScenario);
     const locale = useVNStore(state => state.locale);
     const navigate = useNavigate();
-
-    const isOneShotScenarioAlreadyComplete = (scenarioId: string): boolean => {
-        if (scenarioId === 'detective_case1_hbf_arrival') {
-            return Boolean(flags['arrived_at_hbf']);
-        }
-        if (scenarioId === 'detective_case1_map_first_exploration') {
-            return Boolean(flags['case01_map_exploration_intro_done']);
-        }
-        return false;
-    };
 
     const executeAction = (action: MapAction) => {
         console.log('[MapAction] Executing:', action);
 
         switch (action.type) {
             case 'start_vn': {
-                if (isOneShotScenarioAlreadyComplete(action.scenarioId)) {
+                if (isOneShotScenarioComplete(action.scenarioId, flags)) {
                     console.log('[MapAction] Skipping one-shot VN replay:', action.scenarioId);
                     break;
                 }
@@ -49,15 +47,29 @@ export const useMapActionHandler = () => {
                 // Check if we need to navigate (Fullscreen mode)
                 const scenario = getScenarioById(action.scenarioId, locale);
                 if (scenario?.mode === 'fullscreen') {
-                    navigate(`/vn/${action.scenarioId}`);
+                    if (scenario.packId) {
+                        navigate(`/city/${scenario.packId}/vn/${action.scenarioId}`);
+                    } else {
+                        navigate(`/vn/${action.scenarioId}`);
+                    }
                 }
                 // Otherwise, VisualNovelOverlay will pick it up on the current page
                 break;
             }
             case 'unlock_point': {
                 setPointState(action.pointId, 'discovered');
-                // Removed 'silent' check as it's not in the shared type
                 console.log(`Point ${action.pointId} discovered`);
+                break;
+            }
+            case 'unlock_group': {
+                const pointIds = resolveUnlockGroupPointIds(action.groupId);
+                if (pointIds.length === 0) {
+                    console.warn(`[MapAction] unlock_group matched no points: ${action.groupId}`);
+                    break;
+                }
+
+                pointIds.forEach((pointId) => setPointState(pointId, 'discovered'));
+                console.log(`Unlock group ${action.groupId}: ${pointIds.join(', ')}`);
                 break;
             }
             case 'grant_evidence': {
@@ -86,12 +98,25 @@ export const useMapActionHandler = () => {
                 setActiveCase(action.caseId);
                 break;
             }
+            case 'set_region': {
+                const regionMeta = resolveRegionMeta(action.regionId);
+                if (!regionMeta) {
+                    console.warn('Unknown region id:', action.regionId);
+                    break;
+                }
+                const packMeta = getPackMeta(regionMeta.packId);
+                setActiveRegion(regionMeta.id, 'qr');
+                setActiveCase(packMeta.defaultCaseId);
+                navigate(`/city/${packMeta.packId}/map`);
+                break;
+            }
             case 'set_quest_stage': {
                 setQuestStage(action.questId, action.stage);
                 break;
             }
             case 'start_battle': {
-                console.log('Battle start not implemented yet', action.scenarioId);
+                const deckType = action.deckType ? `&deckType=${encodeURIComponent(action.deckType)}` : '';
+                navigate(`/battle?scenarioId=${encodeURIComponent(action.scenarioId)}${deckType}`);
                 break;
             }
             case 'open_trade': {
@@ -99,7 +124,8 @@ export const useMapActionHandler = () => {
                 break;
             }
             case 'teleport': {
-                console.log('Teleport not implemented yet', action.targetPointId);
+                setCurrentLocation(action.targetPointId);
+                setPointState(action.targetPointId, 'visited');
                 break;
             }
             case 'show_toast': {

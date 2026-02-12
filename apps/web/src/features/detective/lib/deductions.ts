@@ -49,3 +49,30 @@ export const CASE_1_DEDUCTIONS: DeductionRecipe[] = [
 
 export const DEDUCTION_REGISTRY: Record<string, DeductionRecipe> = {};
 CASE_1_DEDUCTIONS.forEach(d => DEDUCTION_REGISTRY[d.id] = d);
+
+// ── Karlsruhe Sandbox: Ghost Case Deductions ─────────────
+
+export const SANDBOX_GHOST_DEDUCTIONS: DeductionRecipe[] = [
+    {
+        id: 'ghost_true_trail',
+        inputs: ['ev_cold_draft', 'ev_ectoplasm_residue'],
+        result: {
+            type: 'add_flag',
+            id: 'GHOST_TRUE_DEDUCTION',
+            label: 'Übernatürliche Manifestation',
+            description: 'The cold draft and ectoplasm cannot be explained by conventional means. This estate is genuinely haunted.'
+        }
+    },
+    {
+        id: 'ghost_false_trail',
+        inputs: ['ev_hidden_passage', 'ev_servant_testimony'],
+        result: {
+            type: 'add_flag',
+            id: 'GHOST_FALSE_DEDUCTION',
+            label: 'Schmugglertheorie',
+            description: 'The hidden passage and the maid\'s account of "figures walking through walls" suggest a contrabandist using the estate as a warehouse.'
+        }
+    }
+];
+
+SANDBOX_GHOST_DEDUCTIONS.forEach(d => DEDUCTION_REGISTRY[d.id] = d);

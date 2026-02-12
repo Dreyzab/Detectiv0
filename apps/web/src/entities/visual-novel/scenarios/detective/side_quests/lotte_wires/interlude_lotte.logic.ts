@@ -2,8 +2,9 @@ import type { VNScenarioLogic } from '../../../../model/types';
 
 export const INTERLUDE_LOTTE_LOGIC: VNScenarioLogic = {
     id: 'interlude_lotte_warning',
+    packId: 'fbg1905',
     title: 'Interlude: The Wire',
-    defaultBackgroundUrl: '/images/scenarios/black_screen.png',
+    defaultBackgroundUrl: '/images/scenarios/black_screen.webp',
     initialSceneId: 'phone_rings',
     mode: 'overlay',
     scenes: {

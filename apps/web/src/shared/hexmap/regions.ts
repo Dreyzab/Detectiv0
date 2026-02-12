@@ -1,3 +1,5 @@
+import { REGION_META } from '@repo/shared/data/regions';
+
 export interface RegionConfig {
     id: string;
     name: string;
@@ -7,22 +9,17 @@ export interface RegionConfig {
     vintageStyle?: boolean;
 }
 
-export const REGIONS: Record<string, RegionConfig> = {
-    // Existing/Placeholder
-    'karlsruhe_default': {
-        id: 'karlsruhe_default',
-        name: 'Karlsruhe (Default)',
-        geoCenterLat: 49.0069,
-        geoCenterLng: 8.4037,
-        zoom: 13
+export const REGIONS: Record<string, RegionConfig> = Object.values(REGION_META).reduce<Record<string, RegionConfig>>(
+    (acc, region) => {
+        acc[region.id] = {
+            id: region.id,
+            name: region.name,
+            geoCenterLat: region.geoCenterLat,
+            geoCenterLng: region.geoCenterLng,
+            zoom: region.zoom,
+            vintageStyle: 'vintageStyle' in region ? region.vintageStyle : undefined
+        };
+        return acc;
     },
-    // New Detective Region
-    'FREIBURG_1905': {
-        id: 'FREIBURG_1905',
-        name: 'Freiburg im Breisgau (1905)',
-        geoCenterLat: 47.9959, // Münsterplatz center
-        geoCenterLng: 7.8522,
-        zoom: 14.5,
-        vintageStyle: true
-    }
-};
+    {}
+);

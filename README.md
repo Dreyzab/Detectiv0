@@ -12,7 +12,7 @@
   - ✅ `event_codes`: QR/ручные коды мигрированы в отдельную таблицу
   - ✅ `hardlinks.ts`: удалён, данные встроены в `map_points.bindings` и `event_codes`
   - ⏳ `cases`, `deductions`: запланированы на Фазу 3 (Content Editor)
-- **Eden Treaty (E2E Type Safety)**: Типобезопасные API-вызовы между клиентом и сервером через `@elysiajs/eden`.
+- **Contract-driven API (E2E Type Safety)**: Типобезопасные API-вызовы между клиентом и сервером через контракты `@repo/contracts`.
 - **Narrative Threads**: Визуализация логических связей между уликами прямо на карте.
 - **Infrastructure Navigation**: Реалистичное перемещение агента с учетом городской среды (дороги, мосты).
 
@@ -26,18 +26,18 @@
 |---|---|---|---|---|---|
 | **Logic** (Логика)<br>Выстраивание фактов | **Intuition** (Чутье)<br>Шестое чувство | **Authority** (Власть)<br>Доминирование | **Endurance** (Стойкость)<br>Боль и усталость | **Stealth** (Скрытность)<br>Незаметность | **Occultism** (Мистика)<br>Тайные знания |
 | **Perception** (Внимание)<br>Поиск улик | **Empathy** (Эмпатия)<br>Чтение эмоций | **Charisma** (Шарм)<br>Обаяние и лесть | **Agility** (Ловкость)<br>Реакция | **Deception** (Обман)<br>Актерство | **Tradition** (Традиция)<br>Устои общества |
-| **Encyclopedia** (Знание)<br>История и лор | **Imagination** (Образ)<br>Реконструкция | **Composure** (Выдержка)<br>Хладнокровие | **Forensics** (Криминалистика)<br>Работа с телами | **Intrusion** (Взлом)<br>Замки и двери | **Poetics** (Поэтика)<br>Чувство высокого |
+| **Encyclopedia** (Знание)<br>История и лор | **Imagination** (Образ)<br>Реконструкция | **Volition** (Воля)<br>Самоконтроль | **Senses** (Чувства)<br>Телесный анализ | **Intrusion** (Взлом)<br>Замки и двери | **Gambling** (Азарт)<br>Риск и удача |
 
 *Каждый голос может вмешиваться в диалог, давать уникальные подсказки или открывать новые варианты ответов.*
 
 - **Mind Palace Overlay**: Система пассивных проверок навыков. Голоса автоматически вмешиваются при входе в сцену (если проверка пройдена), показывая VoiceOrb с пульсирующей анимацией и ThoughtCloud с подсказкой. Интегрирован в оба режима VN (Overlay и Fullscreen).
 - **Skill Check System (RPG)**: Механика проверки навыков (d20 + модификаторы) в диалогах, влияющая на успех расследования. Поддержка активных (на выборах) и пассивных (автоматических) проверок.
-- **Картографический движок (Mapbox)**: Реалистичная карта Фрайбурга 1905 года с «туманом войны» и динамическими слоями нитей расследования.
+- **Картографический движок (Mapbox)**: Multi-city runtime (`fbg1905`, `ka1905`) с единым map runtime, city-aware роутами и динамическими слоями расследования.
 - **Detective Board**: Интерактивная доска дедукции для связи улик и построения версий.
 - **Forensics Mini-games**: Криминалистические мини-игры (химический анализ, взлом), базирующиеся на реальных научных методах той эпохи.
 - **Audio & SFX Engine**: Процедурная генерация звука (Web Audio API) для эффектов пишущей машинки и интерактивных улик. Поддержка эмбиент-музыки.
 - **Visual Novel Engine**: Диалоговая система с поддержкой **Dual Mode** (Overlay/Fullscreen), проверками навыков (18 голосов) и ветвлением сюжета (Interludes, Multi-ending Finale).
-    - **Map-Driven Flow**: Fullscreen VN runs from MapPoint interactions (Investigate -> start_vn) and returns to /map on end.
+    - **Map-Driven Flow**: Fullscreen VN запускается из MapPoint actions (`Investigate -> start_vn`) и возвращает игрока в pack-aware маршрут (`/city/:packId/map`, fallback `/map`).
     - **Virtual Window**: Гироскопический параллакс на мобильных устройствах.
     - **Cinematic Reveal**: "Умное" скрытие интерфейса для акцента на арт.
     - **UI Pro Max**: Асимметричный глассморфизм и микро-анимации.
@@ -66,7 +66,7 @@
 
 ### 🏗 Инфраструктура
 - **Unified Launch**: Запуск всего стека одной командой через `bun run dev`.
-- **Eden Treaty (E2E Type Safety)**: Сквозная типизация API между сервером и клиентом через `@elysiajs/eden`. Клиент `apps/web/src/shared/api/client.ts` типизирован по серверному `App` типу.
+- **Contract-driven API (E2E Type Safety)**: Сквозная типизация API между сервером и клиентом через `@repo/contracts`. Клиент `apps/web/src/shared/api/client.ts` использует контрактные типы запросов и ответов.
 - **Performance**: Сверхбыстрая сборка и выполнение благодаря Bun и Vite 7.
 - **E2E Testing**: Playwright config + smoke test (`e2e/smoke.spec.ts`). Запуск: `bun run test:e2e`.
 - **Drizzle Migrations**: Автоматическая генерация SQL-миграций для Supabase (`apps/server/drizzle/`).
@@ -131,7 +131,7 @@
 
 ---
 
-## � Разработка и запуск
+## 🛠 Разработка и запуск
 
 ### Быстрый старт
 Для управления проектом используется `concurrently`. Вы можете запустить всё одной командой из корня:
@@ -146,6 +146,31 @@ bun run dev
 # 3. Сборка всех проектов
 bun run build
 ```
+
+### Тестирование (каноничный контур)
+Запускать тесты из корня репозитория через Bun scripts:
+
+```bash
+# shared + server unit/integration (bun:test)
+bun run test:bun
+
+# web unit/component (vitest)
+bun run test:web
+
+# e2e smoke (playwright)
+bun run test:e2e:smoke
+
+# полный e2e (включая vn-flow)
+bun run test:e2e
+
+# агрегированный локальный прогон
+bun run test:all
+```
+
+CI-политика:
+- PR в `main`: обязательны `test:bun` + `test:web`.
+- E2E smoke: отдельный job для `push` в `main` и nightly schedule.
+- Bare `bun test` из корня не является каноничным контрактом.
 
 ### Переменные окружения (.env)
 Vite настроен на автоматическую загрузку переменных из корня монорепозитория. Обязательные ключи:
@@ -167,17 +192,6 @@ Vite настроен на автоматическую загрузку пер�
 ---
 *Grezwanderer 4 — Путешествие начинается здесь.*
 
-## Статус QA и тестового контура (06.02.2026)
-
-- Интеграционные map-тесты переведены на контролируемый контур без `skip`.
-- `apps/server/test/modules/map.test.ts` использует in-memory `MapRepository` через `createMapModule(repository)`.
-- Покрыты ключевые сценарии: lifecycle-фильтрация точек, `resolve-code` для `event_codes`, `resolve-code` для QR-точек с `persistentUnlock`, ответ `404` для неизвестного кода.
-- Проверенные команды:
-  - `bun test apps/server/test/modules/map.test.ts`
-  - `bun test apps/server/test/simple.test.ts`
-  - `bun test packages/shared/lib/map-resolver.test.ts`
-  - `bun x tsc -p apps/server/tsconfig.json --noEmit`
-
 ## 📚 Knowledge Base (Obsidian)
 
 Сюжет, Лор и Геймдизайн-документация живут в локальном **Obsidian Vault** (`obsidian/Detectiv`).
@@ -195,94 +209,26 @@ Vite настроен на автоматическую загрузку пер�
 
 > *Note: Папка `obsidian/` находится в `.gitignore` и не попадает в публичный репозиторий.*
 
+## Текущий статус (Snapshot на 12.02.2026)
 
-## Detective Engine Status (2026-02-07)
+- Базовый detective runtime активен: `map`, `engine`, `inventory`, `quests`, `dossier`.
+- Region context (`activeRegionId`) вынесен в отдельный store с persist-ключом `gw4-region-storage` и используется в Home/Map routing.
+- `/map` без выбранного региона редиректит на `/`, а `/city/:packId/map` синхронизирует `activeRegion` по `packId`.
+- `GET /map/points` поддерживает `regionId` (контракт `MapPointsQuery`) и применяет серверный distance-фильтр по радиусу региона (10 км).
+- QR/Event flow работает через `POST /map/resolve-code` (legacy `GET /map/resolve-code/:code` сохранён для совместимости) с валидацией `MapActionSchema`.
+- Gateway QR коды поддерживают action-пайплайн `set_region -> set_active_case -> start_vn` для быстрого входа в FR/KA.
+- Multi-city runtime включен (`fbg1905`, `ka1905`) с city-aware роутами (`/city/:packId/map`, `/city/:packId/vn/:scenarioId`).
+- Karlsruhe sandbox доступен как runtime slice; полностью переписан вертикальный путь `01_Banker`, `02_Dog` и `03_Ghost` пока в compatibility-safe режиме.
+- Seed gateway-кодов выполняется через `bun run --filter server seed:event-codes`.
+- QA-контур стандартизирован по hybrid pipeline:
+  - `bun run test:bun` (shared + server),
+  - `bun run test:web` (web/vitest),
+  - `bun run test:e2e:smoke` и `bun run test:e2e` (playwright).
 
-### What is implemented now
-- **Global Detective Engine module** is online on server with endpoints:
-  - `GET /engine/world`
-  - `POST /engine/time/tick`
-  - `POST /engine/travel/start`
-  - `POST /engine/travel/complete/:sessionId`
-  - `POST /engine/case/advance`
-  - `POST /engine/progress/apply`
-  - `POST /engine/evidence/discover`
-- **Inventory persistence module** is online on server:
-  - `GET /inventory/snapshot`
-  - `POST /inventory/snapshot`
-- **Quest persistence module** is online on server:
-  - `GET /quests/snapshot`
-  - `POST /quests/snapshot`
-- **Dossier persistence module** is online on server:
-  - `GET /dossier/snapshot`
-  - `POST /dossier/snapshot`
-- **Inventory boot hydration** is active in app shell:
-  - snapshot is loaded on app startup, not only on Inventory page.
-- **Dossier boot hydration** is active in app shell:
-  - dossier snapshot is loaded on app startup and normalized before runtime usage.
-- **World simulation foundation** is persisted in Postgres tables:
-  `world_clocks`, `city_routes`, `travel_sessions`, `cases`, `case_objectives`,
-  `user_case_progress`, `player_progression`, `voice_progression`,
-  `factions`, `user_faction_reputation`, `user_character_relations`,
-  `evidence_catalog`, `user_evidence`, `domain_event_log`.
-- **Action-step time model** is active:
-  important actions advance ticks and world phase (`morning/day/evening/night`).
-- **Night access gating** for bank is active:
-  standard approach can be blocked at night; alternatives: `lockpick`, `bribe`, `warrant`.
-- **District-aware availability** is active:
-  `stuhlinger` destinations are soft-gated at night with recovery alternatives (`district_pass`, `wait_until_day`).
-- **Travel beats** are active:
-  travel can return contextual beat payloads (for example `intel_audio`).
+## Где смотреть детали
 
-### Web integration status
-- `MapView` now syncs world snapshot from `/engine/world`.
-- Interaction with a map point now runs through travel flow before scene start.
-- `CaseCard` now displays world context (`phase`, `tick`, current location), busy state, and location availability.
-- Alternative entry buttons (`lockpick/bribe/warrant`) are wired to `/engine/case/advance` and then continue into the scene if successful.
-
-### Validation status
-- `bun x tsc -p apps/web/tsconfig.app.json --noEmit`
-- `bun x tsc -p apps/server/tsconfig.json --noEmit`
-- `bun x tsc -p packages/contracts/tsconfig.json --noEmit`
-- `bun test apps/server/test/modules/engine.test.ts`
-- `bun test apps/server/test/modules/map.test.ts`
-
-### Current constraints (known, accepted for Sprint 0)
-- User identity is resolved per request: `Clerk auth -> x-user-id/x-demo-user-id -> demo_user (fallback)`.
-- Objective routing in web is dynamic by stable location identity (`objective.locationId` matched with `point.data.locationId`, fallback to `point.id`).
-- Progression/evidence apply from VN events is partially integrated and will be expanded in next sprint.
-
-### Fog of war note (next implementation slice)
-- `Fog of war` should be tracked at `location` level, not at individual scene/action level.
-- Reveal channels: successful travel arrival, travel beats (`intel_audio` / rumors), evidence discovery, faction-driven unlocks.
-- `Explored location` and `completed map point` must remain separate states.
-
-## Mirror Protocol Status (2026-02-07)
-
-### Phase 1 complete: Technical Debt Cleanup
-- VN runtime now enforces scene preconditions and preserves logic contract fields during localization merge.
-- Passive checks and scene `onEnter` behavior are stabilized for deterministic scene entry behavior.
-- Canonical Parliament IDs are fully normalized in runtime data paths.
-- Shared item registry is now the base data source for inventory/merchant flows.
-- Map/location identifiers are normalized to reduce `unlock_point` and route binding mismatches.
-
-### Phase 2 complete: Content and Systems Expansion (core slice)
-- ✅ Quest-stage aware branching integrated into VN and map condition runtime.
-- ✅ Stage-aware objective rendering in Quest Journal and Quest Log.
-- ✅ Interactive Stage Timeline popover with transition hints (flags/actions) in quest UI.
-- ✅ Expanded route graph in `city_routes` and normalized `loc_*` IDs in SQL seed.
-- ✅ District-level movement rule documented in Obsidian and enforced as soft gate in engine.
-- ✅ Merchant variants linked to character roles, location trade actions, and economy multipliers.
-- âœ… Consumable gameplay effects integrated into inventory runtime.
-- âœ… Secrets/evolution progression surfaced in dossier-facing UX (`Psyche Profile`).
-
-### Phase 3 started: Polish + Persistence (first slice)
-- Added server-side inventory snapshot persistence with typed contracts (`GET/POST /inventory/snapshot`).
-- Inventory web store now hydrates and syncs `money/items` through backend snapshot API.
-- Added additive Drizzle migration `apps/server/drizzle/0004_lovely_mastermind.sql` for inventory snapshots.
-- Added server-side quest snapshot persistence with typed contracts (`GET/POST /quests/snapshot`).
-- Quest store now hydrates/syncs server snapshot and `useQuestEngine` auto-starts default quest only after hydration.
-- Added additive Drizzle migration `apps/server/drizzle/0005_shiny_plazm.sql` for quest stage/objective snapshot columns.
-- Added server-side dossier snapshot persistence with typed contracts (`GET/POST /dossier/snapshot`).
-- Dossier store now hydrates/syncs server snapshot with debounced sync queue for high-frequency gameplay state.
-- Added additive Drizzle migration `apps/server/drizzle/0006_magenta_satana.sql` for `user_dossier_snapshots`.
+- Полный changelog: `update.md`
+- Архитектура и runtime контракты: `ARCHITECTURE.md`
+- Карта и map pipeline: `Map.md`
+- VN runtime и сценарии: `VisualNovel.md`
+- Канонический план Sandbox KA: `Plan.md`

@@ -67,7 +67,7 @@ export const ChemicalAnalysisModal = ({ isOpen, onClose, onComplete }: ChemicalA
                             className="absolute -top-4 right-0 z-10"
                         >
                             <img
-                                src="/images/detective/chemical_bottle.png"
+                                src="/images/detective/chemical_bottle.webp"
                                 alt="Reagent"
                                 className="w-24 drop-shadow-[0_0_15px_rgba(255,165,0,0.3)] hover:drop-shadow-[0_0_25px_rgba(255,165,0,0.6)] transition-all"
                             />
@@ -94,7 +94,7 @@ export const ChemicalAnalysisModal = ({ isOpen, onClose, onComplete }: ChemicalA
                                     <motion.img
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        src="/images/detective/chemical_reaction_blue.png"
+                                        src="/images/detective/chemical_reaction_blue.webp"
                                         className="absolute inset-0 object-cover mix-blend-screen opacity-80"
                                     />
                                 )}

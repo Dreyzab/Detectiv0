@@ -2,8 +2,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_MAP_FIRST_EXPLORATION_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_map_first_exploration',
+    packId: 'fbg1905',
     title: 'Case 1 - First Exploration',
-    defaultBackgroundUrl: '/images/scenarios/street_day_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/street_day_1905.webp',
     initialSceneId: 'event1_intro',
     mode: 'fullscreen',
     scenes: {

@@ -4,7 +4,7 @@ import type { VNScenarioLogic } from '../../model/types';
 export const encounterStudentLogic: VNScenarioLogic = {
     id: 'encounter_student',
     title: 'Encounter: The Scarred Youth',
-    defaultBackgroundUrl: '/images/scenarios/university_street.png',
+    defaultBackgroundUrl: '/images/scenarios/university_street.webp',
     initialSceneId: 'start',
     musicUrl: '/audio/ambient_city_day.mp3', // Placeholder
     scenes: {

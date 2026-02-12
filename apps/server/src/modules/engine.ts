@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { db } from '../db';
 import {
     caseObjectives,
@@ -47,6 +47,11 @@ import {
 import { resolveUserId } from '../lib/user-id';
 import { ensureUserExists as ensureDbUserExists } from '../db/user-utils';
 const TICKS_PER_PHASE = 3;
+const DEFAULT_LOCATION_ID = 'loc_hbf';
+const DEFAULT_LOCATION_BY_CASE: Record<string, string> = {
+    case_01_bank: 'loc_hbf',
+    sandbox_karlsruhe: 'loc_ka_agency'
+};
 const NIGHT_ACCESS_APPROACHES = new Set(['lockpick', 'bribe', 'warrant']);
 const BANK_LOCATION_IDS = new Set(['loc_freiburg_bank']);
 type DistrictId = 'rail_hub' | 'altstadt' | 'schneckenvorstadt' | 'wiehre' | 'stuhlinger';
@@ -269,6 +274,7 @@ export interface EngineRepository {
     findRoute: (fromLocationId: string, toLocationId: string, mode: TravelMode) => Promise<CityRouteRow | null>;
     createTravelSession: (input: CreateTravelSessionInput) => Promise<void>;
     getTravelSession: (sessionId: string, userId: string) => Promise<TravelSessionRow | null>;
+    getLatestCompletedTravelSession: (userId: string) => Promise<TravelSessionRow | null>;
     completeTravelSession: (input: CompleteTravelSessionInput) => Promise<void>;
     getCaseProgress: (userId: string, caseId: string) => Promise<CaseProgressRow | null>;
     listCaseObjectives: (caseId: string) => Promise<CaseObjectiveRow[]>;
@@ -306,6 +312,13 @@ const levelFromXp = (xp: number): number => Math.max(1, Math.floor(xp / 100) + 1
 const advanceClock = (clock: WorldClockState, deltaTicks: number): WorldClockState => {
     const nextTick = clock.tick + Math.max(0, deltaTicks);
     return { tick: nextTick, phase: phaseAtTick(nextTick) };
+};
+
+const defaultLocationForCase = (caseId?: string): string => {
+    if (!caseId) {
+        return DEFAULT_LOCATION_ID;
+    }
+    return DEFAULT_LOCATION_BY_CASE[caseId] ?? DEFAULT_LOCATION_ID;
 };
 
 const defaultEtaByMode = (mode: TravelMode): number => mode === 'tram' ? 1 : 2;
@@ -524,6 +537,20 @@ export const createDrizzleEngineRepository = (): EngineRepository => ({
             where: and(eq(travelSessions.id, sessionId), eq(travelSessions.userId, userId))
         })) ?? null,
 
+    getLatestCompletedTravelSession: async (userId) => {
+        const [latestCompleted] = await db
+            .select()
+            .from(travelSessions)
+            .where(and(
+                eq(travelSessions.userId, userId),
+                eq(travelSessions.status, 'completed')
+            ))
+            .orderBy(desc(travelSessions.arrivalTick), desc(travelSessions.startedTick))
+            .limit(1);
+
+        return latestCompleted ?? null;
+    },
+
     completeTravelSession: async (input) => {
         await db.update(travelSessions)
             .set({ arrivalTick: input.arrivalTick, status: input.status })
@@ -686,10 +713,11 @@ export const createEngineModule = (repository: EngineRepository = createDrizzleE
 
             const worldClock = await ensureWorldClock(repository, userId);
             const player = await ensurePlayerProgress(repository, userId);
-            const [factions, relations, evidenceRows, activeCaseRow, objectiveRows] = await Promise.all([
+            const [factions, relations, evidenceRows, latestCompletedSession, activeCaseRow, objectiveRows] = await Promise.all([
                 repository.listFactionReputation(userId),
                 repository.listCharacterRelations(userId),
                 repository.listUserEvidence(userId),
+                repository.getLatestCompletedTravelSession(userId),
                 caseId ? repository.getCaseProgress(userId, caseId) : Promise.resolve(null),
                 caseId ? repository.listCaseObjectives(caseId) : Promise.resolve([])
             ]);
@@ -697,6 +725,7 @@ export const createEngineModule = (repository: EngineRepository = createDrizzleE
             const response: WorldSnapshotResponse = {
                 success: true,
                 worldClock,
+                currentLocationId: latestCompletedSession?.toLocationId ?? defaultLocationForCase(caseId),
                 player,
                 factions: factions.map(toFactionState),
                 relations: relations.map(toRelationState),

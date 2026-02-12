@@ -30,7 +30,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_hbf_arrival' }]
             }
         ],
-        image: '/images/detective/loc_hauptbahnhof.png',
+        image: '/images/detective/loc_hauptbahnhof.webp',
         voices: { logic: "Trains arriving on time. A system in motion." }
     },
     'loc_freiburg_bank': {
@@ -110,7 +110,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_bank_scene' }]
             }
         ],
-        image: '/images/detective/loc_bankhaus.png',
+        image: '/images/detective/loc_bankhaus.webp',
         voices: { empathy: "The panic of the clerk still lingers in the air." }
     },
     'loc_munster': {
@@ -122,52 +122,9 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         type: 'interest',
         packId: 'fbg1905',
         bindings: [],
-        image: '/images/detective/loc_munster.png'
+        image: '/images/detective/loc_munster.webp'
     },
-    'loc_freiburg_archive': {
-        id: 'loc_freiburg_archive',
-        title: 'New Town Hall',
-        description: 'Administrative center containing the City Archives.',
-        lat: 47.996090,
-        lng: 7.849500,
-        type: 'bureau',
-        packId: 'fbg1905',
-        bindings: [
-            {
-                id: 'archive_enter_primary',
-                trigger: 'marker_click',
-                label: 'Primary Objective: Build Archive Dossier',
-                priority: 35,
-                conditions: [{
-                    type: 'logic_and',
-                    conditions: [
-                        { type: 'flag_is', flagId: 'archive_casefile_complete', value: false },
-                        { type: 'flag_is', flagId: 'tailor_lead_complete', value: true },
-                        { type: 'flag_is', flagId: 'apothecary_lead_complete', value: true },
-                        { type: 'flag_is', flagId: 'pub_lead_complete', value: true }
-                    ]
-                }],
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
-            },
-            {
-                id: 'archive_enter_followup',
-                trigger: 'marker_click',
-                label: 'Consult Archives',
-                priority: 24,
-                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: false }],
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
-            },
-            {
-                id: 'archive_review',
-                trigger: 'marker_click',
-                label: 'Review Archive Findings',
-                priority: 14,
-                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: true }],
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
-            }
-        ],
-        image: '/images/detective/loc_rathaus_archiv.png'
-    },
+
     'loc_rathaus': {
         id: 'loc_rathaus',
         title: 'Rathaus',
@@ -277,9 +234,41 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                     ]
                 }],
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_mayor_followup' }]
+            },
+            {
+                id: 'archive_enter_primary',
+                trigger: 'marker_click',
+                label: 'Primary Objective: Build Archive Dossier',
+                priority: 35,
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'archive_casefile_complete', value: false },
+                        { type: 'flag_is', flagId: 'tailor_lead_complete', value: true },
+                        { type: 'flag_is', flagId: 'apothecary_lead_complete', value: true },
+                        { type: 'flag_is', flagId: 'pub_lead_complete', value: true }
+                    ]
+                }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
+            },
+            {
+                id: 'archive_enter_followup',
+                trigger: 'marker_click',
+                label: 'Consult Archives',
+                priority: 24,
+                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: false }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
+            },
+            {
+                id: 'archive_review',
+                trigger: 'marker_click',
+                label: 'Review Archive Findings',
+                priority: 14,
+                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: true }],
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_archive_search' }]
             }
         ],
-        image: '/images/detective/loc_rathaus_archiv.png',
+        image: '/images/detective/loc_rathaus_archiv.webp',
         voices: { authority: "The heavy oak doors and stone corridors speak of centuries of local rule." }
     },
 
@@ -302,7 +291,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'start_vn', scenarioId: 'detective_case1_lab_analysis' }]
             }
         ],
-        image: '/images/detective/loc_uni.png'
+        image: '/images/detective/loc_uni.webp'
     },
     'loc_uni_med': {
         id: 'loc_uni_med',
@@ -319,10 +308,10 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 label: 'Analyze Blood Sample',
                 priority: 10,
                 conditions: [{ type: 'flag_is', flagId: 'has_blood_sample', value: true }],
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_blood_analysis' }]
+                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_lab_analysis' }]
             }
         ],
-        image: '/images/detective/loc_uni.png'
+        image: '/images/detective/loc_uni.webp'
     },
     'loc_student_house': {
         id: 'loc_student_house',
@@ -338,10 +327,10 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 trigger: 'marker_click',
                 label: 'Question Students',
                 priority: 10,
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_corps_interview' }]
+                actions: [{ type: 'start_vn', scenarioId: 'encounter_student' }]
             }
         ],
-        image: '/images/detective/loc_student_house.png'
+        image: '/images/detective/loc_student_house.webp'
     },
 
     // --- SCHNECKENVORSTADT ---
@@ -359,10 +348,10 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 trigger: 'marker_click',
                 label: 'Listen for Rumors',
                 priority: 10,
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_pub_gossip' }]
+                actions: [{ type: 'start_vn', scenarioId: 'encounter_tourist' }]
             }
         ],
-        image: '/images/detective/loc_ganter_brauerei.png'
+        image: '/images/detective/loc_ganter_brauerei.webp'
     },
     'loc_red_light': {
         id: 'loc_red_light',
@@ -373,7 +362,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         type: 'interest',
         packId: 'fbg1905',
         bindings: [],
-        image: '/images/detective/loc_suburbs.png'
+        image: '/images/detective/loc_suburbs.webp'
     },
 
     // --- STÜHLINGER ---
@@ -396,7 +385,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'start_vn', scenarioId: 'case1_finale' }]
             }
         ],
-        image: '/images/detective/loc_stuhlinger_warehouse.png'
+        image: '/images/detective/loc_stuhlinger_warehouse.webp'
     },
     'loc_workers_pub': {
         id: 'loc_workers_pub',
@@ -420,7 +409,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 trigger: 'marker_click',
                 label: 'Talk to Workers',
                 priority: 10,
-                actions: [{ type: 'start_vn', scenarioId: 'detective_case1_socialist_talk' }]
+                actions: [{ type: 'start_vn', scenarioId: 'encounter_cleaner' }]
             },
             {
                 id: 'workers_fence_trade',
@@ -430,7 +419,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'open_trade', shopId: 'the_fence' }]
             }
         ],
-        image: '/images/detective/loc_ganter_brauerei.png'
+        image: '/images/detective/loc_ganter_brauerei.webp'
     },
 
     // --- FILLERS ---
@@ -440,7 +429,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         lat: 47.993600, lng: 7.849000,
         type: 'interest', packId: 'fbg1905', bindings: [],
         description: 'Ancient city gate.',
-        image: '/images/detective/loc_munster.png'
+        image: '/images/detective/loc_munster.webp'
     },
     'loc_schwabentor': {
         id: 'loc_schwabentor',
@@ -448,7 +437,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
         lat: 47.992800, lng: 7.854500,
         type: 'interest', packId: 'fbg1905', bindings: [],
         description: 'Ancient city gate with the Boy with the Thorn.',
-        image: '/images/detective/loc_munster.png'
+        image: '/images/detective/loc_munster.webp'
     },
 
     // ─────────────────────────────────────────────────────────────
@@ -479,7 +468,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'open_trade', shopId: 'tailor_shop' }]
             }
         ],
-        image: '/images/detective/loc_tailor.png',
+        image: '/images/detective/loc_student_house.webp',
         voices: { perception: "Fabric samples everywhere. A man who notices details." }
     },
     'loc_apothecary': {
@@ -507,7 +496,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'open_trade', shopId: 'apothecary_shop' }]
             }
         ],
-        image: '/images/detective/loc_apothecary.png',
+        image: '/images/detective/loc_uni.webp',
         voices: { senses: "The scent of herbs and chemicals. A careful inventory." }
     },
     'loc_pub': {
@@ -535,7 +524,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'open_trade', shopId: 'pub_keeper' }]
             }
         ],
-        image: '/images/detective/loc_ganter_brauerei.png',
+        image: '/images/detective/loc_ganter_brauerei.webp',
         voices: { charisma: "Rough crowd. They won't talk to just anyone." }
     },
 
@@ -560,7 +549,7 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'start_vn', scenarioId: 'interlude_victoria_street' }]
             }
         ],
-        image: '/images/detective/loc_streets.png'
+        image: '/images/detective/loc_suburbs.webp'
     },
     'loc_telephone': {
         id: 'loc_telephone',
@@ -627,6 +616,6 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 actions: [{ type: 'start_vn', scenarioId: 'quest_lotte_wires' }]
             }
         ],
-        image: '/images/detective/loc_rathaus_archiv.png'
+        image: '/images/detective/loc_rathaus_archiv.webp'
     }
 };

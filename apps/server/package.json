@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
+    "seed:event-codes": "bun run src/scripts/seed-event-codes.ts",
     "obsidian:sync": "bun run src/scripts/obsidian-sync.ts",
     "obsidian:validate": "bun run src/scripts/obsidian-validate.ts"
   },
@@ -25,10 +26,11 @@
   },
   "devDependencies": {
     "bun-types": "latest",
+    "dotenv": "^17.2.4",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.39.1",
-    "typescript-eslint": "^8.46.4",
-    "globals": "^16.5.0"
+    "globals": "^16.5.0",
+    "typescript-eslint": "^8.46.4"
   },
   "module": "src/index.ts"
 }

@@ -3,8 +3,9 @@ import type { VNScenarioLogic } from '../../../../model/types';
 
 export const questLotteWiresLogic: VNScenarioLogic = {
     id: 'quest_lotte_wires',
+    packId: 'fbg1905',
     title: 'Quest: Ghost in the Wires',
-    defaultBackgroundUrl: '/images/scenarios/telegraph_office_interior.png',
+    defaultBackgroundUrl: '/images/scenarios/telegraph_office_interior.webp',
     initialSceneId: 'arrival',
     musicUrl: '/audio/ambient_telegraph.mp3',
     scenes: {

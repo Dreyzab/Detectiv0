@@ -12,6 +12,8 @@ export * from "./lib/detective_map_types";
 export * from "./lib/detective_engine_types";
 export * from "./lib/map-validators";
 export * from "./data/parliament";
+export * from "./data/pack-meta";
+export * from "./data/regions";
 export * from "./data/battle";
 export * from "./data/items";
 export * from "./data/quests";

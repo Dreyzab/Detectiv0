@@ -1,14 +1,32 @@
 {
     "titleMain": "Grezwanderer 4",
     "subtitle": "Schatten des Schwarzwalds",
+    "regionSelector": {
+        "title": "Stadt wahlen",
+        "subtitle": "Wahlen Sie eine aktive Region oder nutzen Sie einen Gateway-QR-Code.",
+        "freiburg": "Freiburg 1905",
+        "karlsruhe": "Karlsruhe 1905",
+        "scan": "Startcode scannen"
+    },
+    "regions": {
+        "FREIBURG_1905": {
+            "cardTitle": "Archiv: Freiburg 1905",
+            "location": "Freiburg im Breisgau"
+        },
+        "karlsruhe_default": {
+            "cardTitle": "Archiv: Karlsruhe 1905",
+            "location": "Karlsruhe"
+        }
+    },
     "card": {
         "title": "Archiv: Freiburg 1905",
         "location": "Freiburg im Breisgau",
-        "subtitle": "Untersuchen Sie die ungelösten Fälle der Vergangenheit."
+        "subtitle": "Untersuchen Sie die ungelosten Falle der Vergangenheit."
     },
     "btn": {
-        "continue": "Ermittlung Fortsetzen",
-        "newGame": "Neues Spiel"
+        "continue": "Ermittlung fortsetzen",
+        "newGame": "Neues Spiel",
+        "changeRegion": "Stadt wahlen"
     },
     "modal": {
         "resetTitle": "Neues Spiel starten?",

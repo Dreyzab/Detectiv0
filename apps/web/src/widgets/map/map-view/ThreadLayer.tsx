@@ -9,10 +9,11 @@ import type { MapPoint } from '@repo/shared';
 
 interface ThreadLayerProps {
     points: MapPoint[];
+    activeCaseId?: string;
 }
 
-export const ThreadLayer = ({ points }: ThreadLayerProps) => {
-    const { activeCaseId, flags, pointStates } = useDossierStore();
+export const ThreadLayer = ({ points, activeCaseId }: ThreadLayerProps) => {
+    const { flags, pointStates } = useDossierStore();
     const userQuests = useQuestStore((state) => state.userQuests);
     const questStages = useMemo(() => {
         const stages: Record<string, string> = {};
@@ -24,10 +25,10 @@ export const ThreadLayer = ({ points }: ThreadLayerProps) => {
         return stages;
     }, [userQuests]);
 
-    const threadData = useMemo<FeatureCollection>(() => {
-        if (!activeCaseId) return { type: 'FeatureCollection', features: [] };
+    const effectiveCaseId = activeCaseId ?? 'case_01_bank';
 
-        const relevantThreads = NARRATIVE_THREADS.filter(t => t.caseId === activeCaseId);
+    const threadData = useMemo<FeatureCollection>(() => {
+        const relevantThreads = NARRATIVE_THREADS.filter(t => t.caseId === effectiveCaseId);
 
         // Mock inventory for now, since it's required by ResolutionContext
         const inventory = {};
@@ -67,7 +68,7 @@ export const ThreadLayer = ({ points }: ThreadLayerProps) => {
             type: 'FeatureCollection',
             features: features as import('geojson').Feature[]
         };
-    }, [activeCaseId, flags, pointStates, points, questStages]);
+    }, [effectiveCaseId, flags, pointStates, points, questStages]);
 
     return (
         <Source id="narrative-threads" type="geojson" data={threadData}>

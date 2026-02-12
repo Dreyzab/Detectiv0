@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDossierStore } from '../dossier/store';
 import { logger, MapPointSchema, PointStateSchema, type MapPoint, type PointStateEnum } from '@repo/shared';
+import type { MapPointsQuery } from '@repo/contracts';
+import { useMapPointsStore } from './mapPointsStore';
 // import { resolveHardlink } from '../hardlinks'; // REMOVED: Legacy
 import { api } from '@/shared/api/client';
 
@@ -25,8 +27,11 @@ const normalizeMapPoint = (rawPoint: unknown): MapPoint | null => {
     const point = rawPoint as Record<string, unknown>;
     const bindings = parseJsonLike(point.bindings);
     const data = parseJsonLike(point.data);
+    const dataRecord = data && typeof data === 'object' && !Array.isArray(data)
+        ? data as Record<string, unknown>
+        : undefined;
 
-    const parsed = MapPointSchema.safeParse({
+    const normalizedInput = {
         id: point.id,
         title: point.title,
         category: point.category,
@@ -41,10 +46,19 @@ const normalizeMapPoint = (rawPoint: unknown): MapPoint | null => {
         defaultState: typeof point.defaultState === 'string' ? point.defaultState : undefined,
         active: typeof point.active === 'boolean' ? point.active : undefined,
         bindings: Array.isArray(bindings) ? bindings : [],
-        iconOverride: typeof point.iconOverride === 'string' ? point.iconOverride : undefined,
-        isHiddenInitially: typeof point.isHiddenInitially === 'boolean' ? point.isHiddenInitially : undefined,
-        data: data && typeof data === 'object' && !Array.isArray(data) ? data : undefined
-    });
+        iconOverride: typeof point.iconOverride === 'string'
+            ? point.iconOverride
+            : (typeof dataRecord?.iconOverride === 'string' ? dataRecord.iconOverride : undefined),
+        isHiddenInitially: typeof point.isHiddenInitially === 'boolean'
+            ? point.isHiddenInitially
+            : (typeof dataRecord?.isHiddenInitially === 'boolean' ? dataRecord.isHiddenInitially : undefined),
+        unlockGroup: typeof point.unlockGroup === 'string'
+            ? point.unlockGroup
+            : (typeof dataRecord?.unlockGroup === 'string' ? dataRecord.unlockGroup : undefined),
+        data: dataRecord
+    };
+
+    const parsed = MapPointSchema.safeParse(normalizedInput);
 
     if (parsed.success) {
         return parsed.data;
@@ -52,23 +66,8 @@ const normalizeMapPoint = (rawPoint: unknown): MapPoint | null => {
 
     // DB may contain legacy/unknown categories; keep point usable via safe fallback.
     const withFallbackCategory = MapPointSchema.safeParse({
-        id: point.id,
-        title: point.title,
+        ...normalizedInput,
         category: 'INTEREST',
-        lat: point.lat,
-        lng: point.lng,
-        description: typeof point.description === 'string' ? point.description : undefined,
-        image: typeof point.image === 'string' ? point.image : undefined,
-        packId: point.packId,
-        scope: typeof point.scope === 'string' ? point.scope : undefined,
-        caseId: typeof point.caseId === 'string' ? point.caseId : undefined,
-        retentionPolicy: typeof point.retentionPolicy === 'string' ? point.retentionPolicy : undefined,
-        defaultState: typeof point.defaultState === 'string' ? point.defaultState : undefined,
-        active: typeof point.active === 'boolean' ? point.active : undefined,
-        bindings: Array.isArray(bindings) ? bindings : [],
-        iconOverride: typeof point.iconOverride === 'string' ? point.iconOverride : undefined,
-        isHiddenInitially: typeof point.isHiddenInitially === 'boolean' ? point.isHiddenInitially : undefined,
-        data: data && typeof data === 'object' && !Array.isArray(data) ? data : undefined
     });
 
     if (withFallbackCategory.success) {
@@ -99,22 +98,32 @@ const normalizeUserStates = (rawStates: unknown): Record<string, PointStateEnum>
 export interface UseMapPointsParams {
     packId?: string;
     caseId?: string;
+    regionId?: string;
 }
 
-export const useMapPoints = ({ packId, caseId }: UseMapPointsParams = {}) => {
+export const buildMapPointsQuery = ({
+    packId,
+    caseId,
+    regionId
+}: UseMapPointsParams = {}): MapPointsQuery => ({
+    packId,
+    caseId: caseId ?? undefined,
+    regionId: regionId ?? undefined
+});
+
+export const useMapPoints = ({ packId, caseId, regionId }: UseMapPointsParams = {}) => {
     const pointStates = useDossierStore((state) => state.pointStates);
+    const upsertMapPoints = useMapPointsStore((state) => state.upsertPoints);
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ['map-points', packId, caseId],
+        queryKey: ['map-points', packId, caseId, regionId],
         queryFn: async () => {
-            // Contract-based API call
-            const query = {
-                packId,
-                caseId: caseId ?? undefined
-            };
-
             const { data, error } = await api.map.points.get({
-                query
+                query: buildMapPointsQuery({
+                    packId,
+                    caseId,
+                    regionId
+                })
             });
 
             if (error) {
@@ -144,17 +153,23 @@ export const useMapPoints = ({ packId, caseId }: UseMapPointsParams = {}) => {
 
     // Legacy Hardlink Merge Logic REMOVED.
     // Bindings now come directly from the DB via Eden.
-    const rawPoints = Array.isArray(data?.points) ? data.points : [];
-    const enrichedPoints = rawPoints
-        .map(normalizeMapPoint)
-        .filter((point): point is MapPoint => point !== null);
+    const enrichedPoints = useMemo(() => {
+        const rawPoints = Array.isArray(data?.points) ? data.points : [];
+        return rawPoints
+            .map(normalizeMapPoint)
+            .filter((point): point is MapPoint => point !== null);
+    }, [data]);
 
-    if (enrichedPoints.length > 0) {
-        logger.debug("Map Points Loaded via Eden", {
-            count: enrichedPoints.length,
-            ids: enrichedPoints.map(p => p.id).join(', ')
-        });
-    }
+    useEffect(() => {
+        upsertMapPoints(enrichedPoints);
+
+        if (enrichedPoints.length > 0) {
+            logger.debug("Map Points Loaded via Eden", {
+                count: enrichedPoints.length,
+                ids: enrichedPoints.map(p => p.id).join(', ')
+            });
+        }
+    }, [enrichedPoints, upsertMapPoints]);
 
     return {
         points: enrichedPoints,

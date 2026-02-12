@@ -203,6 +203,7 @@ export interface DiscoverEvidenceResponse {
 export interface WorldSnapshotResponse {
     success: true;
     worldClock: WorldClockState;
+    currentLocationId: string;
     player: PlayerProgressionState;
     factions: FactionReputationState[];
     relations: CharacterRelationState[];

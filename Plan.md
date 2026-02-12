@@ -1,224 +1,193 @@
-# Plan: Supabase Migration, Map Contract, and Point Lifecycle
+# PLAN-sandbox-flow
 
-## 1. Goal
-Build a stable, scalable Map Engine on Supabase with:
-- strict API contracts between `apps/server` and `apps/web`;
-- predictable point lifecycle for `global`, `case`, and `progression`;
-- clear behavior for temporary and persistent unlocks;
-- green baseline for build, lint, and tests.
+> Status: APPROVED
+> Owner: @project-planner  
+> Scope: `obsidian/StoryDetective/40_GameViewer/Sandbox_KA/**`  
+> Format: Obsidian notes + canvas only (no runtime code changes)
 
-This plan is focused on current blockers and the next architecture-safe implementation steps.
+---
 
-## 2. Current Problems (Baseline)
-1. Build and type errors in server/frontend integration.
-2. `MapPoint` data arrives as raw DB payload (`unknown` JSONB), not canonical DTO.
-3. Client imports server app type directly (`web` depends on `server/src/index.ts`).
-4. Tests are partially outdated (old endpoints/fields).
-5. Seeding strategy is not yet aligned with long-lived vs case-only points.
+## 1) Цель
 
-## 3. Target Architecture
+Собрать `Sandbox_KA` как понятный поток:
 
-### 3.1 Data Ownership
-- Supabase (PostgreSQL) is source of truth for map content and user point state.
-- Client stores optimistic/local UX state only.
-- Server resolves and returns canonical map DTO for UI.
+`Start -> Language -> Backstory -> First Map Scene -> Location Hubs -> Quest Flows -> Exit To Map`
 
-### 3.2 Point Classes
-- `global`: always available world services (merchant, healer, junk dealer).
-- `case`: points tied to current investigation.
-- `progression`: points unlocked during a case, then kept for long-term progression.
+Ключевая идея: карта является центральным узлом, а каждая локация работает как хаб с квестами и сервисами.
 
-### 3.3 Persistence Policy
-- `temporary`: visible while case is active or until case completion rules hide it.
-- `persistent_on_unlock`: once unlocked by player, remains available.
-- `permanent`: always available.
+---
 
-## 4. Database Design (Supabase)
+## 2) Зафиксированные решения (без доп. согласований)
 
-## 4.1 `map_points` (extend)
-Add columns:
-- `scope text not null default 'case'` (`global|case|progression`)
-- `case_id text null`
-- `retention_policy text not null default 'temporary'` (`temporary|persistent_on_unlock|permanent`)
-- `default_state text not null default 'locked'`
-- `active boolean not null default true`
+1. Механика напарника фиксируется как дизайн-узел в Obsidian (иконка на карте + текстовое облако), без кода.
+2. Выбор предыстории в этом цикле описывается на уровне флагов/заметок в дизайне, без внедрения в рантайм.
+3. `hub_*` трактуется как узел карты (точка входа + список доступных действий), а не как первая VN-сцена.
+4. На этапе планирования не делаем массовый перенос существующих `scene_*`; сначала строим поток и связываем узлы ссылками.
 
-Recommended indexes:
-- `(active, scope, case_id)`
-- `(packId, active)`
-- `(qr_code)` unique where needed
+---
 
-## 4.2 `user_map_point_user_states` (extend)
-Add columns:
-- `persistent_unlock boolean not null default false`
-- `unlocked_by_case_id text null`
-- `meta jsonb null`
+## 3) Целевой Flow (что должно быть на канвасе)
 
-Recommended indexes:
-- `(user_id, point_id)` (already PK)
-- `(user_id, persistent_unlock)`
+### 3.1 Entry Flow (линейный)
+1. `scene_start`
+2. `scene_language_select`
+3. `scene_backstory_select`
+4. `scene_map_intro`
 
-## 4.3 Migration Skeleton (example)
-```sql
-alter table map_points
-  add column if not exists scope text not null default 'case',
-  add column if not exists case_id text,
-  add column if not exists retention_policy text not null default 'temporary',
-  add column if not exists default_state text not null default 'locked',
-  add column if not exists active boolean not null default true;
+### 3.2 Map Layer (центр карты)
+От `scene_map_intro`:
+1. узел карты `map_karlsruhe_main`
+2. отдельные узлы доступных локаций (`loc_*` / `hub_*`)
+3. узел напарника `char_partner` (иконка в нижнем углу)
 
-alter table user_map_point_user_states
-  add column if not exists persistent_unlock boolean not null default false,
-  add column if not exists unlocked_by_case_id text,
-  add column if not exists meta jsonb;
+Текст напарника (обязательный дизайн-блок):
+- "Нужно поговорить с 3 заказчиками."
+- Пояснение: клиентские хабы открыты, порядок прохождения свободный.
+
+### 3.3 Hub Layer (каждая локация = хаб)
+Для каждого `hub_*` обязательны секции:
+1. `Available Quests`
+2. `Available Interactions` (trade, upgrade, heal, info, etc.)
+3. `Requirements` (что нужно для открытия/использования)
+4. `Purpose` (зачем игроку этот хаб)
+5. `Transitions` (куда уходит поток)
+
+### 3.4 Quest Flow Layer (из хаба в сюжет)
+Для каждого квеста:
+
+`hub_* -> scene_*_entry -> (структура как в Case01/Plot/01_Onboarding) -> scene_*_exit_to_map -> map_karlsruhe_main`
+
+`scene_*_entry` обязан содержать:
+1. первый background (что видит игрок)
+2. стартовый текст до первого выбора
+3. пассивные проверки/условия
+4. начальный state input (какие флаги/данные приходят игроку)
+
+`scene_*_exit_to_map` обязан содержать:
+1. результат квеста (кратко)
+2. что изменилось на карте
+3. какие новые возможности открыты
+
+---
+
+## 4) Целевая структура файлов
+
+```text
+obsidian/StoryDetective/40_GameViewer/Sandbox_KA/
+├── Sandbox_KA_Flow.canvas
+├── Sandbox_KA_Flow.md
+├── 00_Entry/
+│   ├── scene_start.md
+│   ├── scene_language_select.md
+│   ├── scene_backstory_select.md
+│   └── scene_map_intro.md
+├── 00_Global/
+│   ├── map_karlsruhe_main.md
+│   └── char_partner.md
+├── 01_Hubs/
+│   ├── hub_agency.md
+│   ├── hub_bank.md
+│   ├── hub_rathaus.md
+│   └── hub_estate.md
+├── 02_Quest_Entries/
+│   ├── scene_banker_entry.md
+│   ├── scene_dog_entry.md
+│   └── scene_ghost_entry.md
+└── 03_Map_Return/
+    ├── scene_banker_exit_to_map.md
+    ├── scene_dog_exit_to_map.md
+    └── scene_ghost_exit_to_map.md
 ```
 
-## 5. API Contract Strategy
+Примечание: существующие цепочки в `Plot/01_Banker`, `Plot/02_Dog`, `Plot/03_Ghost` используются как "внутренние квестовые блоки" через ссылки.
 
-### 5.1 Extract contracts into shared package
-Create `packages/contracts`:
-- `packages/contracts/map.ts`:
-  - request/response schemas for `/map/points`, `/map/resolve-code/:code`;
-  - canonical DTO types (`MapPointDto`, `UserPointStateDto`).
-- Optionally zod schemas reused by server validation and client parsing.
+---
 
-### 5.2 Remove direct web -> server source dependency
-Current anti-pattern:
-- `apps/web/src/shared/api/client.ts` imports type from `apps/server/src/index.ts`.
+## 5) Шаблоны узлов (минимум)
 
-Target:
-- both `web` and `server` import API contract types from `packages/contracts`.
-- web build no longer fails due to unrelated server compile errors.
+### 5.1 Шаблон `hub_*`
+1. Trigger Source
+2. Preconditions
+3. Designer View
+4. Mechanics View
+5. State Delta
+6. Transitions
+7. Validation
 
-## 6. Server Implementation Plan
+### 5.2 Шаблон `scene_*_entry`
+1. Trigger Source (из какого `hub_*` пришли)
+2. Preconditions (флаги/требования)
+3. Designer View (BG + стартовый текст)
+4. Mechanics View (проверки, выдачи, скрытые броски)
+5. State Delta (что выставляется на входе)
+6. Transitions (в первую сцену квеста)
+7. Validation
 
-## Phase A: Stabilization (blocking errors first)
-1. Fix `apps/server/src/modules/admin.ts`
-   - remove sqlite style `.all()` and `.run()`;
-   - use postgres drizzle query style only.
-2. Fix `apps/server/src/modules/map.ts`
-   - `import type` for type-only imports (`verbatimModuleSyntax`);
-   - remove dead imports/unused values.
-3. Keep endpoint behavior stable:
-   - `/map/points`
-   - `/map/resolve-code/:code`
+### 5.3 Шаблон `scene_*_exit_to_map`
+1. Trigger Source (финал квеста)
+2. Preconditions (какой исход)
+3. Designer View (итоговый текст)
+4. Mechanics View (разблокировки, награды)
+5. State Delta (изменения глобальных флагов)
+6. Transitions (`map_karlsruhe_main`)
+7. Validation
 
-## Phase B: Canonical map response
-1. Add server-side mapper:
-   - `apps/server/src/modules/map.ts` or `apps/server/src/modules/map.mapper.ts`.
-2. Parse and validate:
-   - `category` -> enum;
-   - `bindings` JSONB -> `MapPointBinding[]`;
-   - `data` -> typed safe object.
-3. Return canonical shape only:
-   - `points: MapPointDto[]`
-   - `userStates: Record<string, PointStateEnum>`
+---
 
-## Phase C: Lifecycle filtering
-In `/map/points` service logic:
-1. Load active points.
-2. Include by rules:
-   - all `global`;
-   - `case` for active case;
-   - `progression` if `persistent_unlock=true` or condition unlocked.
-3. Apply retention policy rules.
-4. Return final filtered list.
+## 6) План реализации по шагам
 
-## 7. Frontend Implementation Plan
+### Phase 0. Инвентаризация (без переносов)
+1. Зафиксировать текущие активные `scene_*` в `Sandbox_KA/Plot/**`.
+2. Привязать каждый существующий поток к будущему `hub_*`.
+3. Проверить, что для каждого квеста определены точка входа и точка возврата на карту.
 
-## Phase D: Typed consumption
-1. Update `apps/web/src/features/detective/data/useMapPoints.ts`
-   - consume typed DTO only;
-   - remove unsafe assumptions and raw `unknown` usage.
-2. Update `apps/web/src/widgets/map/map-view/MapView.tsx`
-   - strict point type support;
-   - typed `inventory: Record<string, number>`;
-   - no fallback logic based on malformed category strings.
-3. Fix path/type issues in Mind Palace:
-   - `apps/web/src/features/detective/mind-palace/usePassiveChecks.ts` import path fix.
+### Phase 1. Entry Chain
+1. Создать `00_Entry/*`.
+2. Сделать линейные связи от `scene_start` до `scene_map_intro`.
+3. Добавить в `scene_backstory_select` явный выход в карту.
 
-## Phase E: Contract isolation
-1. Replace client typing in `apps/web/src/shared/api/client.ts`:
-   - no import from `server/src/index.ts`;
-   - use shared contracts package.
+### Phase 2. Map + Partner Mechanic
+1. Создать `00_Global/map_karlsruhe_main.md`.
+2. Создать `00_Global/char_partner.md`.
+3. Зафиксировать механику иконок карты (дизайн-описание, без кода).
+4. Добавить реплику напарника про "3 заказчиков".
 
-## 8. Seeding and Content Strategy
+### Phase 3. Hubs
+1. Создать `01_Hubs/hub_*` по каждой ключевой локации.
+2. В каждом `hub_*` описать сервисы, квесты, требования, назначение.
+3. Добавить переходы из карты в каждый хаб и обратно.
 
-## 8.1 Seed model
-Split map content by role:
-- `global_points.ts`
-- `case_01_points.ts` (and later by cases)
-- `progression_points.ts`
+### Phase 4. Quest Entry Wrappers
+1. Создать `02_Quest_Entries/scene_*_entry`.
+2. Привязать каждый `scene_*_entry` к существующей цепочке в `Plot/*`.
+3. Для входного узла заполнить BG/текст/проверки/initial state.
 
-## 8.2 Seed behavior
-1. `global` points are upserted, never removed in case reseed.
-2. `case` points can be replaced by case seed.
-3. `progression` points are upserted and kept.
-4. User persistent unlocks must survive content reseed.
+### Phase 5. Exit To Map
+1. Создать `03_Map_Return/scene_*_exit_to_map`.
+2. Завести в эти узлы выходы из финалов каждого квеста.
+3. Описать пост-эффекты и новые опции на карте.
 
-## 8.3 Script updates
-Update `apps/server/src/scripts/seed-map.ts`:
-- remove stale import from deleted source (`@repo/shared/data/points`);
-- use current content sources only;
-- support idempotent upserts.
+### Phase 6. Canvas Assembly
+1. Собрать `Sandbox_KA_Flow.canvas` в 4 слоя: Entry, Map, Hubs, Quest Flows.
+2. Подписать стрелки условий (`available`, `locked`, `completed`).
+3. Проверить, что из любого финала есть маршрут назад в карту.
 
-## 9. Test Plan
+---
 
-## 9.1 Unit
-1. `packages/shared/lib/map-resolver.test.ts`
-   - update old field checks (`isAvailable` -> `enabled`);
-   - keep priority/condition tests.
-2. Add tests for mapper normalization (category/bindings/data).
+## 7) Критерии готовности (DoD)
 
-## 9.2 Server integration
-1. Update `apps/server/test/modules/map.test.ts`:
-   - use current endpoint `/map/resolve-code/:code`;
-   - avoid direct dependency on remote Supabase in unit-like tests.
-2. Update `apps/server/test/simple.test.ts` to avoid runtime enum assumptions.
+1. Есть единая линейная входная цепочка из 4 узлов до карты.
+2. На карте есть отдельные узлы локаций и отдельный узел напарника.
+3. В каждом `hub_*` описаны квесты, взаимодействия и требования.
+4. Для каждого квеста есть явный `scene_*_entry` и `scene_*_exit_to_map`.
+5. Каждый квестовый поток связан с паттерном `Case01/Plot/01_Onboarding`.
+6. Нет тупиков: любой квестовый финал возвращает игрока на карту.
+7. Все изменения документированы в Obsidian-узлах, без изменений runtime-кода.
 
-## 9.3 Frontend
-1. Fix test alias/mocks for TypedText:
-   - mock `soundManager` in test setup.
-2. Keep VN localization/engine tests as regression guards.
+---
 
-## 9.4 E2E
-1. Ensure playwright browser install in CI:
-   - `bun x playwright install chromium`.
-2. Keep smoke flow stable and minimal.
+## 8) Что делаем после утверждения плана
 
-## 10. Delivery Phases (Suggested Order)
-1. **P0 Stabilization**: compile/lint blockers (`admin`, `map`, `mind-palace import`).
-2. **P1 Contract Normalization**: canonical map DTO on server + typed web consumption.
-3. **P2 Lifecycle Model**: DB migration + filtering rules (`scope`, `retention_policy`).
-4. **P3 Seeding Refactor**: split global/case/progression, idempotent upserts.
-5. **P4 Test Modernization**: unit/integration/e2e baseline green.
-6. **P5 Hardening**: logging, metrics, and rollout safety.
-
-## 11. Definition of Done
-1. `bun run --filter web build` passes.
-2. `bun run --filter web lint` passes.
-3. `bun x tsc -p apps/server/tsconfig.json --noEmit` passes.
-4. Updated tests pass for resolver + map module + typed text baseline.
-5. `/map/points` returns canonical typed DTO only.
-6. Point lifecycle behavior verified:
-   - permanent global points visible;
-   - case points follow case scope;
-   - progression unlock persists across case completion/reseed.
-
-## 12. Rollback and Safety
-1. All schema changes through additive migrations first.
-2. Backfill scripts for new columns with safe defaults.
-3. Feature-flag lifecycle filtering if needed for staged rollout.
-4. Keep old endpoint behavior compatible until client switch is complete.
-
-## 13. Implementation Checklist (Actionable)
-- [x] Fix server compile blockers in `admin.ts` and `map.ts`.
-- [x] Fix mind-palace import path.
-- [x] Add canonical map mapper and schema validation.
-- [x] Create `packages/contracts` and move map API contracts there.
-- [x] Refactor `api/client.ts` to use shared contracts (no direct server source import).
-- [x] Implement DB migration for scope/retention/persistent unlock.
-- [x] Update `/map/points` selection logic by lifecycle rules.
-- [x] Refactor seed pipeline for global/case/progression.
-- [ ] Update outdated tests and restore green baseline (partially done).
-- [x] Add CI playwright install step and validate smoke test.
+1. Создаем каркас файлов и канвас-узлы по разделу 4.
+2. Заполняем шаблоны `hub_*`, `scene_*_entry`, `scene_*_exit_to_map`.
+3. Привязываем существующие квестовые сцены `Sandbox_KA/Plot/**` к новой карте потоков.

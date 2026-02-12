@@ -3,10 +3,13 @@ import { mapPoints, userMapPointStates } from '../db/schema';
 import type { MapPointCategory, MapPointBinding, MapCondition } from '@repo/shared';
 import { CASE_01_POINTS } from './data/case_01_points';
 import { resolvePointLifecycle } from './data/point_lifecycle';
+import { SANDBOX_KA_POINTS } from './data/sandbox_ka_points';
+import { resolveSandboxPointLifecycle } from './data/sandbox_ka_lifecycle';
 
 const mapCategory = (type: string): MapPointCategory => {
     switch (type) {
         case 'crime': return 'CRIME_SCENE';
+        case 'npc': return 'NPC';
         case 'support': return 'NPC';
         case 'bureau': return 'QUEST';
         case 'interest': return 'INTEREST';
@@ -43,16 +46,30 @@ const main = async () => {
         }
     }
 
-    const points = Object.values(CASE_01_POINTS);
+    const points = [
+        ...Object.values(CASE_01_POINTS),
+        ...Object.values(SANDBOX_KA_POINTS)
+    ];
     let upsertedCount = 0;
 
     for (const point of points) {
         const category = mapCategory(point.type);
-        const lifecycle = resolvePointLifecycle(point.id);
+        const lifecycle = point.packId === 'ka1905'
+            ? resolveSandboxPointLifecycle(point.id)
+            : resolvePointLifecycle(point.id);
 
         const additionalData: Record<string, unknown> = {};
         if (point.voices) {
             additionalData.voices = point.voices;
+        }
+        if (typeof point.iconOverride === 'string' && point.iconOverride.trim().length > 0) {
+            additionalData.iconOverride = point.iconOverride;
+        }
+        if (typeof point.isHiddenInitially === 'boolean') {
+            additionalData.isHiddenInitially = point.isHiddenInitially;
+        }
+        if (typeof point.unlockGroup === 'string' && point.unlockGroup.trim().length > 0) {
+            additionalData.unlockGroup = point.unlockGroup;
         }
 
         const bindings = point.bindings.map((binding) => mapBinding(binding as Record<string, unknown>));

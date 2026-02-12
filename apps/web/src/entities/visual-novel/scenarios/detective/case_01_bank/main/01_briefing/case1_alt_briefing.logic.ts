@@ -2,8 +2,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_ALT_BRIEFING_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_alt_briefing',
+    packId: 'fbg1905',
     title: 'Case 1 Briefing - Rathaus',
-    defaultBackgroundUrl: '/images/scenarios/street_day_1905.png',
+    defaultBackgroundUrl: '/images/scenarios/street_day_1905.webp',
     initialSceneId: 'beat0_mayor_intro',
     mode: 'fullscreen',
     scenes: {

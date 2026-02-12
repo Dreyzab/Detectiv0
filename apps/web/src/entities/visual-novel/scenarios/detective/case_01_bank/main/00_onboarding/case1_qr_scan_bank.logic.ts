@@ -2,8 +2,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_QR_SCAN_BANK_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_qr_scan_bank',
+    packId: 'fbg1905',
     title: 'Case 1 - QR Bank Gate',
-    defaultBackgroundUrl: '/images/scenarios/bank_exterior_crowd.png',
+    defaultBackgroundUrl: '/images/scenarios/bank_exterior_crowd.webp',
     initialSceneId: 'qr_gate',
     mode: 'fullscreen',
     scenes: {

@@ -120,7 +120,7 @@ export const CaseCard = ({
 
                     <div className="relative w-full h-40 bg-zinc-900 overflow-hidden shadow-inner border border-[#4a3b2a]/50">
                         <img
-                            src={point.image || "/images/detective/location_placeholder.png"}
+                            src={point.image || "/images/detective/location_placeholder.webp"}
                             alt={point.title}
                             className="w-full h-full object-cover opacity-80 sepia hover:sepia-0 transition-all duration-700 hover:scale-105"
                         />

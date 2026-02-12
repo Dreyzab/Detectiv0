@@ -29,6 +29,7 @@ export type MapCondition =
 export type MapAction =
     | { type: 'start_vn'; scenarioId: string }
     | { type: 'unlock_point'; pointId: string }
+    | { type: 'unlock_group'; groupId: string }
     | { type: 'grant_evidence'; evidenceId: string }
     | { type: 'add_fact'; factId: string } // Generic fact/flag
     | { type: 'set_flag'; flagId: string; value: boolean }
@@ -65,6 +66,7 @@ export interface MapPoint {
     // Visuals
     iconOverride?: string;
     isHiddenInitially?: boolean;
+    unlockGroup?: string;
 }
 
 export interface NarrativeThread {

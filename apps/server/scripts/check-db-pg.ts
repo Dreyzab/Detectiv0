@@ -1,10 +1,16 @@
 
+import 'dotenv/config';
 import { Client } from 'pg';
 
-const connectionString = "postgres://postgres.oumuctqpkzcxakqzslef:Detective6684Qaz@aws-0-eu-west-1.pooler.supabase.com:5432/postgres";
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+    console.error("DATABASE_URL not found in environment");
+    process.exit(1);
+}
 
 async function check() {
-    console.log("Connecting with pg...", connectionString.replace(/:[^:@]+@/, ':***@'));
+    console.log("Connecting with pg...", connectionString!.replace(/:[^:@]+@/, ':***@'));
     const client = new Client({
         connectionString,
         ssl: { rejectUnauthorized: false }

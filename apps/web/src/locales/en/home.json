@@ -1,6 +1,23 @@
 {
     "titleMain": "Grezwanderer 4",
     "subtitle": "Shadows of the Black Forest",
+    "regionSelector": {
+        "title": "Select City",
+        "subtitle": "Choose your active region or enter through a gateway QR.",
+        "freiburg": "Freiburg 1905",
+        "karlsruhe": "Karlsruhe 1905",
+        "scan": "Scan Start Code"
+    },
+    "regions": {
+        "FREIBURG_1905": {
+            "cardTitle": "Archive: Freiburg 1905",
+            "location": "Freiburg im Breisgau"
+        },
+        "karlsruhe_default": {
+            "cardTitle": "Archive: Karlsruhe 1905",
+            "location": "Karlsruhe"
+        }
+    },
     "card": {
         "title": "Archive: Freiburg 1905",
         "location": "Freiburg im Breisgau",
@@ -8,7 +25,8 @@
     },
     "btn": {
         "continue": "Continue Investigation",
-        "newGame": "New Game"
+        "newGame": "New Game",
+        "changeRegion": "Select City"
     },
     "modal": {
         "resetTitle": "Start New Game?",

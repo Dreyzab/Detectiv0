@@ -2,8 +2,9 @@ import type { VNScenarioLogic } from '../../../../../model/types';
 
 export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
     id: 'detective_case1_hbf_arrival',
+    packId: 'fbg1905',
     title: 'Arrival at Freiburg HBF',
-    defaultBackgroundUrl: '/images/scenarios/bahnhof_platform.png',
+    defaultBackgroundUrl: '/images/scenarios/bahnhof_platform.webp',
     initialSceneId: 'beat1_atmosphere',
     mode: 'fullscreen',
     scenes: {

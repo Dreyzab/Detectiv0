@@ -3,8 +3,9 @@ import type { VNScenarioLogic } from '../../../../model/types';
 
 export const questInspectorViennaLogic: VNScenarioLogic = {
     id: 'quest_inspector_vienna',
+    packId: 'fbg1905',
     title: 'Quest: Letters from Vienna',
-    defaultBackgroundUrl: '/images/scenarios/inspector_office_night.png', // or generic office night
+    defaultBackgroundUrl: '/images/scenarios/inspector_office_night.webp', // or generic office night
     initialSceneId: 'arrival',
     musicUrl: '/audio/ambient_office_night.mp3',
     scenes: {

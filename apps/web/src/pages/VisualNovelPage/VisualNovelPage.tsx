@@ -10,7 +10,7 @@ import { CHARACTERS } from '@repo/shared/data/characters';
 import type { VNChoice, VNAction } from '@/entities/visual-novel/model/types';
 import type { TextToken } from '@/shared/ui/TypedText/TypedText';
 import { ParliamentKeywordCard } from '@/features/detective/ui/ParliamentKeywordCard';
-import { PARLIAMENT_TOOLTIP_REGISTRY, getTooltipContent } from '@/features/detective/lib/tooltipRegistry';
+import { getTooltipContent, getTooltipSet } from '@/features/detective/lib/tooltipRegistry';
 import { preloadManager } from '@/shared/lib/preload';
 import { OnboardingModal } from '@/features/detective/onboarding/OnboardingModal';
 import { useInventoryStore } from '@/entities/inventory/model/store';
@@ -20,24 +20,31 @@ import { choiceIsAvailable, filterAvailableChoices, resolveAccessibleSceneId } f
 import type { VoiceId } from '@/features/detective/lib/parliament';
 import { isQuestAtStage as checkQuestAtStage, isQuestPastStage as checkQuestPastStage } from '@repo/shared/data/quests';
 import { buildNotebookEntryId, resolveTooltipKeyword } from '@/entities/visual-novel/lib/interactiveToken';
-
-const ONE_SHOT_SCENARIO_COMPLETION_FLAGS: Record<string, string> = {
-    intro_char_creation: 'char_creation_complete',
-    detective_case1_hbf_arrival: 'arrived_at_hbf',
-    detective_case1_map_first_exploration: 'case01_map_exploration_intro_done'
-};
+import { DEFAULT_PACK_ID } from '@repo/shared/data/pack-meta';
+import { isOneShotScenarioComplete } from '@/entities/visual-novel/lib/oneShotScenarios';
+import { resolveUnlockGroupPointIds } from '@/features/detective/lib/unlock-group';
 
 /**
  * Fullscreen Visual Novel Page
  * Route: /vn/:scenarioId
  */
 export const VisualNovelPage = () => {
-    const { scenarioId } = useParams<{ scenarioId: string }>();
+    const { scenarioId, packId: routePackId } = useParams<{ scenarioId: string; packId?: string }>();
     const navigate = useNavigate();
     const [activeTooltip, setActiveTooltip] = useState<{ keyword: string; rect: DOMRect } | null>(null);
     const processedOnEnterRef = useRef<Set<string>>(new Set());
     const processedPassiveChecksRef = useRef<Set<string>>(new Set());
     const suppressUrlScenarioRestartRef = useRef<string | null>(null);
+    const isProcessingRef = useRef(false);
+    const [isInteractionLocked, setIsInteractionLocked] = useState(false);
+    const lockInteraction = () => {
+        isProcessingRef.current = true;
+        setIsInteractionLocked(true);
+    };
+    const unlockInteraction = () => {
+        isProcessingRef.current = false;
+        setIsInteractionLocked(false);
+    };
 
     const {
         activeScenarioId,
@@ -72,13 +79,13 @@ export const VisualNovelPage = () => {
             return;
         }
 
-        const completionFlag = ONE_SHOT_SCENARIO_COMPLETION_FLAGS[scenarioId];
-        if (completionFlag && flags[completionFlag]) {
+        if (isOneShotScenarioComplete(scenarioId, flags)) {
             if (activeScenarioId === scenarioId) {
                 suppressUrlScenarioRestartRef.current = scenarioId;
                 endScenario();
             }
-            navigate('/map', { replace: true });
+            const mapRoute = routePackId ? `/city/${routePackId}/map` : '/map';
+            navigate(mapRoute, { replace: true });
             return;
         }
 
@@ -101,6 +108,8 @@ export const VisualNovelPage = () => {
 
     // Resolve Scenario dynamically from ID + Locale
     const activeScenario = activeScenarioId ? getScenarioById(activeScenarioId, locale) : null;
+    const activePackId = activeScenario?.packId ?? DEFAULT_PACK_ID;
+    const activeRoutePackId = activeScenario?.packId ?? routePackId;
     const evidenceIds = useMemo(() => new Set(evidence.map((item) => item.id)), [evidence]);
     const questStages = useMemo(() => {
         const stages: Record<string, string> = {};
@@ -141,11 +150,15 @@ export const VisualNovelPage = () => {
         }
     }
 
-    // Safety: fallback to initial if scene doesn't exist
     if (activeScenario && effectiveSceneId && !activeScenario.scenes[effectiveSceneId]) {
         console.warn(`[VN Recovery] Scene '${effectiveSceneId}' not found. Resetting to initial.`);
         effectiveSceneId = activeScenario.initialSceneId;
     }
+
+    // Unlock interaction when scene changes
+    useEffect(() => {
+        unlockInteraction();
+    }, [effectiveSceneId, activeScenarioId]);
 
     const scene = activeScenario?.scenes[effectiveSceneId || ''];
     const availableChoices = useMemo(
@@ -229,7 +242,8 @@ export const VisualNovelPage = () => {
 
         suppressUrlScenarioRestartRef.current = activeScenarioId;
         endScenario();
-        navigate('/map'); // Return to map between scenarios
+        const mapRoute = activeRoutePackId ? `/city/${activeRoutePackId}/map` : '/map';
+        navigate(mapRoute);
     };
 
     const handleTelegramComplete = (name: string) => {
@@ -252,7 +266,10 @@ export const VisualNovelPage = () => {
             return;
         }
 
-        const tooltipKeyword = resolveTooltipKeyword(token, getTooltipContent);
+        const tooltipKeyword = resolveTooltipKeyword(
+            token,
+            (lookupKey) => getTooltipContent(lookupKey, activePackId)
+        );
 
         if (token.type === 'clue' && token.payload) {
             const evidenceItem = EVIDENCE_REGISTRY[token.payload];
@@ -279,7 +296,7 @@ export const VisualNovelPage = () => {
             title: token.text,
             content: `Observed in ${activeScenario?.title || 'Unknown'}`,
             isLocked: false,
-            packId: 'case_01',
+            packId: activePackId,
             refId: token.type === 'clue' ? token.payload : undefined
         });
         if (result === 'added') {
@@ -298,6 +315,16 @@ export const VisualNovelPage = () => {
                 case 'unlock_point':
                     setPointState(action.payload, 'discovered');
                     break;
+                case 'unlock_group': {
+                    const pointIds = resolveUnlockGroupPointIds(action.payload, activePackId);
+                    if (pointIds.length === 0) {
+                        console.warn(`[VN Action] unlock_group matched no points: ${action.payload}`);
+                        break;
+                    }
+
+                    pointIds.forEach((pointId) => setPointState(pointId, 'discovered'));
+                    break;
+                }
                 case 'add_flag':
                     Object.entries(action.payload).forEach(([k, v]) => setFlag(k, v));
                     break;
@@ -305,8 +332,23 @@ export const VisualNovelPage = () => {
                     setQuestStage(action.payload.questId, action.payload.stage);
                     break;
                 case 'start_battle':
-                    handleEndScenario();
-                    navigate(`/battle?scenarioId=${action.payload.scenarioId}&deckType=${action.payload.deckType}`);
+                    suppressUrlScenarioRestartRef.current = activeScenarioId;
+                    endScenario();
+                    {
+                        const params = new URLSearchParams({
+                            scenarioId: action.payload.scenarioId
+                        });
+                        if (activeScenarioId) {
+                            params.set('returnScenarioId', activeScenarioId);
+                        }
+                        if (activeRoutePackId) {
+                            params.set('returnPackId', activeRoutePackId);
+                        }
+                        if (action.payload.deckType) {
+                            params.set('deckType', action.payload.deckType);
+                        }
+                        navigate(`/battle?${params.toString()}`);
+                    }
                     break;
                 case 'modify_relationship':
                     modifyRelationship(action.payload.characterId, action.payload.amount);
@@ -386,59 +428,90 @@ export const VisualNovelPage = () => {
 
     // Choice selection
     const handleChoice = (choice: VNChoice) => {
+        if (isProcessingRef.current) return;
+
         if (!choiceIsAvailable(choice, flags, conditionContext)) {
             return;
         }
 
-        // Add to history before processing
-        addDialogueEntry({
-            characterId: runtimeScene?.characterId,
-            characterName: character?.name,
-            text: runtimeScene?.text || '',
-            choiceMade: choice.text
-        });
+        lockInteraction();
+        let keepLockUntilTransition = false;
 
-        // Skill Check Logic
-        if (choice.skillCheck) {
-            const { id, voiceId, difficulty, onSuccess, onFail } = choice.skillCheck;
-            const level = voiceStats[voiceId] || 0;
-            const res = performSkillCheck(level, difficulty);
-            recordCheckResult(id, res.success ? 'passed' : 'failed');
+        try {
+            // Add to history before processing
+            addDialogueEntry({
+                characterId: runtimeScene?.characterId,
+                characterName: character?.name,
+                text: runtimeScene?.text || '',
+                choiceMade: choice.text
+            });
 
-            if (res.success) {
-                gainVoiceXp(voiceId, 20);
-                executeActions(onSuccess?.actions);
-                advanceScene(onSuccess?.nextSceneId || choice.nextSceneId);
-            } else {
-                gainVoiceXp(voiceId, 10);
-                executeActions(onFail?.actions);
-                if (onFail?.nextSceneId) advanceScene(onFail.nextSceneId);
+            // Skill Check Logic
+            if (choice.skillCheck) {
+                const { id, voiceId, difficulty, onSuccess, onFail } = choice.skillCheck;
+                const level = voiceStats[voiceId] || 0;
+                const res = performSkillCheck(level, difficulty);
+                recordCheckResult(id, res.success ? 'passed' : 'failed');
+
+                if (res.success) {
+                    gainVoiceXp(voiceId, 20);
+                    executeActions(onSuccess?.actions);
+                    const targetSceneId = onSuccess?.nextSceneId || choice.nextSceneId;
+                    keepLockUntilTransition = targetSceneId !== effectiveSceneId;
+                    advanceScene(targetSceneId);
+                } else {
+                    gainVoiceXp(voiceId, 10);
+                    executeActions(onFail?.actions);
+                    if (onFail?.nextSceneId) {
+                        keepLockUntilTransition = onFail.nextSceneId !== effectiveSceneId;
+                        advanceScene(onFail.nextSceneId);
+                    }
+                }
+                return;
             }
-            return;
-        }
 
-        // Standard Choice
-        executeActions(choice.actions);
-        if (choice.nextSceneId === 'END') {
-            handleEndScenario();
-        } else {
-            advanceScene(choice.nextSceneId);
+            // Standard Choice
+            executeActions(choice.actions);
+            if (choice.nextSceneId === 'END') {
+                keepLockUntilTransition = true;
+                handleEndScenario();
+            } else {
+                keepLockUntilTransition = choice.nextSceneId !== effectiveSceneId;
+                advanceScene(choice.nextSceneId);
+            }
+        } finally {
+            if (!keepLockUntilTransition) {
+                unlockInteraction();
+            }
         }
     };
 
     // Tap to advance (no choices)
     const handleTapAdvance = () => {
-        if ((!availableChoices || availableChoices.length === 0) && runtimeScene?.nextSceneId) {
-            addDialogueEntry({
-                characterId: runtimeScene.characterId,
-                characterName: character?.name,
-                text: runtimeScene.text
-            });
+        if (isProcessingRef.current) return;
 
-            if (runtimeScene.nextSceneId === 'END') {
-                handleEndScenario();
-            } else {
-                advanceScene(runtimeScene.nextSceneId);
+        if ((!availableChoices || availableChoices.length === 0) && runtimeScene?.nextSceneId) {
+            lockInteraction();
+            let keepLockUntilTransition = false;
+
+            try {
+                addDialogueEntry({
+                    characterId: runtimeScene.characterId,
+                    characterName: character?.name,
+                    text: runtimeScene.text
+                });
+
+                if (runtimeScene.nextSceneId === 'END') {
+                    keepLockUntilTransition = true;
+                    handleEndScenario();
+                } else {
+                    keepLockUntilTransition = runtimeScene.nextSceneId !== effectiveSceneId;
+                    advanceScene(runtimeScene.nextSceneId);
+                }
+            } finally {
+                if (!keepLockUntilTransition) {
+                    unlockInteraction();
+                }
             }
         }
     };
@@ -455,7 +528,7 @@ export const VisualNovelPage = () => {
         );
     }
 
-    const parliamentKeys = Object.keys(PARLIAMENT_TOOLTIP_REGISTRY);
+    const parliamentKeys = Object.keys(getTooltipSet(activePackId));
 
     return (
         <>
@@ -479,11 +552,18 @@ export const VisualNovelPage = () => {
                 onChoice={handleChoice}
                 onTapAdvance={handleTapAdvance}
                 highlightedTerms={parliamentKeys}
+                isInteractionLocked={isInteractionLocked}
+                testIds={{
+                    root: 'vn-fullscreen-root',
+                    sceneText: 'vn-scene-text',
+                    choices: 'vn-choices'
+                }}
             />
 
             {activeTooltip && (
                 <ParliamentKeywordCard
                     keyword={activeTooltip.keyword}
+                    packId={activePackId}
                     anchorRect={activeTooltip.rect}
                     onClose={() => setActiveTooltip(null)}
                 />

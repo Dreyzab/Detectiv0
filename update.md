@@ -4,6 +4,210 @@
 
 ---
 
+## [12.02.2026] - Test Pipeline Normalization (Hybrid via Bun Scripts)
+
+### Added
+- Root canonical test scripts:
+  - `test:bun`: `bun test packages/shared apps/server/test`
+  - `test:web`: `bun run --cwd apps/web test`
+  - `test:e2e:smoke`: `bun x playwright test e2e/smoke.spec.ts`
+  - `test:all`: `bun run test:bun && bun run test:web && bun run test:e2e:smoke`
+- Web test scripts:
+  - `apps/web/package.json`: `test` (`vitest run`), `test:watch` (`vitest`)
+
+### Changed
+- Web unit tests standardized to Vitest imports:
+  - `apps/web/src/pages/CharacterPage/psycheProfile.test.ts`
+  - `apps/web/src/entities/visual-novel/model/__tests__/engine.test.ts`
+- VN UI received stable E2E test hooks:
+  - `vn-fullscreen-root`, `vn-scene-text`, `vn-choices`
+  - `vn-choice-{choiceId}`
+- `e2e/vn-flow.test.ts` converted from template to real deterministic flow:
+  - direct route `/vn/intro_journalist`
+  - scene text assertions
+  - choice click assertion
+  - transition assertion by scene text/state change
+- CI workflow split into two jobs:
+  - required PR job: `unit-and-web-tests` (`test:bun` + `test:web`)
+  - smoke E2E job: `e2e-smoke` (`push main` + nightly `schedule`)
+
+### Validation
+- `bun run test:bun` - passed
+- `bun run test:web` - passed
+- `bun run test:e2e:smoke` - passed
+- `bun run test:e2e` - passed
+- `bun run test:all` - passed
+
+---
+
+## [11.02.2026] - Karlsruhe Sandbox Runtime Vertical Slice (Banker)
+
+### Added
+- Full runtime VN chain for Banker case:
+  - `sandbox_banker_client`
+  - `sandbox_banker_son_house`
+  - `sandbox_banker_tavern`
+  - `sandbox_banker_casino`
+  with locale packs `EN/DE/RU` and `default` exports.
+- Runtime compatibility stubs to prevent dead clicks on active map points:
+  - `sandbox_dog_mayor`
+  - `sandbox_ghost_investigate`
+  - `sandbox_ghost_guild`
+  - `sandbox_ghost_conclude`
+- Sandbox quest locale files (`EN/DE/RU`) for:
+  - `sandbox_karlsruhe`
+  - `sandbox_banker`
+  - `sandbox_dog`
+  - `sandbox_ghost`
+- Banker evidence entries in dossier registry:
+  - `ev_banker_debt_note`
+  - `ev_banker_pawn_receipt`
+  - `ev_banker_tavern_testimony`
+  - `ev_banker_croupier_ledger`
+
+### Changed
+- Karlsruhe pack default case switched to sandbox:
+  - `packages/shared/data/pack-meta.ts`
+  - `ka1905.defaultCaseId = 'sandbox_karlsruhe'`
+- Sandbox quests wired into runtime quest merge:
+  - `apps/web/src/features/quests/data.ts`
+- Map seed script now seeds Karlsruhe sandbox points and applies pack-specific lifecycle resolver:
+  - `apps/server/src/scripts/seed-map.ts`
+  - `apps/server/src/scripts/data/sandbox_ka_points.ts`
+  - `apps/server/src/scripts/data/sandbox_ka_lifecycle.ts`
+- Banker map bindings now start VN scenes directly for leads/casino (instead of pure flag actions):
+  - `loc_ka_son_house -> start_vn(sandbox_banker_son_house)`
+  - `loc_ka_tavern -> start_vn(sandbox_banker_tavern)`
+  - `loc_ka_casino -> start_vn(sandbox_banker_casino)`
+- Battle return flow now supports VN fallout continuation:
+  - `start_battle` passes `returnScenarioId` + `returnPackId`
+  - `BattlePage` applies `onWin/onLose` actions and resumes VN by `resumeSceneId` when available
+  - fallback remains pack-aware map return (`/city/:packId/map`, else `/map`)
+- `sandbox_son_duel` now returns to `resumeSceneId: 'casino_fallout'` for both win/lose paths.
+- Fullscreen VN map return logic is pack-aware in `VisualNovelPage`.
+
+### Fixed
+- `sandbox_intro` now has valid character IDs (`clara_altenburg`) and a proper explicit exit choice to map.
+- Removed intro replay loop trigger from sandbox meta quest transition.
+- Build blocker fixed: removed unused `STARTER_ITEM_STACKS` import in inventory store.
+
+### Validation
+- `bun --filter web build`
+- `cd apps/web && bun vitest run src/entities/visual-novel/scenarios/__tests__`
+- `bun x tsc -p apps/server/tsconfig.json --noEmit`
+
+---
+
+## [10.02.2026] - QR Entry Flow Review and Hardening
+
+### Findings
+- Review identified one implementation risk in `apps/web/src/pages/KarlsruheEntryPage.tsx`:
+  - synchronous `setState` inside `useEffect` (`react-hooks/set-state-in-effect`).
+
+### Fixed
+- Removed effect-based state synchronization for selected origin.
+- Replaced it with derived `effectiveSelectedOrigin` logic (`selectedOrigin ?? initialOrigin`) to keep behavior stable without cascading renders.
+
+### Validation
+- `bunx eslint --config apps/web/eslint.config.js apps/web/src/pages/KarlsruheEntryPage.tsx apps/web/src/pages/EntryPage.tsx apps/web/src/App.tsx apps/web/src/shared/lib/i18n.ts`
+- `cd apps/web && bunx tsc --noEmit`
+
+---
+
+## [10.02.2026] - QR Entry Flow (Freiburg + Karlsruhe)
+
+### Added
+- Entry dispatcher route and pages:
+  - `apps/web/src/pages/EntryPage.tsx`
+  - `apps/web/src/pages/KarlsruheEntryPage.tsx`
+- New localization namespace for entry onboarding:
+  - `apps/web/src/locales/en/entry.json`
+  - `apps/web/src/locales/de/entry.json`
+  - `apps/web/src/locales/ru/entry.json`
+
+### Changed
+- Routing:
+  - Added `/entry/:packId` in `apps/web/src/App.tsx`.
+  - Existing city routes remain active:
+    - `/city/:packId/map`
+    - `/city/:packId/vn/:scenarioId`
+- Entry behavior:
+  - `fbg1905` entry redirects to current `/` homepage flow.
+  - `ka1905` entry opens a dedicated 3-step onboarding flow:
+    - language selection (`useVNStore.setLocale`)
+    - origin selection (`ka_origin_*` dossier flags, mutually exclusive)
+    - start game (`ka_onboarding_complete` + redirect to `/city/ka1905/map`)
+  - Unknown `packId` falls back to `/`.
+- i18n:
+  - Added `entry` namespace to `apps/web/src/shared/lib/i18n.ts` resources and namespace list.
+
+### Notes
+- Karlsruhe onboarding has hydration-aware guard:
+  - waits for dossier hydration before branching
+  - if `ka_onboarding_complete` is already true, skips onboarding and redirects directly to `/city/ka1905/map`
+- Freiburg flow is unchanged and backward compatible.
+
+### Validation
+- `cd apps/web && bunx tsc --noEmit`
+
+---
+
+## [10.02.2026] - Multi-City Runtime Base (Option B+)
+
+### Added
+- `packages/shared/data/pack-meta.ts`:
+  - `PackMeta` interface
+  - `PACK_META` registry for `fbg1905` and `ka1905`
+  - `DEFAULT_PACK_ID`, `DEFAULT_MAPBOX_STYLE`, `getPackMeta()`
+- Shared one-shot utility: `apps/web/src/entities/visual-novel/lib/oneShotScenarios.ts`
+  - `ONE_SHOT_COMPLETION_FLAGS`
+  - `isOneShotScenarioComplete()`
+
+### Changed
+- Routing:
+  - Added city-aware routes in `apps/web/src/App.tsx`:
+    - `/city/:packId/map`
+    - `/city/:packId/vn/:scenarioId`
+- Map runtime:
+  - `apps/web/src/widgets/map/map-view/MapView.tsx` now resolves active pack from prop/route and uses `getPackMeta()` for:
+    - region (`REGIONS[packMeta.regionId]`)
+    - map style (`packMeta.mapStyle`)
+    - default case fallback (`packMeta.defaultCaseId`)
+  - `useMapPoints` now receives active `packId` from pack meta.
+- VN model/runtime:
+  - Added optional `packId?: string` to `VNScenario` and `VNScenarioLogic` in `apps/web/src/entities/visual-novel/model/types.ts`.
+  - `mergeScenario()` now propagates `packId` and defaults to `DEFAULT_PACK_ID` in `apps/web/src/entities/visual-novel/lib/localization.ts`.
+  - Existing detective `.logic.ts` scenarios were made explicit with `packId: 'fbg1905'`.
+- Tooltips:
+  - `apps/web/src/features/detective/lib/tooltipRegistry.ts` now supports `TOOLTIP_SETS[packId]` with fallback to `fbg1905`.
+  - Added `getTooltipSet(packId?)`.
+  - `getTooltipContent(key, packId?)` is now pack-aware.
+- VN UI:
+  - `apps/web/src/pages/VisualNovelPage/VisualNovelPage.tsx` and `apps/web/src/widgets/visual-novel/VisualNovelOverlay.tsx` derive active `packId` from scenario and pass it to tooltip lookup.
+  - `ParliamentKeywordCard` now accepts `packId` and resolves tooltip content in pack context.
+- One-shot cleanup:
+  - Consolidated duplicated one-shot completion checks into the shared utility and wired it in:
+    - `apps/web/src/pages/HomePage.tsx`
+    - `apps/web/src/widgets/map/map-view/MapView.tsx`
+    - `apps/web/src/pages/VisualNovelPage/VisualNovelPage.tsx`
+    - `apps/web/src/widgets/visual-novel/VisualNovelOverlay.tsx`
+    - `apps/web/src/features/detective/lib/map-action-handler.ts`
+
+### Notes
+- Parliament voices remain universal across cities (no city-specific voice roster split).
+- Karlsruhe in this slice is structural only (`ka1905` metadata + routing/runtime support). Real Karlsruhe content is planned separately.
+
+### Validation
+- Passed:
+  - `npx vitest run src/entities/visual-novel/scenarios/__tests__/de-localization-integrity.test.ts`
+  - `npx vitest run src/entities/visual-novel/scenarios/__tests__/localization.test.ts`
+  - `npx vitest run src/entities/visual-novel/lib/__tests__/interactiveToken.test.ts`
+- Known unrelated blocker:
+  - `npm run build` currently fails on existing issue:
+    - `apps/web/src/entities/inventory/model/store.ts(6,25): TS6133 'STARTER_ITEM_STACKS' is declared but its value is never read.`
+
+---
+
 ## [07.02.2026] — Case 01 Lead Payoff Expansion (Clue Seeding -> Lead Branches)
 
 ### Changed

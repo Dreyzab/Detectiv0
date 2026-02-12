@@ -1,0 +1,31 @@
+{
+    "meta": {
+        "step": "Schritt {{current}} von {{total}}"
+    },
+    "language": {
+        "title": "Sprache waehlen",
+        "subtitle": "Stelle die Sprache fuer das Karlsruhe-Onboarding ein.",
+        "continue": "Weiter",
+        "en": "Englisch",
+        "de": "Deutsch",
+        "ru": "Russisch"
+    },
+    "origin": {
+        "title": "Herkunft waehlen",
+        "subtitle": "Das legt dein Startprofil in Karlsruhe fest.",
+        "scholar": "Ortskundiger Gelehrter",
+        "scholarDesc": "Du kennst Institutionen, Archive und soziale Kreise der Stadt.",
+        "journalist": "Auslaendischer Journalist",
+        "journalistDesc": "Du bist ein Aussenseiter mit scharfen Fragen und schnellem Zugang zu Geruechten.",
+        "doctor": "Reisender Arzt",
+        "doctorDesc": "Du bewegst dich zwischen Klassen und Bezirken unter medizinischer Deckung.",
+        "back": "Zurueck",
+        "continue": "Weiter"
+    },
+    "start": {
+        "title": "Karlsruhe, 1905",
+        "subtitle": "Profil gewaehlt: {{origin}}. Deine Akte ist bereit.",
+        "back": "Zurueck",
+        "enter": "Karlsruhe betreten"
+    }
+}
