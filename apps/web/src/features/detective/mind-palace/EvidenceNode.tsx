@@ -23,7 +23,7 @@ export const EvidenceNode = forwardRef<HTMLDivElement, EvidenceNodeProps>(
             [flipTrigger]
         );
         const transition = useMemo(
-            () => (flipTrigger ? { duration: 0.65, ease: 'easeInOut' } : { duration: 0.2 }),
+            () => (flipTrigger ? { duration: 0.65 } : { duration: 0.2 }),
             [flipTrigger]
         );
 
