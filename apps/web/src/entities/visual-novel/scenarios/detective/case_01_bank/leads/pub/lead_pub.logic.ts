@@ -20,6 +20,13 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             characterId: 'inspector',
             choices: [
                 {
+                    id: 'follow_hidden_slot_route',
+                    nextSceneId: 'pub_hidden_slot_path',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_hidden_slot'] && !flags['pub_checked_hidden_slot']
+                },
+                {
                     id: 'follow_night_guard_rumor',
                     nextSceneId: 'pub_night_guard_path',
                     type: 'inquiry',
@@ -29,6 +36,20 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
                 { id: 'approach_gustav', nextSceneId: 'gustav_intro' },
                 { id: 'ask_barkeep', nextSceneId: 'barkeep_intro' },
                 { id: 'eavesdrop', nextSceneId: 'eavesdrop' }
+            ]
+        },
+        'pub_hidden_slot_path': {
+            id: 'pub_hidden_slot_path',
+            characterId: 'inspector',
+            nextSceneId: 'gustav_intro',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'pub_checked_hidden_slot': true,
+                        'clue_scaffold_hidden_entry': true
+                    }
+                }
             ]
         },
         'pub_night_guard_path': {
@@ -67,8 +88,16 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
                     actions: [{ type: 'add_flag', payload: { 'gustav_asked_hartmann': true } }]
                 },
                 {
+                    id: 'ask_relic_transfer',
+                    nextSceneId: 'gustav_relic_transfer_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_relic_gap'] && !flags['gustav_asked_relic_transfer'],
+                    actions: [{ type: 'add_flag', payload: { 'gustav_asked_relic_transfer': true } }]
+                },
+                {
                     id: 'charisma_buy_drink',
-                    nextSceneId: 'gustav_charisma_result',
+                    nextSceneId: 'gustav_charisma_fail',
                     skillCheck: {
                         id: 'chk_pub_charisma_gustav',
                         voiceId: 'charisma',
@@ -79,7 +108,7 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'authority_badge',
-                    nextSceneId: 'gustav_authority_result',
+                    nextSceneId: 'gustav_clams_up',
                     skillCheck: {
                         id: 'chk_pub_authority_gustav',
                         voiceId: 'authority',
@@ -97,6 +126,14 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             nextSceneId: 'gustav_suspicious',
             onEnter: [
                 { type: 'add_flag', payload: { 'clue_hartmann_cash_runner': true } }
+            ]
+        },
+        'gustav_relic_transfer_reply': {
+            id: 'gustav_relic_transfer_reply',
+            characterId: 'cleaner',
+            nextSceneId: 'gustav_suspicious',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_relic_transfer_rumor': true } }
             ]
         },
         'gustav_charisma_success': {
@@ -156,6 +193,14 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
                 { id: 'barkeep_ask_gustav', nextSceneId: 'barkeep_points_gustav' },
                 { id: 'barkeep_ask_rumors', nextSceneId: 'barkeep_rumors' },
                 {
+                    id: 'ask_relic_transfer_books',
+                    nextSceneId: 'barkeep_relic_transfer_books',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_relic_gap'] &&
+                        !flags['barkeep_relic_transfer_asked']
+                },
+                {
                     id: 'ask_previous_investigator',
                     nextSceneId: 'barkeep_previous_investigator',
                     type: 'inquiry',
@@ -174,6 +219,20 @@ export const LEAD_PUB_LOGIC: VNScenarioLogic = {
             id: 'barkeep_rumors',
             characterId: 'innkeeper',
             nextSceneId: 'entrance'
+        },
+        'barkeep_relic_transfer_books': {
+            id: 'barkeep_relic_transfer_books',
+            characterId: 'innkeeper',
+            nextSceneId: 'entrance',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'barkeep_relic_transfer_asked': true,
+                        'clue_relic_transfer_rumor': true
+                    }
+                }
+            ]
         },
         'barkeep_previous_investigator': {
             id: 'barkeep_previous_investigator',

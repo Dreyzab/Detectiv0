@@ -45,6 +45,30 @@ export const EVIDENCE_REGISTRY: Record<string, Evidence> = {
         description: 'A piece of expensive fabric found near the vault.',
         packId: 'fbg1905'
     },
+    'clue_sleep_agent': {
+        id: 'clue_sleep_agent',
+        name: 'Sleep Agent Trace',
+        description: 'Witness and residue cues suggest synchronized sedation before the breach.',
+        packId: 'fbg1905'
+    },
+    'clue_lock_signature': {
+        id: 'clue_lock_signature',
+        name: 'Lock Signature',
+        description: 'The vault lock was breached by controlled heat and cooling, not brute force.',
+        packId: 'fbg1905'
+    },
+    'clue_relic_gap': {
+        id: 'clue_relic_gap',
+        name: 'Relic Gap Pattern',
+        description: 'Selective empty cradles indicate targeted municipal relic extraction.',
+        packId: 'fbg1905'
+    },
+    'clue_hidden_slot': {
+        id: 'clue_hidden_slot',
+        name: 'Hidden Slot Route',
+        description: 'A concealed transfer path may have been used for entry or extraction.',
+        packId: 'fbg1905'
+    },
 
     // Karlsruhe Sandbox: Banker Case
     'ev_banker_debt_note': {

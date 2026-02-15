@@ -49,16 +49,16 @@ export const CASE1_ALT_BRIEFING_EN: VNContentPack = {
             }
         },
         'beat2_exactly_happened_professional': {
-            text: '"Pre-dawn access, no signs of forced entry, the wrong files missing, and too many people pretending this is routine. That is what happened."'
+            text: '"Pre-dawn access, mass drowsiness among staff, no crude forced entry, and selective vault losses. Too many people want this called routine."'
         },
         'beat2_exactly_happened_harsh': {
-            text: '"A clean breach and a dirty cover story. Nobody admits who had vault access that night."'
+            text: '"A clean breach and a dirty cover story. Witnesses slept through the breach, and nobody admits who controlled vault access that night."'
         },
         'beat2_exactly_happened_soft': {
-            text: '"Quiet entry, missing documents, frightened staff, and pressure from city hall. It is not just a robbery."'
+            text: '"Quiet entry, synchronized sleep, frightened staff, and pressure from city hall. It is not just a robbery."'
         },
         'beat2_taken_answer': {
-            text: '"Not money. Documents from a vault box. Police refuse to name the box number."'
+            text: '"Cash is missing, yes, but targeted collateral relics disappeared too. Police refuse to publish the full list."'
         },
         'beat2_inspector_answer': {
             text: '"Inspector Weiss. Competent, but not fond of visitors from Berlin."'

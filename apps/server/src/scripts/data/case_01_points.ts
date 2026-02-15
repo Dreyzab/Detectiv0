@@ -381,7 +381,13 @@ export const CASE_01_POINTS: Record<string, DetectivePoint> = {
                 trigger: 'marker_click',
                 label: 'Inspect Warehouse',
                 priority: 100,
-                conditions: [{ type: 'flag_is', flagId: 'archive_casefile_complete', value: true }],
+                conditions: [{
+                    type: 'logic_and',
+                    conditions: [
+                        { type: 'flag_is', flagId: 'archive_casefile_complete', value: true },
+                        { type: 'flag_is', flagId: 'case_resolved', value: false }
+                    ]
+                }],
                 actions: [{ type: 'start_vn', scenarioId: 'case1_finale' }]
             }
         ],

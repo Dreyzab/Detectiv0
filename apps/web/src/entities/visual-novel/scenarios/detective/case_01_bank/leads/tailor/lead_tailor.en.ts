@@ -12,6 +12,8 @@ export const LEAD_TAILOR_EN: VNContentPack = {
                 'show_fabric': 'Show torn velvet from the bank.',
                 'ask_hartmann_orders': '"Does the name Hartmann appear in your records?"',
                 'ask_box217_usage': '"Any clients tied to private box 217?"',
+                'ask_lock_signature_workshop': '"Anyone in your circle could produce controlled high heat tools?"',
+                'ask_hidden_slot_pattern': '"Do hidden seam designs map to concealed transport routes?"',
                 'ask_customers': '"Who commissions your premium work?"',
                 'browse_stock': 'Inspect the workshop stock.',
                 'leave_shop': 'Leave.'
@@ -29,6 +31,7 @@ export const LEAD_TAILOR_EN: VNContentPack = {
             choices: {
                 'perception_check_records': '[Perception] Read what is visible on his ledger.',
                 'press_galdermann_name': '"Galdermann surfaced in this case before your name did. Explain."',
+                'press_relic_gap': '"Selective relic shelves were cleared. Who orders carrying capes for that?"',
                 'ask_client': '"Who bought this recently?"',
                 'thank_leave': 'Thank him and leave.'
             }
@@ -51,8 +54,17 @@ export const LEAD_TAILOR_EN: VNContentPack = {
         'tailor_box217_response': {
             text: '"Private-box clients request travel capes with hidden inner seams. Expensive work, minimal names."'
         },
+        'tailor_lock_signature_response': {
+            text: 'Fein studies your sketch. "That pattern needs controlled burners and cooling baths. Not common burglars, more workshop discipline."'
+        },
+        'tailor_hidden_slot_response': {
+            text: '"Smuggling coats use fold-lock seams aligned with wall recess handoff. Stage crews call it a blind pass."'
+        },
         'tailor_galdermann_reply': {
             text: 'Fein exhales. "I do not discuss banking patrons. I discuss measurements and payment."'
+        },
+        'tailor_relic_gap_reply': {
+            text: '"Runners asked for padded liners sized for narrow relic cases. Not cash sacks. Whoever hired them knew dimensions."' 
         },
         'tailor_description': {
             text: '"Buyer had a [[dueling scar]] and slight limp. Mentioned [[Corps Suevia]]."'

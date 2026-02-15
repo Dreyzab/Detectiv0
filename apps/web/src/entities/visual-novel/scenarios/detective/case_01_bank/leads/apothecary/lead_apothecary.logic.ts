@@ -44,6 +44,22 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                         flags['clue_hartmann_internal_contact'] &&
                         !flags['apothecary_asked_hartmann']
                 },
+                {
+                    id: 'ask_sleep_agent_profile',
+                    nextSceneId: 'apothecary_sleep_agent_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_sleep_agent'] &&
+                        !flags['apothecary_asked_sleep_agent']
+                },
+                {
+                    id: 'ask_relic_chain',
+                    nextSceneId: 'apothecary_relic_gap_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_relic_gap'] &&
+                        !flags['apothecary_asked_relic_gap']
+                },
                 { id: 'ask_poisons', nextSceneId: 'ask_poisons' },
                 { id: 'ask_chemicals', nextSceneId: 'ask_chemicals' },
                 { id: 'leave_shop', nextSceneId: 'END' }
@@ -74,7 +90,7 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
             choices: [
                 {
                     id: 'forensics_check',
-                    nextSceneId: 'forensics_result',
+                    nextSceneId: 'forensics_fail',
                     skillCheck: {
                         id: 'chk_apothecary_forensics',
                         voiceId: 'senses',
@@ -90,6 +106,14 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                     condition: (flags) =>
                         flags['clue_sender_residue_match'] &&
                         !flags['apothecary_crosschecked_sender']
+                },
+                {
+                    id: 'crosscheck_lock_signature',
+                    nextSceneId: 'apothecary_lock_signature_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_lock_signature'] &&
+                        !flags['apothecary_checked_lock_signature']
                 },
                 { id: 'ask_source', nextSceneId: 'apothecary_source' },
                 { id: 'thank_leave', nextSceneId: 'END' }
@@ -134,6 +158,34 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                 }
             ]
         },
+        'apothecary_sleep_agent_reply': {
+            id: 'apothecary_sleep_agent_reply',
+            characterId: 'apothecary',
+            nextSceneId: 'apothecary_greets',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'apothecary_asked_sleep_agent': true,
+                        'clue_sleep_agent_confirmed': true
+                    }
+                }
+            ]
+        },
+        'apothecary_relic_gap_reply': {
+            id: 'apothecary_relic_gap_reply',
+            characterId: 'apothecary',
+            nextSceneId: 'apothecary_greets',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'apothecary_asked_relic_gap': true,
+                        'clue_relic_preservative_chain': true
+                    }
+                }
+            ]
+        },
         'forensics_success': {
             id: 'forensics_success',
             characterId: 'inspector',
@@ -147,6 +199,20 @@ export const LEAD_APOTHECARY_LOGIC: VNScenarioLogic = {
                         name: 'University Formula',
                         description: 'The specific mixture ratio matches research published last year by Prof. Kiliani\'s chemistry department.',
                         packId: 'fbg1905'
+                    }
+                }
+            ]
+        },
+        'apothecary_lock_signature_reply': {
+            id: 'apothecary_lock_signature_reply',
+            characterId: 'apothecary',
+            nextSceneId: 'apothecary_result',
+            onEnter: [
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'apothecary_checked_lock_signature': true,
+                        'clue_lock_cooling_agent': true
                     }
                 }
             ]

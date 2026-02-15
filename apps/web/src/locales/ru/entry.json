@@ -1,31 +1,31 @@
 {
     "meta": {
-        "step": "Shag {{current}} iz {{total}}"
+        "step": "Шаг {{current}} из {{total}}"
     },
     "language": {
-        "title": "Vyberite yazyk",
-        "subtitle": "Nastroyte yazyk dlya vkhoda v Karlsruhe.",
-        "continue": "Prodolzhit",
-        "en": "Angliyskiy",
-        "de": "Nemetskiy",
-        "ru": "Russkiy"
+        "title": "Выберите язык",
+        "subtitle": "Настройте язык для входа в Карлсруэ.",
+        "continue": "Продолжить",
+        "en": "Английский",
+        "de": "Немецкий",
+        "ru": "Русский"
     },
     "origin": {
-        "title": "Vyberite proiskhozhdenie",
-        "subtitle": "Eto opredelit startovyy profil v Karlsruhe.",
-        "scholar": "Mestnyy uchenyy",
-        "scholarDesc": "Vy znaete arkhivy, uchrezhdeniya i sotsialnye krugi goroda.",
-        "journalist": "Inostrannyy zhurnalist",
-        "journalistDesc": "Vy autsayder s ostrymi voprosami i bystrym dostupom k slukham.",
-        "doctor": "Puteshestvuyushchiy vrach",
-        "doctorDesc": "Vy peremeshchayetes mezhdu rayonami i sloyami obshchestva pod meditsinskoy roleyu.",
-        "back": "Nazad",
-        "continue": "Prodolzhit"
+        "title": "Выберите происхождение",
+        "subtitle": "Это определит стартовый профиль в Карлсруэ.",
+        "scholar": "Местный ученый",
+        "scholarDesc": "Вы знаете архивы, учреждения и социальные круги города.",
+        "journalist": "Иностранный журналист",
+        "journalistDesc": "Вы чужак с острыми вопросами и быстрым доступом к слухам.",
+        "doctor": "Путешествующий врач",
+        "doctorDesc": "Вы свободно перемещаетесь между районами и слоями общества как врач.",
+        "back": "Назад",
+        "continue": "Продолжить"
     },
     "start": {
-        "title": "Karlsruhe, 1905",
-        "subtitle": "Vybrannyy profil: {{origin}}. Vashe dosye gotovo.",
-        "back": "Nazad",
-        "enter": "Voyti v Karlsruhe"
+        "title": "Карлсруэ, 1905",
+        "subtitle": "Выбранный профиль: {{origin}}. Ваше досье готово.",
+        "back": "Назад",
+        "enter": "Войти в Карлсруэ"
     }
 }

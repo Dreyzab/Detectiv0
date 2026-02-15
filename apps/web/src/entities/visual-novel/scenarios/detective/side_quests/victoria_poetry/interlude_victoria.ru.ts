@@ -1,9 +1,38 @@
-﻿import type { VNContentPack } from '@/entities/visual-novel/model/types';
-import contentEn from './interlude_victoria.en';
+﻿import type { VNContentPack } from '../../../../model/types';
 
-const contentRu: VNContentPack = {
-    ...contentEn,
-    locale: 'ru'
+export const INTERLUDE_VICTORIA_RU: VNContentPack = {
+    locale: 'ru',
+    scenes: {
+        'street_encounter': {
+            text: 'Вы идете с Викторией по Кайзер-Йозеф-Штрассе. Внезапно [[нищий]] плюет ей под ноги. "Шлюха! Паразит! Дочь вора!"'
+        },
+        'victoria_reaction': {
+            text: 'Виктория замирает. Лицо то белеет, то краснеет. Сжимает парасоль, пока костяшки не побелели. Нищий исчезает в толпе.'
+        },
+        'victoria_confession': {
+            text: '"Раньше они снимали шляпы," шепчет, голос дрожит. "Теперь... смотрят, будто я сама их уморила. Это то, кто я есть, Инспектор? Просто... дочь своего отца?"',
+            choices: {
+                'comfort_empathy': '[Эмпатия] "Ты — это ты, Виктория. А не его грехи."',
+                'challenge_authority': '[Авторитет] "Игнорируй их. Волки лают на то, до чего не могут дотянуться."',
+                'ignore': 'Ничего не говорить.'
+            }
+        },
+        'comfort_success': {
+            text: 'Она смотрит удивленно. "Моя собственная... Я стараюсь. Но этот город... он помнит имена." Глубокий вдох. "Спасибо. Мне нужно было это услышать."'
+        },
+        'comfort_fail': {
+            text: '"Тебе легко говорить. Ты не носишь имя фон Кребс." Она смотрит вдаль.'
+        },
+        'challenge_success': {
+            text: 'Она выпрямляется, маскируя боль гордостью. "Ты прав. Я не должна позволять сброду тревожить меня. Я Кребс, в конце концов."'
+        },
+        'challenge_fail': {
+            text: '"Они не волки, Инспектор. Они голодные люди. И мой отец... неважно." Она идет вперед.'
+        },
+        'ignore_res': {
+            text: 'Тишина повисает между вами. Виктория вздыхает и берет себя в руки.'
+        }
+    }
 };
 
-export default contentRu;
+export default INTERLUDE_VICTORIA_RU;

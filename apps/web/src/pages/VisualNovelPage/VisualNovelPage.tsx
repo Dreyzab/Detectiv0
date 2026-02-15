@@ -23,6 +23,9 @@ import { buildNotebookEntryId, resolveTooltipKeyword } from '@/entities/visual-n
 import { DEFAULT_PACK_ID } from '@repo/shared/data/pack-meta';
 import { isOneShotScenarioComplete } from '@/entities/visual-novel/lib/oneShotScenarios';
 import { resolveUnlockGroupPointIds } from '@/features/detective/lib/unlock-group';
+import { useTensionStore } from '@/features/detective/interrogation';
+import { TensionHUD } from '@/features/detective/interrogation/ui/TensionHUD';
+import { AnimatePresence } from 'framer-motion';
 
 /**
  * Fullscreen Visual Novel Page
@@ -72,6 +75,7 @@ export const VisualNovelPage = () => {
     const { modifyRelationship, setCharacterStatus } = useCharacterStore();
     const userQuests = useQuestStore((state) => state.userQuests);
     const setQuestStage = useQuestStore((state) => state.setQuestStage);
+    const tensionStore = useTensionStore();
 
     // Start scenario from URL param if not already active
     useEffect(() => {
@@ -366,6 +370,23 @@ export const VisualNovelPage = () => {
                 case 'add_heat':
                     console.warn('[VN Action] add_heat is not wired into progression yet', action.payload);
                     break;
+                case 'start_interrogation':
+                    tensionStore.startInterrogation({
+                        characterId: action.payload.characterId,
+                        scenarioId: action.payload.scenarioId ?? activeScenarioId ?? 'global',
+                        topicId: action.payload.topicId,
+                        lockoutSceneId: action.payload.lockoutSceneId
+                    });
+                    break;
+                case 'end_interrogation':
+                    tensionStore.endInterrogation();
+                    break;
+                case 'add_tension':
+                    tensionStore.applyTensionDelta(action.payload);
+                    break;
+                case 'grant_influence_point':
+                    tensionStore.addInfluencePoints(action.payload);
+                    break;
             }
         });
     };
@@ -426,6 +447,14 @@ export const VisualNovelPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeScenarioId, effectiveSceneId, runtimeScene?.id]);
 
+    // Tick interrogation progress on every scene change
+    useEffect(() => {
+        if (!effectiveSceneId) return;
+        if (!tensionStore.targetCharacterId) return;
+        tensionStore.tickProgress(voiceStats as Partial<Record<import('@/features/detective/lib/parliament').VoiceId, number>>);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [effectiveSceneId]);
+
     // Choice selection
     const handleChoice = (choice: VNChoice) => {
         if (isProcessingRef.current) return;
@@ -438,6 +467,19 @@ export const VisualNovelPage = () => {
         let keepLockUntilTransition = false;
 
         try {
+            const applyChoiceTension = (): boolean => {
+                if (typeof choice.tensionDelta !== 'number') {
+                    return false;
+                }
+                const tensionResult = tensionStore.applyTensionDelta(choice.tensionDelta);
+                if (tensionResult.justLockedOut && tensionStore.lockoutSceneId) {
+                    keepLockUntilTransition = tensionStore.lockoutSceneId !== effectiveSceneId;
+                    advanceScene(tensionStore.lockoutSceneId);
+                    return true;
+                }
+                return false;
+            };
+
             // Add to history before processing
             addDialogueEntry({
                 characterId: runtimeScene?.characterId,
@@ -445,6 +487,10 @@ export const VisualNovelPage = () => {
                 text: runtimeScene?.text || '',
                 choiceMade: choice.text
             });
+
+            if (applyChoiceTension()) {
+                return;
+            }
 
             // Skill Check Logic
             if (choice.skillCheck) {
@@ -568,6 +614,10 @@ export const VisualNovelPage = () => {
                     onClose={() => setActiveTooltip(null)}
                 />
             )}
+
+            <AnimatePresence>
+                {tensionStore.targetCharacterId && <TensionHUD />}
+            </AnimatePresence>
         </>
     );
 };

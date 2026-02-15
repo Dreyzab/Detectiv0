@@ -2,7 +2,7 @@ import type { VoiceId } from '../../../features/detective/lib/parliament';
 import type { Evidence } from '../../../features/detective/dossier/store';
 
 // Re-export from shared for backwards compatibility
-export type { CharacterId, VNCharacter } from '@repo/shared/data/characters';
+export type { CharacterId, VNCharacter, InterrogationProfile } from '@repo/shared/data/characters';
 import type { CharacterId } from '@repo/shared/data/characters';
 
 /**
@@ -30,7 +30,19 @@ export type VNAction =
     | { type: 'modify_relationship'; payload: { characterId: CharacterId; amount: number } }
     | { type: 'set_character_status'; payload: { characterId: CharacterId; status: string } }
     | { type: 'set_stat'; payload: { id: string; value: number } }
-    | { type: 'start_battle'; payload: { scenarioId: string; deckType: string } };
+    | { type: 'start_battle'; payload: { scenarioId: string; deckType: string } }
+    | { type: 'add_tension'; payload: number }
+    | { type: 'grant_influence_point'; payload: number }
+    | {
+        type: 'start_interrogation';
+        payload: {
+            characterId: CharacterId;
+            scenarioId?: string;
+            topicId?: string;
+            lockoutSceneId?: string;
+        };
+    }
+    | { type: 'end_interrogation' };
 
 export interface VNConditionContext {
     evidenceIds: Set<string>;
@@ -74,6 +86,8 @@ export interface VNChoice {
     actions?: VNAction[];
     // Conditions to show this choice
     condition?: VNConditionPredicate;
+    // Tension delta shorthand (added to tension on pick)
+    tensionDelta?: number;
 
     // RPG Skill Check
     skillCheck?: VNSkillCheck;
@@ -119,10 +133,11 @@ export interface VNSceneLogic {
     choices?: {
         id: ChoiceId;
         nextSceneId?: string;
-        type?: 'action' | 'inquiry' | 'flavor'; // Added here too
+        type?: 'action' | 'inquiry' | 'flavor';
         actions?: VNAction[];
         condition?: VNConditionPredicate;
         skillCheck?: VNSkillCheck;
+        tensionDelta?: number;
     }[];
 
     onEnter?: VNAction[];
@@ -147,5 +162,9 @@ export interface VNContentPack {
     scenes: Record<SceneId, {
         text: string;
         choices?: Record<ChoiceId, string>;
+        passiveChecks?: Record<string, { // key is checkId (e.g., 'chk_case1_hbf_perception_fritz')
+            passiveText?: string;
+            passiveFailText?: string;
+        }>;
     }>;
 }

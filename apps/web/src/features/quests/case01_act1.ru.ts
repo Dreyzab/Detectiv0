@@ -22,8 +22,12 @@ export const CASE_01_ACT_1_RU: QuestContent = {
         'finale->resolved': 'Финальная развязка завершена, дело закрыто.'
     },
     objectives: {
+        select_priority_route: 'Выбрать приоритет (сначала банк или ратуша)',
+        visit_briefing_bank: 'Посетить Bankhaus Krebs (маршрутная цель)',
+        visit_briefing_mayor: 'Посетить ратушу / мэра Тома (маршрутная цель)',
         visit_bank: 'Посетить место преступления (Банк Кребса)',
-        find_clue_safe: 'Осмотреть сейф',
-        interrogate_clerk: 'Допросить клерка'
+        find_clue_safe: 'Осмотреть хранилище и схему взлома',
+        interrogate_clerk: 'Опросить клерка и сверить хронологию',
+        close_case: 'Завершить финал у склада и закрыть дело'
     }
 };

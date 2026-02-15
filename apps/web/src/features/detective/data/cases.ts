@@ -26,9 +26,29 @@ export const NARRATIVE_THREADS: NarrativeThread[] = [
         id: 'thread_02_archive',
         caseId: 'case_01_bank',
         sourcePointId: 'loc_freiburg_bank',
-        targetPointId: 'loc_freiburg_archive',
+        targetPointId: 'loc_rathaus',
         // style: 'dashed',
-        condition: { type: 'flag_is', flagId: 'knows_archive_lead', value: true }
+        condition: {
+            type: 'logic_and',
+            conditions: [
+                { type: 'quest_past_stage', questId: 'case01', stage: 'leads_open' },
+                { type: 'flag_is', flagId: 'archive_casefile_complete', value: false }
+            ]
+        }
+    },
+    // Thread 3: Archive -> Warehouse
+    {
+        id: 'thread_03_warehouse',
+        caseId: 'case_01_bank',
+        sourcePointId: 'loc_rathaus',
+        targetPointId: 'loc_freiburg_warehouse',
+        condition: {
+            type: 'logic_and',
+            conditions: [
+                { type: 'flag_is', flagId: 'archive_casefile_complete', value: true },
+                { type: 'flag_is', flagId: 'case_resolved', value: false }
+            ]
+        }
     }
 ];
 

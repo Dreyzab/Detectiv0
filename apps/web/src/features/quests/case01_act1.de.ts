@@ -22,8 +22,12 @@ export const CASE_01_ACT_1_DE: QuestContent = {
         'finale->resolved': 'Die Schlusskonfrontation ist beendet, der Fall ist gelöst.'
     },
     objectives: {
+        select_priority_route: 'Prioritaet waehlen (Bank zuerst oder Rathaus zuerst)',
+        visit_briefing_bank: 'Bankhaus Krebs besuchen (Routing-Ziel)',
+        visit_briefing_mayor: 'Rathaus / Buergermeister Thoma besuchen (Routing-Ziel)',
         visit_bank: 'Besuchen Sie den Tatort (Bankhaus J.A. Krebs)',
-        find_clue_safe: 'Untersuchen Sie den Tresor',
-        interrogate_clerk: 'Verhören Sie den Angestellten'
+        find_clue_safe: 'Untersuchen Sie das Tresorgewölbe und das Aufbruchsmuster',
+        interrogate_clerk: 'Befragen Sie den Angestellten und sichern Sie die Zeitleiste',
+        close_case: 'Schließen Sie das Lagerhaus-Finale und lösen Sie den Fall'
     }
 };

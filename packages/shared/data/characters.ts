@@ -3,6 +3,7 @@
  * Used by Visual Novel engine for speaker identification
  */
 
+import type { VoiceId } from './parliament';
 
 
 export type CharacterId =
@@ -63,6 +64,19 @@ interface BaseCharacter {
     tags?: string[];
 }
 
+/**
+ * Interrogation profile — per-NPC tension parameters.
+ * Sweet spot = optimal tension range where progress ticks.
+ */
+export interface InterrogationProfile {
+    sweetSpotMin: number;        // e.g. 35
+    sweetSpotMax: number;        // e.g. 65
+    vulnerableVoice?: VoiceId;   // high player stat widens sweet spot
+    resistantVoice?: VoiceId;    // low player handling narrows sweet spot
+    lockoutThreshold?: number;   // default 100
+    progressRequired: number;    // ticks needed for Interrogation Point
+}
+
 // Tier 1: Major Characters (Protagonists, Companions, Main Villains)
 // Fully realized individuals with stats (Voices) and potential evolution.
 export type DetectiveOrigin = 'veteran' | 'journalist' | 'academic' | 'noble';
@@ -72,6 +86,7 @@ export interface MajorCharacter extends BaseCharacter {
     role: 'protagonist' | 'antagonist' | 'companion' | 'key_npc';
     voiceStats?: Partial<Record<string, number>>; // 1-20 scale (Logic, Empathy, etc.)
     secrets?: string[]; // Hidden info unlocked via Dossier
+    interrogation?: InterrogationProfile;
     evolution?: {
         stage: string; // e.g., 'cynic' | 'idealist'
         possibleStages: string[];
@@ -91,6 +106,7 @@ export interface FunctionalCharacter extends BaseCharacter {
     role: 'merchant' | 'service' | 'witness';
     locationId?: string; // Map point where they can usually be found
     serviceType?: string; // e.g., 'shop', 'info', 'craft'
+    interrogation?: InterrogationProfile;
 }
 
 // Tier 3: Generic Characters (The Crowd)
@@ -183,7 +199,14 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
             'The vault was empty before the robbery',
             'Embezzled funds to build the Stadttheater',
             'Terrified of the Journalist Anna Mahler'
-        ]
+        ],
+        interrogation: {
+            sweetSpotMin: 50,
+            sweetSpotMax: 75,
+            vulnerableVoice: 'logic',
+            resistantVoice: 'authority',
+            progressRequired: 5
+        }
     },
     boss: {
         id: 'boss',
@@ -259,7 +282,14 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         description: 'Junior clerk at Bankhaus Krebs. Nervous, meticulous. Was on night duty during the robbery. Knows more than he dares to say.',
         avatarUrl: '/images/characters/clerk.webp',
         tags: ['witness', 'bank', 'scared'],
-        locationId: 'bank_krebs'
+        locationId: 'bank_krebs',
+        interrogation: {
+            sweetSpotMin: 20,
+            sweetSpotMax: 45,
+            vulnerableVoice: 'empathy',
+            resistantVoice: 'authority',
+            progressRequired: 3
+        }
     },
     coroner: {
         id: 'coroner',

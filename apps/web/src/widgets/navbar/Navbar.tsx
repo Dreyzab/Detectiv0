@@ -24,6 +24,10 @@ export const Navbar = () => {
     const { t } = useTranslation('common');
     const location = useLocation();
     const pathname = location.pathname;
+    const isVnRoute = pathname.includes('/vn/');
+    const isMapRoute = pathname === '/map' || /^\/city\/[^/]+\/map$/.test(pathname);
+    const isScannerRoute = pathname === '/scanner' || pathname.startsWith('/scanner/');
+    const shouldRenderMobileTopSpacer = !(isMapRoute || isScannerRoute);
 
     // Hide navbar on VN pages logic?
     // User requested "redesign HomePage and Navbar".
@@ -32,10 +36,27 @@ export const Navbar = () => {
     // If route starts with /vn/, maybe hide? 
     // Usually Visual Novels want immersion.
     // Let's hide on /vn/ routes.
-    if (pathname.startsWith('/vn/')) return null;
+    if (isVnRoute) return null;
 
     return (
         <>
+            {shouldRenderMobileTopSpacer && (
+                <div
+                    aria-hidden="true"
+                    className="md:hidden"
+                    style={{ height: 'calc(max(env(safe-area-inset-top), 0.75rem) + 2.75rem)' }}
+                />
+            )}
+
+            <div
+                className="fixed left-1/2 -translate-x-1/2 z-50 md:hidden"
+                style={{ top: 'max(env(safe-area-inset-top), 0.75rem)' }}
+            >
+                <div className="bg-stone-900/80 border border-stone-700/80 rounded-full px-2 py-1 shadow-lg backdrop-blur-sm">
+                    <LanguageSwitcher />
+                </div>
+            </div>
+
             {/* Mobile Bottom Bar */}
             <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-stone-950/95 backdrop-blur-md border-t border-stone-800 hidden md:flex items-center justify-center px-4">
                 {/* Desktop/Tablet View - Centered Floating or just same logic? */}

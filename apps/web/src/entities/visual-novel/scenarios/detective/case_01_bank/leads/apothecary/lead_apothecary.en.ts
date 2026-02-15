@@ -12,6 +12,8 @@ export const LEAD_APOTHECARY_EN: VNContentPack = {
                 'show_residue': 'Show powder recovered at the bank vault.',
                 'ask_sender_manifest': '"Have you seen shipments from Breisgau Chemical Works?"',
                 'ask_hartmann_procurement': '"Any chemical orders routed through a bank contact named Hartmann?"',
+                'ask_sleep_agent_profile': '"Could this profile produce synchronized sleep without fatalities?"',
+                'ask_relic_chain': '"Could chemical prep support targeted relic extraction?"',
                 'ask_poisons': '"What poison traffic passes through this district?"',
                 'ask_chemicals': '"Who supplies industrial reagents nearby?"',
                 'leave_shop': 'Leave.'
@@ -32,6 +34,7 @@ export const LEAD_APOTHECARY_EN: VNContentPack = {
             choices: {
                 'forensics_check': '[Senses] Analyze ratio and formulation.',
                 'crosscheck_sender_chain': '"Cross-check this with the Breisgau sender trace."',
+                'crosscheck_lock_signature': '"Would this chain also explain controlled lock cooling?"',
                 'ask_source': '"Where would an operator source this mix?"',
                 'thank_leave': 'Thank him and leave.'
             }
@@ -42,11 +45,20 @@ export const LEAD_APOTHECARY_EN: VNContentPack = {
         'apothecary_hartmann_reply': {
             text: '"Hartmann appears in settlement slips, not direct orders. Clerk-level name, high-sensitivity routing."'
         },
+        'apothecary_sleep_agent_reply': {
+            text: 'Weiss taps the sample tray. "Yes. Sedative-adjacent compounds can be aerosolized in low mortality windows if dosage discipline is strict."'
+        },
+        'apothecary_relic_gap_reply': {
+            text: '"If relic crates were handled, preservative wraps and anti-corrosion salts would be pre-positioned. That implies planning."' 
+        },
         'forensics_success': {
             text: 'The ratio is disciplined and reproducible. This came from trained hands, not improvisation.'
         },
         'apothecary_sender_crosscheck': {
             text: 'Weiss aligns your sender clue with his records. "Then the chain points toward university-adjacent procurement."'
+        },
+        'apothecary_lock_signature_reply': {
+            text: '"Possible. Cooling baths for metal control use compounds my regular clients do not buy in that volume."'
         },
         'forensics_fail': {
             text: 'Explosive confirmed. Source precision remains uncertain.'

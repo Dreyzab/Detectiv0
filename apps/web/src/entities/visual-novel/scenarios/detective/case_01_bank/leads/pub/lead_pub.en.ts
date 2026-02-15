@@ -6,11 +6,15 @@ export const LEAD_PUB_EN: VNContentPack = {
         'entrance': {
             text: 'Gasthaus "Zum Schlappen" is loud, smoky, and watchful. Old Gustav sits in the corner while the barkeep tracks every stranger.',
             choices: {
+                'follow_hidden_slot_route': 'Follow the hidden-slot route rumor first.',
                 'follow_night_guard_rumor': 'Follow Clara\'s night-guard rumor lead.',
                 'approach_gustav': 'Approach Gustav directly.',
                 'ask_barkeep': 'Question the barkeep first.',
                 'eavesdrop': 'Listen to workers at the next table.'
             }
+        },
+        'pub_hidden_slot_path': {
+            text: 'A porter points to a service alley behind the tavern. "Scaffold men used that cut-through after dawn shifts."'
         },
         'pub_night_guard_path': {
             text: 'The barkeep taps his chin toward Gustav. "If you want dawn-shift eyes, start with him."'
@@ -23,6 +27,7 @@ export const LEAD_PUB_EN: VNContentPack = {
             text: '"You are not local. Why are you asking old Gustav questions?"',
             choices: {
                 'mention_hartmann_payments': '"Heard Hartmann moved cash through intermediaries. Ring a bell?"',
+                'ask_relic_transfer': '"Anyone moving narrow relic crates through this district?"',
                 'charisma_buy_drink': '[Charisma] "Let me buy the next drink."',
                 'authority_badge': '[Authority] "Police inquiry. Cooperate."',
                 'leave_gustav': 'Back off for now.'
@@ -30,6 +35,9 @@ export const LEAD_PUB_EN: VNContentPack = {
         },
         'gustav_hartmann_reply': {
             text: 'Gustav squints. "Name was whispered with runner boys near dawn. Money moved quiet, not honest."'
+        },
+        'gustav_relic_transfer_reply': {
+            text: 'He leans closer. "Not sacks, boxes. Wrapped and narrow. Loaded near service lanes before sunrise."'
         },
         'gustav_charisma_success': {
             text: 'He softens at the offer. "Fine. I will tell you what I saw."'
@@ -55,6 +63,7 @@ export const LEAD_PUB_EN: VNContentPack = {
             choices: {
                 'barkeep_ask_gustav': '"Who is the old man?"',
                 'barkeep_ask_rumors': '"What rumors are circulating?"',
+                'ask_relic_transfer_books': '"Any unusual transfer tabs in your night books?"',
                 'ask_previous_investigator': '"A prior investigator disappeared. Did he come through here?"'
             }
         },
@@ -63,6 +72,9 @@ export const LEAD_PUB_EN: VNContentPack = {
         },
         'barkeep_rumors': {
             text: '"Everyone has rumors. Few survive contact with facts."'
+        },
+        'barkeep_relic_transfer_books': {
+            text: 'He taps a private ledger line. "Two prepaid rounds tied to warehouse porters on relic-night. They were celebrating a completed run."'
         },
         'barkeep_previous_investigator': {
             text: 'He lowers his voice. "Yes. Asked about bank scaffolds, then vanished from this route."'

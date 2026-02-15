@@ -1,15 +1,16 @@
-import type { VNScenarioLogic } from '../../../../../model/types';
+﻿import type { VNScenarioLogic } from '../../../../../model/types';
 
 /**
- * Case 1: Bank Investigation — Bankhaus Krebs
- * 
- * This scenario introduces the skill check system and grants 3 leads
- * that unlock new map locations for the "Open City" phase.
- * 
- * Flow:
- * arrival → bank_hub → (vault_inspection | clerk_interrogation)
- *                    ↓
- *           bank_conclusion → unlock 3 map points
+ * Case 1: Bank Investigation - Bankhaus Krebs
+ *
+ * Mainline Replace:
+ * - mass sleep event at the crime scene
+ * - lock breached by extreme controlled heat
+ * - money theft used as cover for targeted relic removal
+ *
+ * Compatibility contract kept:
+ * - completion gate: clerk_interviewed && vault_inspected
+ * - legacy flags still set (found_velvet, found_residue, clue_sender_residue_match, etc.)
  */
 
 export const CASE1_BANK_LOGIC: VNScenarioLogic = {
@@ -20,9 +21,6 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
     initialSceneId: 'arrival',
     mode: 'fullscreen',
     scenes: {
-        // ─────────────────────────────────────────────────────────────
-        // ARRIVAL
-        // ─────────────────────────────────────────────────────────────
         'arrival': {
             id: 'arrival',
             characterId: 'inspector',
@@ -42,14 +40,7 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'scene_duo_entry': {
             id: 'scene_duo_entry',
             characterId: 'inspector',
-            onEnter: [
-                {
-                    type: 'add_flag',
-                    payload: {
-                        'clara_seen_in_bank': true
-                    }
-                }
-            ],
+            onEnter: [{ type: 'add_flag', payload: { 'clara_seen_in_bank': true } }],
             nextSceneId: 'bank_hub'
         },
         'scene_solo_entry': {
@@ -96,29 +87,23 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'react_surprise_res': { id: 'react_surprise_res', characterId: 'clara_altenburg', nextSceneId: 'bank_hub' },
         'react_interest_res': { id: 'react_interest_res', characterId: 'clara_altenburg', nextSceneId: 'bank_hub' },
 
-        // ─────────────────────────────────────────────────────────────
-        // BANK HUB — Central navigation point
-        // ─────────────────────────────────────────────────────────────
         'bank_hub': {
             id: 'bank_hub',
             characterId: 'inspector',
             choices: [
                 { id: 'speak_manager', nextSceneId: 'manager_intro', type: 'inquiry' },
-                { id: 'speak_clerk', nextSceneId: 'clerk_intro', type: 'inquiry' },
-                { id: 'inspect_vault', nextSceneId: 'vault_inspection', type: 'inquiry' },
+                { id: 'triage_witnesses', nextSceneId: 'triage_intro', type: 'inquiry' },
+                { id: 'inspect_vault_forensics', nextSceneId: 'vault_entry', type: 'inquiry' },
+                { id: 'run_reconstruction', nextSceneId: 'reconstruction_intro', type: 'inquiry' },
                 {
                     id: 'conclude_investigation',
                     nextSceneId: 'bank_conclusion',
                     type: 'action',
-                    condition: (flags) =>
-                        flags['vault_inspected'] && flags['clerk_interviewed']
+                    condition: (flags) => Boolean(flags['vault_inspected'] && flags['clerk_interviewed'])
                 }
             ]
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // MANAGER DIALOGUE (Heinrich Galdermann)
-        // ─────────────────────────────────────────────────────────────
         'manager_intro': {
             id: 'manager_intro',
             characterId: 'bank_manager',
@@ -127,12 +112,11 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                     id: 'manager_confront_seed',
                     nextSceneId: 'manager_seed_reaction',
                     type: 'inquiry',
-                    condition: (flags) =>
-                        Boolean(flags['clue_galdermann_mention'] || flags['clue_galdermann_leaflet'])
+                    condition: (flags) => Boolean(flags['clue_galdermann_mention'] || flags['clue_galdermann_leaflet'])
                 },
                 {
                     id: 'manager_open_case',
-                    nextSceneId: 'manager_about_robbery',
+                    nextSceneId: 'manager_casefile',
                     type: 'action'
                 }
             ]
@@ -140,21 +124,23 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
         'manager_seed_reaction': {
             id: 'manager_seed_reaction',
             characterId: 'bank_manager',
-            nextSceneId: 'manager_about_robbery',
-            onEnter: [
-                { type: 'add_flag', payload: { 'clue_galdermann_preseed_confirmed': true } }
-            ]
+            nextSceneId: 'manager_casefile',
+            onEnter: [{ type: 'add_flag', payload: { 'clue_galdermann_preseed_confirmed': true } }]
         },
-        'manager_about_robbery': {
-            id: 'manager_about_robbery',
+        'manager_casefile': {
+            id: 'manager_casefile',
             characterId: 'bank_manager',
             choices: [
                 {
                     id: 'manager_press_hartmann',
                     nextSceneId: 'manager_hartmann_reaction',
                     type: 'inquiry',
-                    condition: (flags) =>
-                        Boolean(flags['clue_hartmann_newspaper'] || flags['clue_hartmann_letter'])
+                    condition: (flags) => Boolean(flags['clue_hartmann_newspaper'] || flags['clue_hartmann_letter'])
+                },
+                {
+                    id: 'manager_press_relics',
+                    nextSceneId: 'manager_relic_reaction',
+                    type: 'inquiry'
                 },
                 {
                     id: 'manager_request_statements',
@@ -167,162 +153,237 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
             id: 'manager_hartmann_reaction',
             characterId: 'bank_manager',
             nextSceneId: 'manager_dismissive',
-            onEnter: [
-                { type: 'add_flag', payload: { 'clue_hartmann_brushed_off': true } }
-            ]
+            onEnter: [{ type: 'add_flag', payload: { 'clue_hartmann_brushed_off': true } }]
+        },
+        'manager_relic_reaction': {
+            id: 'manager_relic_reaction',
+            characterId: 'bank_manager',
+            nextSceneId: 'manager_dismissive',
+            onEnter: [{ type: 'add_flag', payload: { 'clue_relic_gap': true } }]
         },
         'manager_dismissive': {
             id: 'manager_dismissive',
             characterId: 'bank_manager',
             nextSceneId: 'bank_hub',
-            onEnter: [
-                { type: 'add_flag', payload: { 'met_galdermann': true } }
-            ]
+            onEnter: [{ type: 'add_flag', payload: { 'met_galdermann': true } }]
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // CLERK INVESTIGATION (Ernst Vogel) — Empathy Check
-        // ─────────────────────────────────────────────────────────────
-        'clerk_intro': {
-            id: 'clerk_intro',
-            characterId: 'clerk',
-            nextSceneId: 'clerk_nervous'
+        'triage_intro': {
+            id: 'triage_intro',
+            characterId: 'inspector',
+            passiveChecks: [
+                {
+                    id: 'chk_bank_triage_senses',
+                    voiceId: 'senses',
+                    difficulty: 9,
+                    isPassive: true,
+                    passiveText: 'Sweet residue near the ventilation grilles. Not panic, not alcohol.',
+                    passiveFailText: 'The room smells wrong, but the source stays elusive.',
+                    onSuccess: {
+                        actions: [{ type: 'add_flag', payload: { 'clue_sleep_agent': true } }]
+                    }
+                },
+                {
+                    id: 'chk_bank_triage_volition',
+                    voiceId: 'volition',
+                    difficulty: 8,
+                    isPassive: true,
+                    passiveText: 'Everyone else is rushing to certainty. You do not have to.',
+                    passiveFailText: 'Pressure from uniforms and officials bleeds into your focus.'
+                }
+            ],
+            nextSceneId: 'triage_clerk_intro'
         },
-        'clerk_nervous': {
-            id: 'clerk_nervous',
+        'triage_clerk_intro': {
+            id: 'triage_clerk_intro',
+            characterId: 'clerk',
+            nextSceneId: 'triage_clerk'
+        },
+        'triage_clerk': {
+            id: 'triage_clerk',
             characterId: 'clerk',
             choices: [
                 {
                     id: 'ask_about_hartmann',
-                    nextSceneId: 'clerk_hartmann_response',
+                    nextSceneId: 'triage_clerk_hartmann_response',
                     type: 'inquiry',
                     condition: (flags) =>
-                        Boolean(flags['clue_hartmann_newspaper'] || flags['clue_hartmann_letter']) &&
-                        !flags['asked_hartmann'],
-                    actions: [
-                        {
-                            type: 'add_flag',
-                            payload: {
-                                'asked_hartmann': true,
-                                'clue_hartmann_internal_contact': true
-                            }
-                        }
-                    ]
+                        Boolean(flags['clue_hartmann_newspaper'] || flags['clue_hartmann_letter']) && !flags['asked_hartmann'],
+                    actions: [{ type: 'add_flag', payload: { 'asked_hartmann': true, 'clue_hartmann_internal_contact': true } }]
                 },
                 {
                     id: 'ask_about_box_217',
-                    nextSceneId: 'clerk_box217_response',
+                    nextSceneId: 'triage_clerk_box217_response',
                     type: 'inquiry',
-                    condition: (flags) =>
-                        Boolean(flags['clue_vault_box_217']) && !flags['asked_box_217'],
-                    actions: [
-                        {
-                            type: 'add_flag',
-                            payload: {
-                                'asked_box_217': true,
-                                'clue_box217_sensitive': true
-                            }
-                        }
-                    ]
+                    condition: (flags) => Boolean(flags['clue_vault_box_217']) && !flags['asked_box_217'],
+                    actions: [{ type: 'add_flag', payload: { 'asked_box_217': true, 'clue_box217_sensitive': true } }]
                 },
                 {
                     id: 'read_clerk_empathy',
-                    nextSceneId: 'clerk_empathy_result',
+                    nextSceneId: 'triage_medic_intro',
                     type: 'flavor',
                     skillCheck: {
                         id: 'chk_bank_empathy_clerk',
                         voiceId: 'empathy',
                         difficulty: 10,
                         onSuccess: {
-                            nextSceneId: 'clerk_empathy_success',
+                            nextSceneId: 'triage_clerk_empathy_success',
                             actions: [
                                 {
                                     type: 'grant_evidence',
                                     payload: {
                                         id: 'ev_witness_rumor',
-                                        name: 'Bächleputzer Sighting',
-                                        description: 'The night cleaner overheard the Bächleputzer saw "a shadow" near the bank at dawn.',
+                                        name: 'Bachleputzer Sighting',
+                                        description: 'A dawn cleaner saw a stage-clad figure near the scaffold line.',
                                         packId: 'fbg1905'
                                     }
-                                }
+                                },
+                                { type: 'add_flag', payload: { 'clue_sleep_agent': true } }
                             ]
                         },
                         onFail: {
-                            nextSceneId: 'clerk_empathy_fail'
+                            nextSceneId: 'triage_clerk_empathy_fail'
                         }
                     }
                 },
                 {
+                    id: 'ask_medical_chain',
+                    nextSceneId: 'triage_medic_intro',
+                    type: 'inquiry'
+                },
+                {
                     id: 'press_clerk',
-                    nextSceneId: 'clerk_press',
+                    nextSceneId: 'triage_clerk_press',
                     type: 'action'
                 },
                 {
-                    id: 'leave_clerk',
-                    nextSceneId: 'bank_hub',
+                    id: 'leave_triage',
+                    nextSceneId: 'triage_done',
                     type: 'action'
                 }
             ]
         },
-        'clerk_hartmann_response': {
-            id: 'clerk_hartmann_response',
+        'triage_clerk_hartmann_response': {
+            id: 'triage_clerk_hartmann_response',
             characterId: 'clerk',
-            nextSceneId: 'clerk_nervous'
+            nextSceneId: 'triage_clerk'
         },
-        'clerk_box217_response': {
-            id: 'clerk_box217_response',
+        'triage_clerk_box217_response': {
+            id: 'triage_clerk_box217_response',
             characterId: 'clerk',
-            nextSceneId: 'clerk_nervous'
+            nextSceneId: 'triage_clerk'
         },
-        'clerk_empathy_success': {
-            id: 'clerk_empathy_success',
+        'triage_clerk_empathy_success': {
+            id: 'triage_clerk_empathy_success',
             characterId: 'clerk',
-            nextSceneId: 'clerk_revelation'
+            nextSceneId: 'triage_medic_intro'
         },
-        'clerk_empathy_fail': {
-            id: 'clerk_empathy_fail',
+        'triage_clerk_empathy_fail': {
+            id: 'triage_clerk_empathy_fail',
             characterId: 'clerk',
-            nextSceneId: 'clerk_closes_up'
+            nextSceneId: 'triage_medic_intro'
         },
-        'clerk_revelation': {
-            id: 'clerk_revelation',
+        'triage_clerk_press': {
+            id: 'triage_clerk_press',
             characterId: 'clerk',
-            nextSceneId: 'clerk_done',
-            onEnter: [
-                { type: 'add_flag', payload: { 'clerk_revealed_shadow': true } }
+            nextSceneId: 'triage_medic_intro'
+        },
+        'triage_medic_intro': {
+            id: 'triage_medic_intro',
+            characterId: 'inspector',
+            choices: [
+                {
+                    id: 'check_sleep_wave',
+                    nextSceneId: 'triage_done',
+                    type: 'flavor',
+                    skillCheck: {
+                        id: 'chk_bank_logic_sleep_wave',
+                        voiceId: 'logic',
+                        difficulty: 9,
+                        onSuccess: {
+                            nextSceneId: 'triage_medic_logic_success',
+                            actions: [
+                                {
+                                    type: 'grant_evidence',
+                                    payload: {
+                                        id: 'ev_sleep_agent_profile',
+                                        name: 'Sleep Agent Profile',
+                                        description: 'Symptoms indicate a dosed sedative cloud, not natural fatigue.',
+                                        packId: 'fbg1905'
+                                    }
+                                },
+                                { type: 'add_flag', payload: { 'clue_sleep_agent': true } }
+                            ]
+                        },
+                        onFail: {
+                            nextSceneId: 'triage_medic_logic_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'ask_who_moved_first',
+                    nextSceneId: 'triage_medic_timeline',
+                    type: 'inquiry'
+                },
+                {
+                    id: 'return_to_hub',
+                    nextSceneId: 'triage_done',
+                    type: 'action'
+                }
             ]
         },
-        'clerk_closes_up': {
-            id: 'clerk_closes_up',
-            characterId: 'clerk',
-            nextSceneId: 'clerk_done'
+        'triage_medic_logic_success': {
+            id: 'triage_medic_logic_success',
+            characterId: 'inspector',
+            nextSceneId: 'triage_done'
         },
-        'clerk_press': {
-            id: 'clerk_press',
-            characterId: 'clerk',
-            nextSceneId: 'clerk_done'
+        'triage_medic_logic_fail': {
+            id: 'triage_medic_logic_fail',
+            characterId: 'inspector',
+            nextSceneId: 'triage_done'
         },
-        'clerk_done': {
-            id: 'clerk_done',
+        'triage_medic_timeline': {
+            id: 'triage_medic_timeline',
+            characterId: 'inspector',
+            nextSceneId: 'triage_done',
+            onEnter: [{ type: 'add_flag', payload: { 'clue_hidden_slot': true } }]
+        },
+        'triage_done': {
+            id: 'triage_done',
             characterId: 'inspector',
             nextSceneId: 'bank_hub',
-            onEnter: [
-                { type: 'add_flag', payload: { 'clerk_interviewed': true } }
-            ]
+            onEnter: [{ type: 'add_flag', payload: { 'clerk_interviewed': true, 'triage_completed': true } }]
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // VAULT INSPECTION — Logic & Intuition Checks
-        // ─────────────────────────────────────────────────────────────
-        'vault_inspection': {
-            id: 'vault_inspection',
+        'vault_entry': {
+            id: 'vault_entry',
+            characterId: 'inspector',
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
+            passiveChecks: [
+                {
+                    id: 'chk_bank_vault_perception_heat',
+                    voiceId: 'perception',
+                    difficulty: 8,
+                    isPassive: true,
+                    passiveText: 'The lock ring was heat-sheared, then cooled with discipline. No panic cuts.',
+                    passiveFailText: 'The lock is ruined, but the method remains unclear.',
+                    onSuccess: {
+                        actions: [{ type: 'add_flag', payload: { 'clue_lock_signature': true } }]
+                    }
+                }
+            ],
+            nextSceneId: 'vault_actions'
+        },
+        'vault_actions': {
+            id: 'vault_actions',
             characterId: 'inspector',
             backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
             choices: [
                 {
                     id: 'examine_lock_logic',
-                    nextSceneId: 'vault_logic_result',
+                    nextSceneId: 'vault_logic_fail',
                     type: 'flavor',
+                    condition: (flags) => !flags['found_velvet'],
                     skillCheck: {
                         id: 'chk_bank_logic_safe',
                         voiceId: 'logic',
@@ -335,10 +396,20 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                                     payload: {
                                         id: 'ev_torn_velvet',
                                         name: 'Torn Velvet',
-                                        description: 'Expensive red velvet fabric, theatrical quality. Found snagged near the safe.',
+                                        description: 'Red theatrical velvet caught near the vault hinge.',
                                         packId: 'fbg1905'
                                     }
-                                }
+                                },
+                                {
+                                    type: 'grant_evidence',
+                                    payload: {
+                                        id: 'ev_lock_signature_report',
+                                        name: 'Lock Signature Report',
+                                        description: 'The breach shows controlled high heat and deliberate cooling.',
+                                        packId: 'fbg1905'
+                                    }
+                                },
+                                { type: 'add_flag', payload: { 'clue_lock_signature': true } }
                             ]
                         },
                         onFail: {
@@ -348,8 +419,9 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'sense_atmosphere_intuition',
-                    nextSceneId: 'vault_intuition_result',
+                    nextSceneId: 'vault_intuition_fail',
                     type: 'flavor',
+                    condition: (flags) => !flags['found_residue'],
                     skillCheck: {
                         id: 'chk_bank_intuition_atmosphere',
                         voiceId: 'intuition',
@@ -362,10 +434,11 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                                     payload: {
                                         id: 'ev_chemical_residue',
                                         name: 'Strange Dust',
-                                        description: 'Industrial powder with a faint bitter almond scent. Not standard explosives.',
+                                        description: 'Fine industrial residue with an anesthetic sweet note.',
                                         packId: 'fbg1905'
                                     }
-                                }
+                                },
+                                { type: 'add_flag', payload: { 'clue_sleep_agent': true } }
                             ]
                         },
                         onFail: {
@@ -375,22 +448,77 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'compare_chemical_sender',
-                    nextSceneId: 'vault_sender_match_result',
+                    nextSceneId: 'vault_sender_match_fail',
                     type: 'inquiry',
-                    condition: (flags) =>
-                        Boolean(flags['clue_chemical_sender']) && !flags['compared_sender_residue'],
+                    condition: (flags) => Boolean(flags['clue_chemical_sender']) && !flags['compared_sender_residue'],
                     skillCheck: {
                         id: 'chk_bank_logic_sender_chain',
                         voiceId: 'logic',
                         difficulty: 8,
                         onSuccess: {
                             nextSceneId: 'vault_sender_match_success',
-                            actions: [
-                                { type: 'add_flag', payload: { 'clue_sender_residue_match': true } }
-                            ]
+                            actions: [{ type: 'add_flag', payload: { 'clue_sender_residue_match': true } }]
                         },
                         onFail: {
                             nextSceneId: 'vault_sender_match_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'inspect_relic_cradles',
+                    nextSceneId: 'vault_relic_fail',
+                    type: 'flavor',
+                    condition: (flags) => !flags['relic_cradles_checked'],
+                    skillCheck: {
+                        id: 'chk_bank_imagination_relic_pattern',
+                        voiceId: 'imagination',
+                        difficulty: 11,
+                        onSuccess: {
+                            nextSceneId: 'vault_relic_success',
+                            actions: [
+                                {
+                                    type: 'grant_evidence',
+                                    payload: {
+                                        id: 'ev_relic_inventory_gap',
+                                        name: 'Relic Inventory Gap',
+                                        description: 'Removal pattern targets municipal relic storage, not bulk currency racks.',
+                                        packId: 'fbg1905'
+                                    }
+                                },
+                                { type: 'add_flag', payload: { 'clue_relic_gap': true, 'relic_cradles_checked': true } }
+                            ]
+                        },
+                        onFail: {
+                            nextSceneId: 'vault_relic_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'occult_shivers_check',
+                    nextSceneId: 'vault_occult_fail',
+                    type: 'flavor',
+                    condition: (flags) => Boolean(flags['found_residue']) && !flags['occult_checked'],
+                    skillCheck: {
+                        id: 'chk_bank_occultism_symbols',
+                        voiceId: 'occultism',
+                        difficulty: 14,
+                        onSuccess: {
+                            nextSceneId: 'vault_occult_success',
+                            actions: [
+                                {
+                                    type: 'grant_evidence',
+                                    payload: {
+                                        id: 'ev_occult_circle',
+                                        name: 'Occult Circle',
+                                        description: 'Geometric chalk marks left as deliberate scene control, not random graffiti.',
+                                        packId: 'fbg1905'
+                                    }
+                                },
+                                { type: 'add_flag', payload: { 'clue_hidden_slot': true } }
+                            ]
+                        },
+                        onFail: {
+                            nextSceneId: 'vault_occult_fail'
                         }
                     }
                 },
@@ -401,199 +529,194 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
                 }
             ]
         },
-
-        // Logic Check Results
         'vault_logic_success': {
             id: 'vault_logic_success',
             characterId: 'inspector',
-            nextSceneId: 'vault_continue',
-            onEnter: [
-                { type: 'add_flag', payload: { 'found_velvet': true } }
-            ]
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
+            nextSceneId: 'vault_actions',
+            onEnter: [{ type: 'add_flag', payload: { 'found_velvet': true } }]
         },
         'vault_logic_fail': {
             id: 'vault_logic_fail',
             characterId: 'inspector',
-            nextSceneId: 'vault_continue'
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
+            nextSceneId: 'vault_actions'
         },
-
-        // Intuition Check Results
         'vault_intuition_success': {
             id: 'vault_intuition_success',
             characterId: 'inspector',
-            nextSceneId: 'vault_occult_discovery',
-            onEnter: [
-                { type: 'add_flag', payload: { 'found_residue': true } }
-            ]
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
+            nextSceneId: 'vault_actions',
+            onEnter: [{ type: 'add_flag', payload: { 'found_residue': true } }]
         },
         'vault_intuition_fail': {
             id: 'vault_intuition_fail',
             characterId: 'inspector',
-            nextSceneId: 'vault_continue'
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
+            nextSceneId: 'vault_actions'
         },
         'vault_sender_match_success': {
             id: 'vault_sender_match_success',
             characterId: 'inspector',
-            nextSceneId: 'vault_continue',
-            onEnter: [
-                { type: 'add_flag', payload: { 'compared_sender_residue': true } }
-            ]
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
+            nextSceneId: 'vault_actions',
+            onEnter: [{ type: 'add_flag', payload: { 'compared_sender_residue': true } }]
         },
         'vault_sender_match_fail': {
             id: 'vault_sender_match_fail',
             characterId: 'inspector',
-            nextSceneId: 'vault_continue',
-            onEnter: [
-                { type: 'add_flag', payload: { 'compared_sender_residue': true } }
-            ]
+            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
+            nextSceneId: 'vault_actions',
+            onEnter: [{ type: 'add_flag', payload: { 'compared_sender_residue': true } }]
         },
-
-        // ─────────────────────────────────────────────────────────────
-        // OCCULT SYMBOLS DISCOVERY — Hidden layer of mystery
-        // ─────────────────────────────────────────────────────────────
-        'vault_occult_discovery': {
-            id: 'vault_occult_discovery',
+        'vault_relic_success': {
+            id: 'vault_relic_success',
             characterId: 'inspector',
             backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
-            nextSceneId: 'vault_occult_victoria'
+            nextSceneId: 'vault_actions'
         },
-        'vault_occult_victoria': {
-            id: 'vault_occult_victoria',
-            characterId: 'clara_altenburg',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
-            choices: [
-                {
-                    id: 'occult_shivers_check',
-                    nextSceneId: 'vault_shivers_result',
-                    type: 'flavor',
-                    skillCheck: {
-                        id: 'chk_bank_occultism_symbols',
-                        voiceId: 'occultism',
-                        difficulty: 14,
-                        onSuccess: {
-                            nextSceneId: 'vault_shivers_success',
-                            actions: [
-                                {
-                                    type: 'grant_evidence',
-                                    payload: {
-                                        id: 'ev_occult_circle',
-                                        name: 'Occult Circle',
-                                        description: 'Chalk markings with geometric precision. Not mere vandalism—a deliberate ritual pattern.',
-                                        packId: 'fbg1905'
-                                    }
-                                }
-                            ]
-                        },
-                        onFail: {
-                            nextSceneId: 'vault_shivers_fail'
-                        }
-                    }
-                },
-                {
-                    id: 'dismiss_occult',
-                    nextSceneId: 'vault_dismiss_theatrics',
-                    type: 'action'
-                },
-                {
-                    id: 'ask_victoria_occult',
-                    nextSceneId: 'vault_victoria_analysis',
-                    type: 'inquiry'
-                }
-            ]
-        },
-        'vault_shivers_success': {
-            id: 'vault_shivers_success',
+        'vault_relic_fail': {
+            id: 'vault_relic_fail',
             characterId: 'inspector',
             backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
-            nextSceneId: 'vault_continue',
-            onEnter: [
-                { type: 'add_flag', payload: { 'sensed_presence': true } }
-            ]
+            nextSceneId: 'vault_actions',
+            onEnter: [{ type: 'add_flag', payload: { 'relic_cradles_checked': true } }]
         },
-        'vault_shivers_fail': {
-            id: 'vault_shivers_fail',
+        'vault_occult_success': {
+            id: 'vault_occult_success',
             characterId: 'inspector',
             backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
-            nextSceneId: 'vault_continue'
+            nextSceneId: 'vault_actions',
+            onEnter: [{ type: 'add_flag', payload: { 'occult_checked': true, 'sensed_presence': true } }]
         },
-        'vault_dismiss_theatrics': {
-            id: 'vault_dismiss_theatrics',
+        'vault_occult_fail': {
+            id: 'vault_occult_fail',
             characterId: 'inspector',
             backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
-            nextSceneId: 'vault_continue'
+            nextSceneId: 'vault_actions',
+            onEnter: [{ type: 'add_flag', payload: { 'occult_checked': true } }]
         },
-        'vault_victoria_analysis': {
-            id: 'vault_victoria_analysis',
-            characterId: 'clara_altenburg',
-            backgroundUrl: '/images/scenarios/bank_vault_1905.webp',
-            nextSceneId: 'vault_continue',
-            onEnter: [
-                { type: 'modify_relationship', payload: { characterId: 'clara_altenburg', amount: 5 } },
-                { type: 'add_flag', payload: { 'clara_analyzed_occult': true } }
-            ]
-        },
-
-        // Continue investigating or leave
-        'vault_continue': {
-            id: 'vault_continue',
-            characterId: 'inspector',
-            choices: [
-                {
-                    id: 'examine_lock_logic',
-                    nextSceneId: 'vault_logic_result',
-                    condition: (flags) => !flags['found_velvet'],
-                    skillCheck: {
-                        id: 'chk_bank_logic_safe',
-                        voiceId: 'logic',
-                        difficulty: 10,
-                        onSuccess: { nextSceneId: 'vault_logic_success' },
-                        onFail: { nextSceneId: 'vault_logic_fail' }
-                    }
-                },
-                {
-                    id: 'sense_atmosphere_intuition',
-                    nextSceneId: 'vault_intuition_result',
-                    condition: (flags) => !flags['found_residue'],
-                    skillCheck: {
-                        id: 'chk_bank_intuition_atmosphere',
-                        voiceId: 'intuition',
-                        difficulty: 12,
-                        onSuccess: { nextSceneId: 'vault_intuition_success' },
-                        onFail: { nextSceneId: 'vault_intuition_fail' }
-                    }
-                },
-                {
-                    id: 'compare_chemical_sender',
-                    nextSceneId: 'vault_sender_match_result',
-                    condition: (flags) =>
-                        Boolean(flags['clue_chemical_sender']) && !flags['compared_sender_residue'],
-                    skillCheck: {
-                        id: 'chk_bank_logic_sender_chain',
-                        voiceId: 'logic',
-                        difficulty: 8,
-                        onSuccess: { nextSceneId: 'vault_sender_match_success' },
-                        onFail: { nextSceneId: 'vault_sender_match_fail' }
-                    }
-                },
-                {
-                    id: 'return_to_hub',
-                    nextSceneId: 'vault_leave'
-                }
-            ]
-        },
-
         'vault_leave': {
             id: 'vault_leave',
             characterId: 'inspector',
             nextSceneId: 'bank_hub',
-            onEnter: [
-                { type: 'add_flag', payload: { 'vault_inspected': true } }
-            ]
+            onEnter: [{ type: 'add_flag', payload: { 'vault_inspected': true } }]
         },
 
-        // ─────────────────────────────────────────────────────────────
-        // CONCLUSION — Unlock 3 Map Points
-        // ─────────────────────────────────────────────────────────────
+        'reconstruction_intro': {
+            id: 'reconstruction_intro',
+            characterId: 'inspector',
+            passiveChecks: [
+                {
+                    id: 'chk_bank_reconstruction_perception',
+                    voiceId: 'perception',
+                    difficulty: 9,
+                    isPassive: true,
+                    passiveText: 'Three movement lanes: vent access, scaffold entry, vault extraction.',
+                    passiveFailText: 'The scene is noisy with uniforms and assumptions.'
+                }
+            ],
+            nextSceneId: 'reconstruction_table'
+        },
+        'reconstruction_table': {
+            id: 'reconstruction_table',
+            characterId: 'inspector',
+            choices: [
+                {
+                    id: 'rebuild_entry_vector',
+                    nextSceneId: 'reconstruction_entry_fail',
+                    type: 'flavor',
+                    skillCheck: {
+                        id: 'chk_bank_imagination_entry_vector',
+                        voiceId: 'imagination',
+                        difficulty: 12,
+                        onSuccess: {
+                            nextSceneId: 'reconstruction_entry_success',
+                            actions: [{ type: 'add_flag', payload: { 'clue_hidden_slot': true } }]
+                        },
+                        onFail: {
+                            nextSceneId: 'reconstruction_entry_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'stress_test_timeline',
+                    nextSceneId: 'reconstruction_timeline_fail',
+                    type: 'flavor',
+                    skillCheck: {
+                        id: 'chk_bank_logic_timeline_pressure',
+                        voiceId: 'logic',
+                        difficulty: 10,
+                        onSuccess: {
+                            nextSceneId: 'reconstruction_timeline_success',
+                            actions: [{ type: 'add_flag', payload: { 'clue_relic_gap': true } }]
+                        },
+                        onFail: {
+                            nextSceneId: 'reconstruction_timeline_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'check_witness_overlap',
+                    nextSceneId: 'reconstruction_overlap_fail',
+                    type: 'flavor',
+                    skillCheck: {
+                        id: 'chk_bank_empathy_witness_overlap',
+                        voiceId: 'empathy',
+                        difficulty: 9,
+                        onSuccess: {
+                            nextSceneId: 'reconstruction_overlap_success',
+                            actions: [{ type: 'add_flag', payload: { 'clue_sleep_agent': true } }]
+                        },
+                        onFail: {
+                            nextSceneId: 'reconstruction_overlap_fail'
+                        }
+                    }
+                },
+                {
+                    id: 'return_to_hub',
+                    nextSceneId: 'reconstruction_done',
+                    type: 'action'
+                }
+            ]
+        },
+        'reconstruction_entry_success': {
+            id: 'reconstruction_entry_success',
+            characterId: 'inspector',
+            nextSceneId: 'reconstruction_done'
+        },
+        'reconstruction_entry_fail': {
+            id: 'reconstruction_entry_fail',
+            characterId: 'inspector',
+            nextSceneId: 'reconstruction_done'
+        },
+        'reconstruction_timeline_success': {
+            id: 'reconstruction_timeline_success',
+            characterId: 'inspector',
+            nextSceneId: 'reconstruction_done'
+        },
+        'reconstruction_timeline_fail': {
+            id: 'reconstruction_timeline_fail',
+            characterId: 'inspector',
+            nextSceneId: 'reconstruction_done'
+        },
+        'reconstruction_overlap_success': {
+            id: 'reconstruction_overlap_success',
+            characterId: 'inspector',
+            nextSceneId: 'reconstruction_done'
+        },
+        'reconstruction_overlap_fail': {
+            id: 'reconstruction_overlap_fail',
+            characterId: 'inspector',
+            nextSceneId: 'reconstruction_done'
+        },
+        'reconstruction_done': {
+            id: 'reconstruction_done',
+            characterId: 'inspector',
+            nextSceneId: 'bank_hub',
+            onEnter: [{ type: 'add_flag', payload: { 'bank_reconstruction_done': true } }]
+        },
+
         'bank_conclusion': {
             id: 'bank_conclusion',
             characterId: 'inspector',
@@ -605,11 +728,9 @@ export const CASE1_BANK_LOGIC: VNScenarioLogic = {
             nextSceneId: 'END',
             onEnter: [
                 { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'leads_open' } },
-                // Unlock the 3 investigation leads
                 { type: 'unlock_point', payload: 'loc_tailor' },
                 { type: 'unlock_point', payload: 'loc_apothecary' },
                 { type: 'unlock_point', payload: 'loc_pub' },
-                // Set completion flag
                 { type: 'add_flag', payload: { 'bank_investigation_complete': true } }
             ]
         }

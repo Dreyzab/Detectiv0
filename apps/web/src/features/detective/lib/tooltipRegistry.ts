@@ -88,6 +88,94 @@ export const PARLIAMENT_TOOLTIP_REGISTRY: Record<string, KeywordTooltip> = {
             }
         ]
     },
+    'Sleep Wave Residue': {
+        id: 'sleep_wave_residue',
+        title: 'Sleep Wave Residue',
+        fact: 'A synchronized collapse pattern where multiple witnesses report rapid drowsiness before memory discontinuity. Usually linked to engineered sedative spread, not chance exposure.',
+        voices: [
+            {
+                voiceId: 'senses',
+                threshold: 2,
+                text: 'Sweet trace in the air and dry tongue after waking. Not natural fatigue.'
+            },
+            {
+                voiceId: 'logic',
+                threshold: 3,
+                text: 'Simultaneous onset implies controlled dispersal, not random contamination.'
+            },
+            {
+                voiceId: 'volition',
+                threshold: 2,
+                text: 'Do not panic-interpret. Sedation is a method, not a confession.'
+            }
+        ]
+    },
+    'Lock Signature': {
+        id: 'lock_signature',
+        title: 'Lock Signature',
+        fact: 'A repeatable forensic profile: heat shearing near the ring followed by deliberate cooling to suppress fracture noise and visible chaos.',
+        voices: [
+            {
+                voiceId: 'logic',
+                threshold: 2,
+                text: 'Controlled heat profile. This was technique, not improvisation.'
+            },
+            {
+                voiceId: 'perception',
+                threshold: 2,
+                text: 'Smooth edge transitions. Tools were applied in phases.'
+            },
+            {
+                voiceId: 'intrusion',
+                threshold: 4,
+                text: 'This is lock-system literacy, not brute-force entry.'
+            }
+        ]
+    },
+    'Relic Transfer Gap': {
+        id: 'relic_transfer_gap',
+        title: 'Relic Transfer Gap',
+        fact: 'When selective shelves are cleared while bulk currency remains partially untouched, the objective is often symbolic or protocol-bound assets, not fast liquidity.',
+        voices: [
+            {
+                voiceId: 'imagination',
+                threshold: 2,
+                text: 'They knew the shelf map before entering.'
+            },
+            {
+                voiceId: 'tradition',
+                threshold: 3,
+                text: 'Municipal relics carry leverage that ledgers cannot price.'
+            },
+            {
+                voiceId: 'authority',
+                threshold: 3,
+                text: 'Stealing symbols is pressure politics, not simple theft.'
+            }
+        ]
+    },
+    'Hidden Slot Hypothesis': {
+        id: 'hidden_slot_hypothesis',
+        title: 'Hidden Slot Hypothesis',
+        fact: 'Maintenance cavities and service recesses can form covert transfer paths when internal prep exists.',
+        voices: [
+            {
+                voiceId: 'imagination',
+                threshold: 2,
+                text: 'A route nobody sees is often a route someone paid to build.'
+            },
+            {
+                voiceId: 'deception',
+                threshold: 3,
+                text: 'Best camouflage is architecture. Let the building lie for them.'
+            },
+            {
+                voiceId: 'perception',
+                threshold: 3,
+                text: 'Panel seams and dust breaks speak louder than witness rehearsals.'
+            }
+        ]
+    },
     // ═══════════════════════════════════════════════════════════════
     // GERMAN KEYWORDS (Alt Briefing)
     // ═══════════════════════════════════════════════════════════════

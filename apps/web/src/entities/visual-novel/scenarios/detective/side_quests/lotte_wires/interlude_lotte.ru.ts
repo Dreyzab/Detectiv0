@@ -1,9 +1,28 @@
-﻿import type { VNContentPack } from '@/entities/visual-novel/model/types';
-import contentEn from './interlude_lotte.en';
+﻿import type { VNContentPack } from '../../../../model/types';
 
-const contentRu: VNContentPack = {
-    ...contentEn,
-    locale: 'ru'
+export const INTERLUDE_LOTTE_RU: VNContentPack = {
+    locale: 'ru',
+    scenes: {
+        'phone_rings': {
+            text: 'Трубка телеграфного офиса звонит однажды, затем снова. Клерк указывает на вас, словно ему велели ждать именно этого момента.'
+        },
+        'lotte_speaks': {
+            text: '"Инспектор?" Голос доносится фрагментами сквозь статику. Это Лотте. "Говорите кратко. Городской коммутатор под наблюдением."'
+        },
+        'lotte_warning': {
+            text: '"Ваш паттерн заметен," шепчет Лотте. "Кто-то в Президиуме направляет наблюдение через сервисные линии. Если продолжите давить, они ударят первыми."',
+            choices: {
+                'thank_personal': '"Ты все сделала правильно, Лотте. Продолжай кормить меня тем, что они упускают."',
+                'dismiss_professional': '"Понятно. Вернуться к протоколу и забыть этот звонок."'
+            }
+        },
+        'thank_res': {
+            text: '"Тогда продолжаем осторожно," говорит она. "Заходите на коммутатор, когда сможете. Я нашла что-то, похороненное в мертвых каналах." Линия обрывается.'
+        },
+        'dismiss_res': {
+            text: 'Пауза. "Хорошо. Профессионально. Если передумаете, спросите меня на центральной доске." Линия обрывается.'
+        }
+    }
 };
 
-export default contentRu;
+export default INTERLUDE_LOTTE_RU;

@@ -45,6 +45,22 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
                         flags['clue_box217_sensitive'] && !flags['tailor_asked_box217'],
                     actions: [{ type: 'add_flag', payload: { 'tailor_asked_box217': true } }]
                 },
+                {
+                    id: 'ask_lock_signature_workshop',
+                    nextSceneId: 'tailor_lock_signature_response',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_lock_signature'] && !flags['tailor_asked_lock_signature'],
+                    actions: [{ type: 'add_flag', payload: { 'tailor_asked_lock_signature': true } }]
+                },
+                {
+                    id: 'ask_hidden_slot_pattern',
+                    nextSceneId: 'tailor_hidden_slot_response',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_hidden_slot'] && !flags['tailor_asked_hidden_slot'],
+                    actions: [{ type: 'add_flag', payload: { 'tailor_asked_hidden_slot': true } }]
+                },
                 { id: 'ask_customers', nextSceneId: 'ask_customers' },
                 { id: 'browse_stock', nextSceneId: 'browse_stock' },
                 { id: 'leave_shop', nextSceneId: 'END' }
@@ -70,7 +86,7 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
             choices: [
                 {
                     id: 'perception_check_records',
-                    nextSceneId: 'perception_result',
+                    nextSceneId: 'perception_fail',
                     skillCheck: {
                         id: 'chk_tailor_perception',
                         voiceId: 'perception',
@@ -86,6 +102,14 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
                     condition: (flags) =>
                         flags['clue_galdermann_preseed_confirmed'] &&
                         !flags['tailor_pressed_galdermann']
+                },
+                {
+                    id: 'press_relic_gap',
+                    nextSceneId: 'tailor_relic_gap_reply',
+                    type: 'inquiry',
+                    condition: (flags) =>
+                        flags['clue_relic_gap'] &&
+                        !flags['tailor_pressed_relic_gap']
                 },
                 { id: 'ask_client', nextSceneId: 'tailor_client_info' },
                 { id: 'thank_leave', nextSceneId: 'END' }
@@ -139,6 +163,22 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
                 { type: 'add_flag', payload: { 'clue_box217_costume_storage': true } }
             ]
         },
+        'tailor_lock_signature_response': {
+            id: 'tailor_lock_signature_response',
+            characterId: 'tailor',
+            nextSceneId: 'tailor_greets',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_tailor_heat_source': true } }
+            ]
+        },
+        'tailor_hidden_slot_response': {
+            id: 'tailor_hidden_slot_response',
+            characterId: 'tailor',
+            nextSceneId: 'tailor_greets',
+            onEnter: [
+                { type: 'add_flag', payload: { 'clue_hidden_slot_tailor_pattern': true } }
+            ]
+        },
         'tailor_galdermann_reply': {
             id: 'tailor_galdermann_reply',
             characterId: 'tailor',
@@ -146,6 +186,15 @@ export const LEAD_TAILOR_LOGIC: VNScenarioLogic = {
             onEnter: [
                 { type: 'add_flag', payload: { 'tailor_pressed_galdermann': true } },
                 { type: 'add_flag', payload: { 'clue_galdermann_tailor_denial': true } }
+            ]
+        },
+        'tailor_relic_gap_reply': {
+            id: 'tailor_relic_gap_reply',
+            characterId: 'tailor',
+            nextSceneId: 'tailor_recognition',
+            onEnter: [
+                { type: 'add_flag', payload: { 'tailor_pressed_relic_gap': true } },
+                { type: 'add_flag', payload: { 'clue_relic_tailor_transfer': true } }
             ]
         },
         'tailor_description': {

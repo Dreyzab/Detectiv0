@@ -69,7 +69,7 @@ export const CASE1_ARCHIVE_LOGIC: VNScenarioLogic = {
             choices: [
                 {
                     id: 'archive_check_registry',
-                    nextSceneId: 'archive_registry_result',
+                    nextSceneId: 'archive_registry_fail',
                     type: 'inquiry',
                     condition: (flags) => !flags['archive_check_registry_attempted'],
                     skillCheck: {
@@ -112,7 +112,7 @@ export const CASE1_ARCHIVE_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'archive_check_stamps',
-                    nextSceneId: 'archive_stamps_result',
+                    nextSceneId: 'archive_stamps_fail',
                     type: 'inquiry',
                     condition: (flags) => !flags['archive_check_stamps_attempted'],
                     skillCheck: {
@@ -157,7 +157,7 @@ export const CASE1_ARCHIVE_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'archive_check_customs',
-                    nextSceneId: 'archive_customs_result',
+                    nextSceneId: 'archive_customs_fail',
                     type: 'inquiry',
                     condition: (flags) => !flags['archive_check_customs_attempted'],
                     skillCheck: {

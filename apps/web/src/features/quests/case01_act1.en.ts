@@ -26,7 +26,8 @@ export const CASE_01_ACT_1_EN: QuestContent = {
         visit_briefing_bank: 'Visit Bankhaus Krebs (routing objective)',
         visit_briefing_mayor: 'Visit Rathaus / Mayor Thoma (routing objective)',
         visit_bank: 'Visit the Crime Scene (Bankhaus J.A. Krebs)',
-        find_clue_safe: 'Inspect the Safe',
-        interrogate_clerk: 'Interrogate the Clerk'
+        find_clue_safe: 'Inspect the Vault and Breach Pattern',
+        interrogate_clerk: 'Interview the Clerk and Confirm Timeline',
+        close_case: 'Close the Warehouse Finale and Resolve the Case'
     }
 };

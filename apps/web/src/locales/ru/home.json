@@ -1,39 +1,39 @@
 {
     "titleMain": "Grezwanderer 4",
-    "subtitle": "Teni Chernogo Lesa",
+    "subtitle": "Тени Черного Леса",
     "regionSelector": {
-        "title": "Vybor goroda",
-        "subtitle": "Vyberite aktivnyi region ili vojdite cherez gateway QR kod.",
-        "freiburg": "Freiburg 1905",
-        "karlsruhe": "Karlsruhe 1905",
-        "scan": "Skanirovat start kod"
+        "title": "Выбор города",
+        "subtitle": "Выберите активный регион или войдите через стартовый QR-код.",
+        "freiburg": "Фрайбург 1905",
+        "karlsruhe": "Карлсруэ 1905",
+        "scan": "Сканировать код"
     },
     "regions": {
         "FREIBURG_1905": {
-            "cardTitle": "Arkhiv: Freiburg 1905",
-            "location": "Freiburg im Breisgau"
+            "cardTitle": "Архив: Фрайбург 1905",
+            "location": "Фрайбург-им-Брайсгау"
         },
         "karlsruhe_default": {
-            "cardTitle": "Arkhiv: Karlsruhe 1905",
-            "location": "Karlsruhe"
+            "cardTitle": "Архив: Карлсруэ 1905",
+            "location": "Карлсруэ"
         }
     },
     "card": {
-        "title": "Arkhiv: Freiburg 1905",
-        "location": "Freiburg-im-Braisgau",
-        "subtitle": "Rassleduite neraskrytye dela proshlogo. Logika vashe oruzhie."
+        "title": "Архив: Фрайбург 1905",
+        "location": "Фрайбург-им-Брайсгау",
+        "subtitle": "Расследуйте нераскрытые дела прошлого. Логика — ваше оружие."
     },
     "btn": {
-        "continue": "Prodolzhit",
-        "newGame": "Novaya igra",
-        "changeRegion": "Vybrat gorod"
+        "continue": "Продолжить",
+        "newGame": "Новая игра",
+        "changeRegion": "Выбрать город"
     },
     "modal": {
-        "resetTitle": "Nachat novuyu igru?",
-        "resetConfirm": "Vy uvereny? Ves progress budet uteryan."
+        "resetTitle": "Начать новую игру?",
+        "resetConfirm": "Вы уверены? Весь прогресс будет утерян."
     },
     "debug": {
-        "title": "Otladka",
-        "jumpBank": "[DEBUG] Perejti k delu banka"
+        "title": "Отладка",
+        "jumpBank": "[DEBUG] Перейти к делу банка"
     }
 }

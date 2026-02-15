@@ -7,37 +7,31 @@ export const CASE_01_ACT_1_LOGIC: QuestLogic = {
     stageTransitions: [
         {
             from: 'not_started',
-            to: 'briefing',
-            triggerActions: ['start_vn(detective_case1_hbf_arrival)']
+            to: 'briefing'
         },
         {
             from: 'briefing',
-            to: 'bank_investigation',
-            triggerActions: ['set_quest_stage(case01, bank_investigation) in qr_success']
+            to: 'bank_investigation'
         },
         {
             from: 'bank_investigation',
             to: 'leads_open',
-            requiredFlags: ['vault_inspected', 'clerk_interviewed'],
-            triggerActions: ['set_quest_stage(case01, leads_open) in bank_conclusion_summary']
+            requiredFlags: ['vault_inspected', 'clerk_interviewed']
         },
         {
             from: 'leads_open',
             to: 'leads_done',
-            requiredFlags: ['all_leads_resolved'],
-            triggerActions: ['set_quest_stage(case01, leads_done) in lead resolution chain']
+            requiredFlags: ['all_leads_resolved']
         },
         {
             from: 'leads_done',
             to: 'finale',
-            requiredFlags: ['finale_unlocked'],
-            triggerActions: ['start_vn(case1_finale)']
+            requiredFlags: ['finale_unlocked']
         },
         {
             from: 'finale',
             to: 'resolved',
-            requiredFlags: ['case_resolved'],
-            triggerActions: ['set_quest_stage(case01, resolved) in finale ending']
+            requiredFlags: ['case_resolved']
         }
     ],
     objectives: [
@@ -72,22 +66,21 @@ export const CASE_01_ACT_1_LOGIC: QuestLogic = {
         },
         {
             id: 'find_clue_safe',
-            condition: { type: 'flag', flag: 'EVIDENCE_SAFE_CRACKED' },
+            condition: { type: 'flag', flag: 'vault_inspected' },
             stage: 'bank_investigation'
         },
         {
             id: 'interrogate_clerk',
-            condition: { type: 'flag', flag: 'INTERROGATION_CLERK_DONE' },
+            condition: { type: 'flag', flag: 'clerk_interviewed' },
             stage: 'bank_investigation'
+        },
+        {
+            id: 'close_case',
+            condition: { type: 'flag', flag: 'case_resolved' },
+            stage: 'finale'
         }
     ],
-    completionCondition: {
-        type: 'logic_and',
-        conditions: [
-            { type: 'flag', flag: 'EVIDENCE_SAFE_CRACKED' },
-            { type: 'flag', flag: 'INTERROGATION_CLERK_DONE' }
-        ]
-    },
+    completionCondition: { type: 'flag', flag: 'case_resolved' },
     rewards: {
         xp: 150,
         traits: ['observant']

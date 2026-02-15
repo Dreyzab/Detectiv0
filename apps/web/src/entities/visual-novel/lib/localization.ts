@@ -56,8 +56,30 @@ export const mergeScenario = (
                     type: choiceLogic.type, // action | inquiry | flavor
                     actions: choiceLogic.actions,
                     condition: choiceLogic.condition,
-                    skillCheck: choiceLogic.skillCheck
+                    skillCheck: choiceLogic.skillCheck,
+                    tensionDelta: choiceLogic.tensionDelta
                 });
+            });
+        }
+
+
+        // 3. Passive Checks (RPG)
+        let mergedPassiveChecks = sceneLogic.passiveChecks;
+        if (sceneLogic.passiveChecks) {
+            mergedPassiveChecks = sceneLogic.passiveChecks.map(check => {
+                const checkId = check.id;
+                const locCheck = sceneContent?.passiveChecks?.[checkId];
+                const fallbackCheck = fallback?.sceneContent?.passiveChecks?.[checkId];
+
+                // Override if localized content exists
+                const passiveText = locCheck?.passiveText ?? fallbackCheck?.passiveText ?? check.passiveText;
+                const passiveFailText = locCheck?.passiveFailText ?? fallbackCheck?.passiveFailText ?? check.passiveFailText;
+
+                return {
+                    ...check,
+                    passiveText,
+                    passiveFailText
+                };
             });
         }
 
@@ -69,7 +91,7 @@ export const mergeScenario = (
             nextSceneId: sceneLogic.nextSceneId,
             onEnter: sceneLogic.onEnter,
             preconditions: sceneLogic.preconditions,
-            passiveChecks: sceneLogic.passiveChecks,
+            passiveChecks: mergedPassiveChecks,
             text: bodyText,
             choices: mergedChoices.length > 0 ? mergedChoices : undefined
         };

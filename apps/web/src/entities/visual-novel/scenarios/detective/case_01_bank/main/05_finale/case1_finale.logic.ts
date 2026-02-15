@@ -28,6 +28,9 @@ export const CASE1_FINALE_LOGIC: VNScenarioLogic = {
             id: 'deduction_start',
             characterId: 'inspector',
             nextSceneId: 'deduction_choice',
+            onEnter: [
+                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'finale' } }
+            ],
             // Placeholder: "Everything points to this moment..."
         },
         'deduction_choice': {
@@ -132,7 +135,21 @@ export const CASE1_FINALE_LOGIC: VNScenarioLogic = {
         'END_POLITICAL_BAD': { id: 'END_POLITICAL_BAD', characterId: 'inspector', nextSceneId: 'credits' },
         'END_CRIMINAL': { id: 'END_CRIMINAL', characterId: 'inspector', nextSceneId: 'credits' },
         'END_CRIMINAL_BAD': { id: 'END_CRIMINAL_BAD', characterId: 'inspector', nextSceneId: 'credits' },
-        'credits': { id: 'credits', characterId: 'inspector', nextSceneId: 'END' }
+        'credits': {
+            id: 'credits',
+            characterId: 'inspector',
+            nextSceneId: 'END',
+            onEnter: [
+                { type: 'set_quest_stage', payload: { questId: 'case01', stage: 'resolved' } },
+                {
+                    type: 'add_flag',
+                    payload: {
+                        'case_resolved': true,
+                        'case01_finale_complete': true
+                    }
+                }
+            ]
+        }
     }
 };
 

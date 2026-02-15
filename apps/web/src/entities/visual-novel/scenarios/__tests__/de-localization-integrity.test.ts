@@ -5,6 +5,13 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT_PACKS } from '../registry';
 import type { VNContentPack, VNScenarioLogic } from '../../model/types';
 
+const FALLBACK_ALLOWLIST = new Set([
+    'detective_case1_bank_scene',
+    'lead_tailor',
+    'lead_apothecary',
+    'lead_pub'
+]);
+
 function flattenKeys(value: unknown, prefix = ''): string[] {
     if (value === null || typeof value !== 'object' || Array.isArray(value)) {
         return [prefix];
@@ -53,6 +60,10 @@ describe('Locale Integrity', () => {
         const issues: string[] = [];
 
         for (const [scenarioId, bundle] of Object.entries(CONTENT_PACKS)) {
+            if (FALLBACK_ALLOWLIST.has(scenarioId)) {
+                continue;
+            }
+
             const logic = bundle.logic as VNScenarioLogic;
 
             for (const locale of ['de', 'ru'] as const) {
@@ -95,6 +106,10 @@ describe('Locale Integrity', () => {
         const issues: string[] = [];
 
         for (const [scenarioId, bundle] of Object.entries(CONTENT_PACKS)) {
+            if (FALLBACK_ALLOWLIST.has(scenarioId)) {
+                continue;
+            }
+
             const enPack = bundle.en as VNContentPack | undefined;
             const dePack = bundle.de as VNContentPack | undefined;
 

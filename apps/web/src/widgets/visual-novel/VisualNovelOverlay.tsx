@@ -1,5 +1,7 @@
 import { useVNStore } from '@/entities/visual-novel/model/store';
 import { useDossierStore } from '@/features/detective/dossier/store';
+import { useTensionStore } from '@/features/detective/interrogation/tensionStore';
+import { TensionHUD } from '@/features/detective/interrogation/ui/TensionHUD';
 import { useCharacterStore } from '@/entities/character/model/store';
 import { useQuestStore } from '@/features/quests/store';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -37,6 +39,7 @@ export const VisualNovelOverlay = () => {
 const VisualNovelOverlayInner = () => {
     const { activeScenarioId, currentSceneId, advanceScene, endScenario, locale, recordChoice, isChoiceVisited } = useVNStore();
     const { setPointState, addEvidence, setFlag, addEntry, recordCheckResult, voiceStats, gainVoiceXp, flags, evidence, setVoiceLevel } = useDossierStore();
+    const tensionStore = useTensionStore();
     const { modifyRelationship, setCharacterStatus } = useCharacterStore();
     const userQuests = useQuestStore((state) => state.userQuests);
     const setQuestStage = useQuestStore((state) => state.setQuestStage);
@@ -156,6 +159,14 @@ const VisualNovelOverlayInner = () => {
         setIsTyping(true);
     }, [activeScenarioId, effectiveSceneId]);
 
+    // Tick interrogation progress on every scene change
+    useEffect(() => {
+        if (!effectiveSceneId) return;
+        if (!tensionStore.targetCharacterId) return;
+        tensionStore.tickProgress(voiceStats as Partial<Record<import('@repo/shared/data/parliament').VoiceId, number>>);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [effectiveSceneId]);
+
     // --- Actions ---
     const handleInteract = (token: TextToken, element?: HTMLElement) => {
         const scenario = activeScenario;
@@ -267,6 +278,23 @@ const VisualNovelOverlayInner = () => {
                 case 'add_heat':
                     console.warn('[VN Action] add_heat is not wired into progression yet', action.payload);
                     break;
+                case 'add_tension':
+                    tensionStore.applyTensionDelta(action.payload);
+                    break;
+                case 'grant_influence_point':
+                    tensionStore.addInfluencePoints(action.payload);
+                    break;
+                case 'start_interrogation':
+                    tensionStore.startInterrogation({
+                        characterId: action.payload.characterId,
+                        scenarioId: action.payload.scenarioId ?? activeScenarioId ?? 'global',
+                        topicId: action.payload.topicId,
+                        lockoutSceneId: action.payload.lockoutSceneId
+                    });
+                    break;
+                case 'end_interrogation':
+                    tensionStore.endInterrogation();
+                    break;
             }
         });
     };
@@ -295,9 +323,25 @@ const VisualNovelOverlayInner = () => {
             return;
         }
 
+        const applyChoiceTension = (): boolean => {
+            if (typeof choice.tensionDelta !== 'number') {
+                return false;
+            }
+            const tensionResult = tensionStore.applyTensionDelta(choice.tensionDelta);
+            if (tensionResult.justLockedOut && tensionStore.lockoutSceneId) {
+                advanceScene(tensionStore.lockoutSceneId);
+                return true;
+            }
+            return false;
+        };
+
         // Record this choice as visited
         if (activeScenarioId && effectiveSceneId) {
             recordChoice(activeScenarioId, effectiveSceneId, choice.id);
+        }
+
+        if (applyChoiceTension()) {
+            return;
         }
 
         // Skill Check Logic
@@ -538,6 +582,10 @@ const VisualNovelOverlayInner = () => {
 
     return (
         <>
+            <AnimatePresence>
+                {tensionStore.targetCharacterId && <TensionHUD />}
+            </AnimatePresence>
+
             <OverlayLayout />
 
             {/* Mind Palace Layer - Fixed to ensure correct positioning relative to viewport */}
