@@ -69,7 +69,7 @@ export const mergeScenario = (
             mergedPassiveChecks = sceneLogic.passiveChecks.map(check => {
                 const checkId = check.id;
                 const locCheck = sceneContent?.passiveChecks?.[checkId];
-                const fallbackCheck = fallback?.sceneContent?.passiveChecks?.[checkId];
+                const fallbackCheck = fallback?.passiveChecks?.[checkId];
 
                 // Override if localized content exists
                 const passiveText = locCheck?.passiveText ?? fallbackCheck?.passiveText ?? check.passiveText;

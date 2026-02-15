@@ -93,8 +93,106 @@ describe('Localization Merge Utility', () => {
             scenes: {}
         };
 
+        // Suppress warning for test
+        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
         const merged = mergeScenario(mockLogic, emptyContent);
+        consoleSpy.mockRestore();
+
         expect(merged.scenes['start'].text).toContain('MISSING TEXT');
         expect(merged.scenes['start'].choices?.[0].text).toContain('MISSING CHOICE');
+    });
+
+    it('should merge localized passive checks correctly', () => {
+        const logicWithPassive: VNScenarioLogic = {
+            ...mockLogic,
+            scenes: {
+                'start': {
+                    id: 'start',
+                    passiveChecks: [
+                        {
+                            id: 'chk_test',
+                            passiveText: 'Original English Passive',
+                            passiveFailText: 'Original English Fail',
+                            difficulty: 10,
+                            voiceId: 'logic',
+                            isPassive: true
+                        }
+                    ],
+                    choices: []
+                }
+            }
+        };
+
+        const contentWithPassiveRU: VNContentPack = {
+            locale: 'ru',
+            scenes: {
+                'start': {
+                    text: 'Текст сцены',
+                    passiveChecks: {
+                        'chk_test': {
+                            passiveText: 'Пассивный Текст',
+                            passiveFailText: 'Пассивный Провал'
+                        }
+                    }
+                }
+            }
+        };
+
+        const merged = mergeScenario(logicWithPassive, contentWithPassiveRU);
+
+        expect(merged.scenes['start'].passiveChecks?.[0].passiveText).toBe('Пассивный Текст');
+        expect(merged.scenes['start'].passiveChecks?.[0].passiveFailText).toBe('Пассивный Провал');
+    });
+
+    it('should fallback for missing passive check translations', () => {
+        const logicWithPassive: VNScenarioLogic = {
+            ...mockLogic,
+            scenes: {
+                'start': {
+                    id: 'start',
+                    passiveChecks: [
+                        {
+                            id: 'chk_test',
+                            passiveText: 'Original English Passive',
+                            passiveFailText: 'Original English Fail',
+                            difficulty: 10,
+                            voiceId: 'logic',
+                            isPassive: true
+                        }
+                    ],
+                    choices: []
+                }
+            }
+        };
+
+        const contentPartialRU: VNContentPack = {
+            locale: 'ru',
+            scenes: {
+                'start': {
+                    text: 'Текст сцены',
+                    // No passiveChecks defined
+                }
+            }
+        };
+
+        // Mock fallback content
+        const fallbackContent: VNContentPack = {
+            locale: 'en',
+            scenes: {
+                'start': {
+                    text: 'Scene Text',
+                    passiveChecks: {
+                        'chk_test': {
+                            passiveText: 'Fallback Passive',
+                            passiveFailText: 'Fallback Fail'
+                        }
+                    }
+                }
+            }
+        };
+
+        const merged = mergeScenario(logicWithPassive, contentPartialRU, fallbackContent);
+
+        expect(merged.scenes['start'].passiveChecks?.[0].passiveText).toBe('Fallback Passive');
     });
 });

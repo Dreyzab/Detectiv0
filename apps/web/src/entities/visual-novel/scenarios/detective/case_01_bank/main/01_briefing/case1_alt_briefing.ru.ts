@@ -64,7 +64,13 @@ export const CASE1_ALT_BRIEFING_RU: VNContentPack = {
             text: '"Инспектор Вайс. Компетентен, но не любит гостей из Берлина."'
         },
         'beat2_empathy_read': {
-            text: 'Она говорит ровным тоном, но слишком сильно сжимает чашку.'
+            text: 'Она говорит ровным тоном, но слишком сильно сжимает чашку.',
+            passiveChecks: {
+                'chk_case1_briefing_empathy_clara': {
+                    passiveText: 'Её тон контролируем, но в этом деле у неё есть личный интерес.',
+                    passiveFailText: 'Она звучит собранно. Больше ничего не выделяется.'
+                }
+            }
         },
 
         'beat3_setup': {

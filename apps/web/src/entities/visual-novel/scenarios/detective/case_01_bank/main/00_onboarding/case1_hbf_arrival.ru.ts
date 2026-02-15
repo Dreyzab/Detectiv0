@@ -11,6 +11,12 @@ export const CASE1_HBF_ARRIVAL_RU: VNContentPack = {
             choices: {
                 'choice_approach_fritz': 'Направиться прямо к офицеру.',
                 'choice_investigate_station': 'Сначала осмотреть станцию.'
+            },
+            passiveChecks: {
+                'chk_case1_hbf_perception_fritz': {
+                    passiveText: 'В потоке людей вы замечаете человека в форме с остроконечным шлемом.',
+                    passiveFailText: 'Толпа — это хаотичное пятно лиц и багажа.'
+                }
             }
         },
 
@@ -19,6 +25,12 @@ export const CASE1_HBF_ARRIVAL_RU: VNContentPack = {
             choices: {
                 'beat2_buy_newspaper': 'Купить газету (1 Марка).',
                 'beat2_glance_headline': 'Просто взглянуть на заголовок.'
+            },
+            passiveChecks: {
+                'chk_case1_hbf_intuition_paperboy': {
+                    passiveText: 'Мальчишка-газетчик кричит слишком громко. Он скрывает страх.',
+                    passiveFailText: 'Мальчик выкрикивает заголовки об ограблении.'
+                }
             }
         },
         'beat2_buy_result': {
@@ -37,7 +49,13 @@ export const CASE1_HBF_ARRIVAL_RU: VNContentPack = {
         },
 
         'beat3_square': {
-            text: 'Снаружи вокзала звонят трамваи, и экипажи грохочут по мокрой брусчатке. Фрайбург уже в движении.\n\nОфицер, который кивнул вам ранее, стоит у фонтана, тихо переговариваясь с коллегой. Один упоминает имя, которое вы запоминаете: Гальдерманн.'
+            text: 'Снаружи вокзала звонят трамваи, и экипажи грохочут по мокрой брусчатке. Фрайбург уже в движении.\n\nОфицер, который кивнул вам ранее, стоит у фонтана, тихо переговариваясь с коллегой. Один упоминает имя, которое вы запоминаете: Гальдерманн.',
+            passiveChecks: {
+                'chk_case1_hbf_senses_galdermann': {
+                    passiveText: 'Офицеры упоминают знакомое имя: Гальдерманн.',
+                    passiveFailText: 'Только звон трамваев и стук колес прорезают площадь.'
+                }
+            }
         },
 
         'beat_fritz_intro_direct': {
