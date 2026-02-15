@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { OnboardingModal } from '../features/detective/onboarding/OnboardingModal';
+import { ConfirmationModal } from '../shared/ui/ConfirmationModal';
 import { useInventoryStore } from '../entities/inventory/model/store';
 import { useDossierStore } from '../features/detective/dossier/store';
 import { useQuestStore } from '../features/quests/store';
@@ -42,6 +44,16 @@ export const HomePage = () => {
     const locale = useVNStore((state) => state.locale);
     const flags = useDossierStore((state) => state.flags);
     const kaOnboardingComplete = Boolean(flags.ka_onboarding_complete);
+
+    const [showTelegram, setShowTelegram] = useState(false);
+    const playerName = useInventoryStore((state) => state.playerName);
+
+    const handleTelegramComplete = (name: string) => {
+        setPlayerName(name);
+        setShowTelegram(false);
+        useVNStore.getState().startScenario('detective_case1_hbf_arrival');
+        navigate('/vn/detective_case1_hbf_arrival');
+    };
 
     const fallbackScenarioId = useMemo(
         () => (activeRegionId === 'karlsruhe_default' ? 'sandbox_intro' : 'detective_case1_hbf_arrival'),
@@ -96,20 +108,30 @@ export const HomePage = () => {
         navigate(getRegionMapRoute(regionId, kaOnboardingComplete));
     };
 
-    const handleNewGame = () => {
-        if (confirm(`${t('modal.resetTitle')}\n${t('modal.resetConfirm')}`)) {
-            useInventoryStore.getState().resetAll();
-            useDossierStore.getState().resetDossier();
-            useQuestStore.getState().resetQuests();
-            useVNStore.getState().endScenario();
+    const [showConfirmReset, setShowConfirmReset] = useState(false);
 
-            if (activeRegionId === 'karlsruhe_default') {
-                navigate('/entry/ka1905');
-            } else {
-                useVNStore.getState().startScenario('intro_char_creation');
-                navigate('/vn/intro_char_creation');
-            }
+    const handleNewGame = () => {
+        // If no player name set (new player), skip confirmation
+        if (!playerName) {
+            startNewGame();
+            return;
         }
+        setShowConfirmReset(true);
+    };
+
+    const startNewGame = () => {
+        useInventoryStore.getState().resetAll();
+        useDossierStore.getState().resetDossier();
+        useQuestStore.getState().resetQuests();
+        useVNStore.getState().endScenario();
+
+        if (activeRegionId === 'karlsruhe_default') {
+            navigate('/entry/ka1905');
+        } else {
+            // Show Telegram on Home instead of navigating to intro_char_creation
+            setShowTelegram(true);
+        }
+        setShowConfirmReset(false);
     };
 
     const regionCardTitle = activeRegionId ? t(`regions.${activeRegionId}.cardTitle`) : '';
@@ -120,6 +142,22 @@ export const HomePage = () => {
 
     return (
         <div className="min-h-[100dvh] bg-stone-950 text-stone-200 flex flex-col relative overflow-hidden font-body">
+            {showTelegram && (
+                <OnboardingModal
+                    onComplete={handleTelegramComplete}
+                    onCancel={() => setShowTelegram(false)}
+                />
+            )}
+            {showConfirmReset && (
+                <ConfirmationModal
+                    title={t('modal.resetTitle') || "Start New Investigation?"}
+                    message={t('modal.resetConfirm') || "Current progress will be lost. This cannot be undone."}
+                    confirmLabel={t('btn.newGame') || "Start New Game"}
+                    onConfirm={startNewGame}
+                    onCancel={() => setShowConfirmReset(false)}
+                    isDestructive
+                />
+            )}
             <div className="fixed inset-0 bg-[url('/images/paper-texture.png')] opacity-[0.05] mix-blend-overlay pointer-events-none" />
             <div className="fixed inset-0 bg-gradient-to-b from-stone-950 via-transparent to-stone-950/80 pointer-events-none" />
 

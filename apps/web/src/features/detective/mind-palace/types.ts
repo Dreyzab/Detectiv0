@@ -17,5 +17,6 @@ export interface ThoughtCloudProps {
     text: string;
     voiceId: VoiceId;
     isVisible: boolean;
+    subtitle?: string;
     onComplete?: () => void;
 }

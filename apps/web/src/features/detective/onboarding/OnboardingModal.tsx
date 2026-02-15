@@ -11,7 +11,16 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, onCancel }) => {
     const [name, setName] = useState('')
     const [touched, setTouched] = useState(false)
+    const [isFocused, setIsFocused] = useState(false)
+    const inputRef = React.useRef<HTMLInputElement>(null)
     const { t } = useTranslation('detective');
+
+    React.useEffect(() => {
+        // Only auto-focus on desktop
+        if (window.innerWidth > 768) {
+            inputRef.current?.focus()
+        }
+    }, [])
 
     const handleSubmit = () => {
         if (!name.trim()) {
@@ -72,6 +81,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, on
                     <div className="w-full relative group mb-10">
                         <label htmlFor="inspector-name" className="sr-only">Inspector Name Signature</label>
                         <input
+                            ref={inputRef}
                             id="inspector-name"
                             type="text"
                             value={name}
@@ -79,17 +89,25 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, on
                                 setName(e.target.value)
                                 if (touched) setTouched(false)
                             }}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') handleSubmit()
                             }}
-                            placeholder="Sign Name Here..."
+                            placeholder={isFocused ? "Sign Name Here..." : ""}
                             className={cn(
                                 "w-full bg-transparent border-b-2 border-[#a8a29e] text-[#1a1612] text-3xl font-serif italic text-center py-3 focus:outline-none focus:border-[#8b2323] transition-colors placeholder:text-[#d6d3ce]",
                                 "placeholder:italic placeholder:opacity-50",
                                 touched && !name.trim() && "border-red-500 placeholder:text-red-300"
                             )}
-                            autoFocus
                         />
+                        {!name && !isFocused && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span className="text-[#a8a29e] text-3xl font-serif italic opacity-70 animate-pulse">
+                                    {t('onboarding.enterName') || "Enter Name..."}
+                                </span>
+                            </div>
+                        )}
                         {touched && !name.trim() && (
                             <span className="absolute -bottom-6 left-0 right-0 text-xs text-red-600 font-mono uppercase tracking-widest animate-pulse">
                                 Signature Required

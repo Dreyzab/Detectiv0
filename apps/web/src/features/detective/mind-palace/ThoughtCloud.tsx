@@ -6,7 +6,8 @@ import type { ThoughtCloudProps } from './types';
 export const ThoughtCloud: React.FC<ThoughtCloudProps> = ({
     text,
     voiceId,
-    isVisible
+    isVisible,
+    subtitle = 'Passive Check: Success'
 }) => {
     const color = getVoiceColor(voiceId);
     const voiceName = VOICES[voiceId].name;
@@ -30,7 +31,7 @@ export const ThoughtCloud: React.FC<ThoughtCloudProps> = ({
                                 {voiceName}
                             </span>
                             <span className="text-[10px] text-white/40 uppercase tracking-widest">
-                                Passive Check: Success
+                                {subtitle}
                             </span>
                         </div>
 

@@ -1,7 +1,7 @@
 import type { MapPoint, MapPointCategory } from '@repo/shared';
 
 /**
- * Karlsruhe Sandbox Map Points (12 locations)
+ * Karlsruhe Sandbox Map Points (15 locations)
  * Pack: ka1905
  * 
  * GPS coordinates: real Karlsruhe landmarks
@@ -190,15 +190,38 @@ export const SANDBOX_KA_POINTS: Record<string, DetectivePoint> = {
                 id: 'ka_platz_dog_sighting',
                 trigger: 'marker_click',
                 label: 'Ask vendors about the dog',
-                priority: 15,
+                priority: 20,
                 conditions: [
                     { type: 'flag_is', flagId: 'TALKED_MAYOR', value: true },
-                    { type: 'flag_is', flagId: 'DOG_VENDOR_CLUE', value: false }
+                    { type: 'flag_is', flagId: 'DOG_VENDOR_CLUE', value: false },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
                 ],
                 actions: [
                     { type: 'set_flag', flagId: 'DOG_VENDOR_CLUE', value: true },
-                    { type: 'show_toast', message: 'A sausage vendor says "Bruno" visits the butcher daily.', variant: 'info' },
-                    { type: 'unlock_point', pointId: 'loc_ka_butcher' }
+                    { type: 'grant_evidence', evidenceId: 'ev_dog_vendor_tip' },
+                    { type: 'unlock_group', groupId: 'ka_dog_open_leads' },
+                    {
+                        type: 'show_toast',
+                        message: 'Vendors saw Bruno circling sausage stands and vanishing into side streets.',
+                        variant: 'info'
+                    }
+                ]
+            },
+            {
+                id: 'ka_platz_dog_repeat',
+                trigger: 'marker_click',
+                label: 'Re-check vendor chatter',
+                priority: 5,
+                conditions: [
+                    { type: 'flag_is', flagId: 'DOG_VENDOR_CLUE', value: true },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
+                ],
+                actions: [
+                    {
+                        type: 'show_toast',
+                        message: 'The crowd repeats three leads: butcher lane, old stables, and the river docks.',
+                        variant: 'info'
+                    }
                 ]
             }
         ]
@@ -213,6 +236,7 @@ export const SANDBOX_KA_POINTS: Record<string, DetectivePoint> = {
         type: 'npc',
         packId: 'ka1905',
         isHiddenInitially: true,
+        unlockGroup: 'ka_dog_open_leads',
         bindings: [
             {
                 id: 'ka_butcher_dog',
@@ -221,6 +245,7 @@ export const SANDBOX_KA_POINTS: Record<string, DetectivePoint> = {
                 priority: 20,
                 conditions: [
                     { type: 'flag_is', flagId: 'TALKED_MAYOR', value: true },
+                    { type: 'flag_is', flagId: 'DOG_VENDOR_CLUE', value: true },
                     { type: 'flag_is', flagId: 'DOG_BUTCHER_CLUE', value: false },
                     { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
                 ],
@@ -228,6 +253,155 @@ export const SANDBOX_KA_POINTS: Record<string, DetectivePoint> = {
             }
         ],
         image: '/images/detective/loc_ganter_brauerei.webp'
+    },
+
+    'loc_ka_stables': {
+        id: 'loc_ka_stables',
+        title: 'Alte Stallungen',
+        description: 'Old municipal stables with hay lofts and delivery carts.',
+        lat: 49.0106,
+        lng: 8.3948,
+        type: 'interest',
+        packId: 'ka1905',
+        isHiddenInitially: true,
+        unlockGroup: 'ka_dog_open_leads',
+        bindings: [
+            {
+                id: 'ka_stables_false_lead',
+                trigger: 'marker_click',
+                label: 'Inspect hay carts',
+                priority: 16,
+                conditions: [
+                    { type: 'flag_is', flagId: 'DOG_VENDOR_CLUE', value: true },
+                    { type: 'flag_is', flagId: 'DOG_FALSE_STABLES_DONE', value: false },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
+                ],
+                actions: [
+                    { type: 'set_flag', flagId: 'DOG_FALSE_STABLES_DONE', value: true },
+                    { type: 'grant_evidence', evidenceId: 'ev_dog_hay_fur' },
+                    { type: 'unlock_point', pointId: 'loc_ka_service_lane' },
+                    {
+                        type: 'show_toast',
+                        message: 'You find coarse fur in hay bales. A stable hand mentions a heavy dog passing through.',
+                        variant: 'warning'
+                    }
+                ]
+            },
+            {
+                id: 'ka_stables_revisit',
+                trigger: 'marker_click',
+                label: 'Re-check stables',
+                priority: 4,
+                conditions: [
+                    { type: 'flag_is', flagId: 'DOG_FALSE_STABLES_DONE', value: true },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
+                ],
+                actions: [
+                    { type: 'show_toast', message: 'No fresh canine traces. The stable lead feels stale.', variant: 'info' }
+                ]
+            }
+        ]
+    },
+
+    'loc_ka_river_docks': {
+        id: 'loc_ka_river_docks',
+        title: 'Rheinhafen Docks',
+        description: 'Cargo carts, fish barrels, and muddy tracks along the river edge.',
+        lat: 49.0049,
+        lng: 8.3884,
+        type: 'interest',
+        packId: 'ka1905',
+        isHiddenInitially: true,
+        unlockGroup: 'ka_dog_open_leads',
+        bindings: [
+            {
+                id: 'ka_docks_false_lead',
+                trigger: 'marker_click',
+                label: 'Follow dockside prints',
+                priority: 16,
+                conditions: [
+                    { type: 'flag_is', flagId: 'DOG_VENDOR_CLUE', value: true },
+                    { type: 'flag_is', flagId: 'DOG_FALSE_DOCKS_DONE', value: false },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
+                ],
+                actions: [
+                    { type: 'set_flag', flagId: 'DOG_FALSE_DOCKS_DONE', value: true },
+                    { type: 'grant_evidence', evidenceId: 'ev_dog_river_prints' },
+                    { type: 'unlock_point', pointId: 'loc_ka_service_lane' },
+                    {
+                        type: 'show_toast',
+                        message: 'Paw prints run toward the docks, then break near a fish cart.',
+                        variant: 'warning'
+                    }
+                ]
+            },
+            {
+                id: 'ka_docks_revisit',
+                trigger: 'marker_click',
+                label: 'Re-check riverbank',
+                priority: 4,
+                conditions: [
+                    { type: 'flag_is', flagId: 'DOG_FALSE_DOCKS_DONE', value: true },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
+                ],
+                actions: [
+                    { type: 'show_toast', message: 'The tide erased most traces. Nothing new at the docks.', variant: 'info' }
+                ]
+            }
+        ]
+    },
+
+    'loc_ka_service_lane': {
+        id: 'loc_ka_service_lane',
+        title: 'Service Alley',
+        description: 'A narrow alley behind laundries and baker delivery doors.',
+        lat: 49.0088,
+        lng: 8.4011,
+        type: 'interest',
+        packId: 'ka1905',
+        isHiddenInitially: true,
+        bindings: [
+            {
+                id: 'ka_service_lane_followup',
+                trigger: 'marker_click',
+                label: 'Cross-check side-lane traces',
+                priority: 17,
+                conditions: [
+                    {
+                        type: 'logic_or',
+                        conditions: [
+                            { type: 'flag_is', flagId: 'DOG_FALSE_STABLES_DONE', value: true },
+                            { type: 'flag_is', flagId: 'DOG_FALSE_DOCKS_DONE', value: true }
+                        ]
+                    },
+                    { type: 'flag_is', flagId: 'DOG_FALSE_SERVICE_DONE', value: false },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
+                ],
+                actions: [
+                    { type: 'set_flag', flagId: 'DOG_FALSE_SERVICE_DONE', value: true },
+                    { type: 'grant_evidence', evidenceId: 'ev_dog_laundry_thread' },
+                    { type: 'unlock_point', pointId: 'loc_ka_bakery' },
+                    {
+                        type: 'show_toast',
+                        message: 'Laundry fibers carry bakery flour. False leads converge back to bakery lane.',
+                        variant: 'success'
+                    }
+                ]
+            },
+            {
+                id: 'ka_service_lane_revisit',
+                trigger: 'marker_click',
+                label: 'Re-check service alley',
+                priority: 4,
+                conditions: [
+                    { type: 'flag_is', flagId: 'DOG_FALSE_SERVICE_DONE', value: true },
+                    { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
+                ],
+                actions: [
+                    { type: 'show_toast', message: 'Only delivery wagons now. Bruno has moved on.', variant: 'info' }
+                ]
+            }
+        ]
     },
 
     'loc_ka_bakery': {
@@ -246,7 +420,13 @@ export const SANDBOX_KA_POINTS: Record<string, DetectivePoint> = {
                 label: 'Follow the trail',
                 priority: 20,
                 conditions: [
-                    { type: 'flag_is', flagId: 'DOG_BUTCHER_CLUE', value: true },
+                    {
+                        type: 'logic_or',
+                        conditions: [
+                            { type: 'flag_is', flagId: 'DOG_BUTCHER_CLUE', value: true },
+                            { type: 'flag_is', flagId: 'DOG_FALSE_SERVICE_DONE', value: true }
+                        ]
+                    },
                     { type: 'flag_is', flagId: 'DOG_BAKERY_CLUE', value: false },
                     { type: 'flag_is', flagId: 'DOG_CASE_DONE', value: false }
                 ],

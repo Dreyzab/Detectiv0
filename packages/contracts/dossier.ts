@@ -22,6 +22,15 @@ export interface DossierEvidenceSnapshot {
     packId: string;
 }
 
+export interface DossierHypothesisSnapshot {
+    deductionId: string;
+    resultId: string;
+    confidence: number;
+    voiceModifiers: Record<string, number>;
+    tier: number;
+    isRedHerring?: boolean;
+}
+
 export interface DossierSnapshot {
     entries: DossierEntrySnapshot[];
     evidence: DossierEvidenceSnapshot[];
@@ -36,6 +45,8 @@ export interface DossierSnapshot {
     traits: string[];
     voiceStats: Record<string, number>;
     voiceXp: Record<string, number>;
+    hypotheses: Record<string, DossierHypothesisSnapshot>;
+    thoughtPoints: number;
 }
 
 export interface DossierSnapshotResponse {

@@ -22,20 +22,35 @@ export const CASE1_HBF_ARRIVAL_EN: VNContentPack = {
             }
         },
         'beat2_buy_result': {
-            text: 'You hand over a coin. The boy practically throws the paper at you and moves away quickly.\n\nThe headline screams: "IMPERIAL BANK ROBBED — POLICE BAFFLED". A witness surname stands out: Hartmann. You fold the paper and tuck it away.'
+            text: 'You toss a coin to the boy. "Keep the change. Buy yourself something warm."\n\nHe catches it with a surprised blink, then smirks, pulling his cap lower. "Don\'t think a Mark buys you a friend, suit. But thanks."\n\nA shadow falls over you both.\n\n"Selling lies today, Hans?" Fritz Muller looms behind you, his thumb hooked in his belt.\n\nThe boy pales and scampers off, dropping the paper in your hand. Fritz chuckles, watching him run.\n\n"The press writes what people fear, not what is true. We have the truth, Detective."'
         },
-        'beat2_glance_result': {
-            text: 'The headline is visible from here: "IMPERIAL BANK ROBBED". Everyone in Freiburg knows. You are not starting with surprise on your side.'
+        'beat_paperboy_theft': {
+            text: 'You lean in to read the headline without paying. The boy, noticing your stinginess, suddenly stumbles into you.\n\nHis hand—quick as a magician\'s—dives for your pocket. But your reflexes are faster. You catch his thin wrist an inch from your watch.\n\n"Let go! I didn\'t do anything!"\n\nThe crowd parts. A shadow in a spiked helmet falls over you. Officer Fritz Muller stands there, hands behind his back.'
+        },
+
+        'choice_paperboy_fate': {
+            text: '"Problem, Herr Detective? Is this sparrow pecking where he shouldn\'t?"\n\nThe boy trembles in your grip, glaring sullenly.',
+            choices: {
+                'choice_paperboy_mercy': '"Run. And don\'t get caught again." (Release him)',
+                'choice_paperboy_report': '"Your client, Officer." (Hand him over)'
+            }
         },
 
         'beat3_square': {
-            text: 'Outside the station, trams ring their bells and carriages cut through wet cobblestones. Freiburg is already in motion.\n\nTwo officers stand near the fountain, speaking in low voices. One mentions a name you file away: Galdermann.'
+            text: 'Outside the station, trams ring their bells and carriages cut through wet cobblestones. Freiburg is already in motion.\n\nThe officer who nodded to you earlier stands near the fountain, speaking in low voices with a colleague. One mentions a name you file away: Galdermann.'
         },
-        'beat_fritz_priority': {
-            text: '"Schutzmann Fritz Muller, Freiburg police. Bankhaus Krebs was hit hard, and Mayor Thoma is demanding answers. Your call, detective: bank first or Rathaus first."',
+
+        'beat_fritz_intro_direct': {
+            text: 'You push through the crowd, heading straight for the uniform. The officer watches your approach, his hand resting casually on his belt buckle. As you get closer, he steps away from the station pillar to meet you halfway.\n\nHe is older than he looked from a distance, with a thick mustache and tired eyes. He offers a curt nod.\n\n"Herr Detective? Schutzmann Fritz Muller. Good to put a face to the telegram. Taking the direct approach, I see. Most people avoid us."'
+        },
+        'beat_fritz_intro_indirect': {
+            text: 'You keep your distance, observing the station first. When you finally approach the fountain, the officers stop talking immediately.\n\nThe one with the spiked helmet—Fritz—recognizes you. He gives a sharp, impatient nod to his colleague. "Moment, bitte, Hans."\n\nThe younger officer salutes and hurries away. Fritz turns to you, a dry smile on his lips.\n\n"You take your time, Detective. Observing the terrain? Or just avoiding the uniform?"'
+        },
+        'beat_fritz_mission': {
+            text: 'Muller lowers his voice, though the fountain drowns out most of the conversation. His expression hardens.\n\n"Let\'s get to it. Bankhaus Krebs was hit last night. Clean job, no alarms. But Mayor Thoma is breathing down our necks, demanding answers yesterday."\n\nHe pauses, gauging you.\n\n"We are stretched thin. I can hold the perimeter at the Bank, or manage the politics at the Rathaus. But I can\'t do both. Where do you want to start?"',
             choices: {
-                'priority_bank_first': 'Primary task: Bank. Secondary: Mayor.',
-                'priority_mayor_first': 'Primary task: Mayor. Secondary: Bank.'
+                'priority_bank_first': '"Secure the Crime Scene. I need to see the vault." (Bank)',
+                'priority_mayor_first': '"Politics first. The Mayor needs to be managed." (Rathaus)'
             }
         },
 

@@ -22,7 +22,7 @@ export const DeductionBoard = () => {
         } else {
             // Attempt combination
             const result = combineEvidence(selectedId, id);
-            if (result) {
+            if (result && !result.blocked) {
                 if (result.type === 'minigame' && result.id === 'chemical_analysis') {
                     // Trigger Mini-game
                     setIsChemicalModalOpen(true);
@@ -31,6 +31,10 @@ export const DeductionBoard = () => {
                     setFeedback({ type: 'success', message: `${result.label}: ${result.description}` });
                 }
                 setTimeout(() => setFeedback(null), 4000);
+            } else if (result?.blocked) {
+                const lockedMessage = result.matchedVoiceReactions[0]?.text ?? 'This chain is currently blocked.';
+                setFeedback({ type: 'failure', message: lockedMessage });
+                setTimeout(() => setFeedback(null), 3000);
             } else {
                 setFeedback({ type: 'failure', message: "No meaningful connection found." });
                 setTimeout(() => setFeedback(null), 2000);

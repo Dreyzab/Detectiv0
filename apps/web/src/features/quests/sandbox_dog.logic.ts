@@ -13,14 +13,79 @@ export const SANDBOX_DOG_LOGIC: QuestLogic = {
     objectives: [
         {
             id: 'obj_meet_mayor',
-            condition: { type: 'flag', flag: 'TALKED_MAYOR', value: true }
+            condition: { type: 'flag', flag: 'TALKED_MAYOR', value: true },
+            targetPointId: 'loc_ka_rathaus'
         },
         {
-            id: 'obj_follow_trail',
-            condition: { type: 'flag', flag: 'DOG_BAKERY_CLUE', value: true }
+            id: 'obj_vendor_sweep',
+            stage: 'client_met',
+            targetPointId: 'loc_ka_platz',
+            condition: { type: 'flag', flag: 'DOG_VENDOR_CLUE', value: true }
+        },
+        {
+            id: 'obj_check_butcher',
+            stage: 'searching',
+            targetPointId: 'loc_ka_butcher',
+            condition: {
+                type: 'logic_or',
+                conditions: [
+                    { type: 'flag', flag: 'DOG_BUTCHER_CLUE', value: true },
+                    { type: 'flag', flag: 'DOG_CASE_DONE', value: true }
+                ]
+            }
+        },
+        {
+            id: 'obj_check_stables',
+            stage: 'searching',
+            targetPointId: 'loc_ka_stables',
+            condition: {
+                type: 'logic_or',
+                conditions: [
+                    { type: 'flag', flag: 'DOG_FALSE_STABLES_DONE', value: true },
+                    { type: 'flag', flag: 'DOG_CASE_DONE', value: true }
+                ]
+            }
+        },
+        {
+            id: 'obj_check_docks',
+            stage: 'searching',
+            targetPointId: 'loc_ka_river_docks',
+            condition: {
+                type: 'logic_or',
+                conditions: [
+                    { type: 'flag', flag: 'DOG_FALSE_DOCKS_DONE', value: true },
+                    { type: 'flag', flag: 'DOG_CASE_DONE', value: true }
+                ]
+            }
+        },
+        {
+            id: 'obj_check_service_lane',
+            stage: 'searching',
+            targetPointId: 'loc_ka_service_lane',
+            condition: {
+                type: 'logic_or',
+                conditions: [
+                    { type: 'flag', flag: 'DOG_FALSE_SERVICE_DONE', value: true },
+                    { type: 'flag', flag: 'DOG_CASE_DONE', value: true }
+                ]
+            }
+        },
+        {
+            id: 'obj_check_bakery',
+            stage: 'searching',
+            targetPointId: 'loc_ka_bakery',
+            condition: {
+                type: 'logic_or',
+                conditions: [
+                    { type: 'flag', flag: 'DOG_BAKERY_CLUE', value: true },
+                    { type: 'flag', flag: 'DOG_CASE_DONE', value: true }
+                ]
+            }
         },
         {
             id: 'obj_find_dog',
+            stage: 'found',
+            targetPointId: 'loc_ka_park',
             condition: { type: 'flag', flag: 'DOG_FOUND', value: true }
         }
     ],

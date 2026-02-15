@@ -1,6 +1,44 @@
 import type { Evidence } from './dossier/store';
 
 export const EVIDENCE_REGISTRY: Record<string, Evidence> = {
+    // Core Case 01 compatibility IDs
+    'shard_glass': {
+        id: 'shard_glass',
+        name: 'Glass Shard',
+        description: 'A sharp shard retrieved near the break-in site.',
+        packId: 'fbg1905'
+    },
+    'factory_sample': {
+        id: 'factory_sample',
+        name: 'Factory Glass Sample',
+        description: 'Reference sample from a known factory production batch.',
+        packId: 'fbg1905'
+    },
+    'ledger_page': {
+        id: 'ledger_page',
+        name: 'Ledger Page',
+        description: 'A page of coded account entries from the bank ledgers.',
+        packId: 'fbg1905'
+    },
+    'cipher_key': {
+        id: 'cipher_key',
+        name: 'Cipher Key',
+        description: 'A handwritten key for decoding numeric substitutions.',
+        packId: 'fbg1905'
+    },
+    'unknown_powder': {
+        id: 'unknown_powder',
+        name: 'Unknown Powder',
+        description: 'A powder sample collected for laboratory analysis.',
+        packId: 'fbg1905'
+    },
+    'reagent_kit': {
+        id: 'reagent_kit',
+        name: 'Reagent Kit',
+        description: 'Portable reagent kit used for field chemical tests.',
+        packId: 'fbg1905'
+    },
+
     'ev_torn_fabric': {
         id: 'ev_torn_fabric',
         name: 'Torn Fabric',
@@ -41,6 +79,12 @@ export const EVIDENCE_REGISTRY: Record<string, Evidence> = {
         description: 'The butcher confirms Bruno visits daily and leaves toward the bakery lane.',
         packId: 'ka1905'
     },
+    'ev_dog_vendor_tip': {
+        id: 'ev_dog_vendor_tip',
+        name: 'Vendor Tip',
+        description: 'Market vendors report Bruno circling sausage stalls before darting into side lanes.',
+        packId: 'ka1905'
+    },
     'ev_dog_meat_wrapping': {
         id: 'ev_dog_meat_wrapping',
         name: 'Grease-Stained Wrapping',
@@ -57,6 +101,24 @@ export const EVIDENCE_REGISTRY: Record<string, Evidence> = {
         id: 'ev_dog_mayor_tag',
         name: 'Mayor Seal Collar Tag',
         description: 'An official Rathaus collar seal proving Bruno belongs to the mayor.',
+        packId: 'ka1905'
+    },
+    'ev_dog_hay_fur': {
+        id: 'ev_dog_hay_fur',
+        name: 'Hay-Soaked Fur',
+        description: 'Coarse fur caught in hay bales at the old stables. Could be Bruno, could be another mastiff.',
+        packId: 'ka1905'
+    },
+    'ev_dog_river_prints': {
+        id: 'ev_dog_river_prints',
+        name: 'Riverbank Paw Prints',
+        description: 'Wide paw marks near the docks. The trail breaks abruptly by a fish cart.',
+        packId: 'ka1905'
+    },
+    'ev_dog_laundry_thread': {
+        id: 'ev_dog_laundry_thread',
+        name: 'Laundry Service Thread',
+        description: 'A coarse thread with flour residue from laundry sacks in a side service lane.',
         packId: 'ka1905'
     },
 

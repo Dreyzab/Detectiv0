@@ -33,13 +33,25 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
             choices: [
                 {
                     id: 'choice_approach_fritz',
-                    nextSceneId: 'beat_fritz_priority',
-                    actions: [{ type: 'add_flag', payload: { 'skipped_station_investigation': true } }]
+                    nextSceneId: 'beat_fritz_intro_direct',
+                    actions: [{
+                        type: 'add_flag',
+                        payload: {
+                            'skipped_station_investigation': true,
+                            'investigated_station': false
+                        }
+                    }]
                 },
                 {
                     id: 'choice_investigate_station',
                     nextSceneId: 'beat2_paperboy',
-                    actions: [{ type: 'add_flag', payload: { 'investigated_station': true } }]
+                    actions: [{
+                        type: 'add_flag',
+                        payload: {
+                            'investigated_station': true,
+                            'skipped_station_investigation': false
+                        }
+                    }]
                 }
             ]
         },
@@ -74,19 +86,77 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
                 },
                 {
                     id: 'beat2_glance_headline',
-                    nextSceneId: 'beat2_glance_result'
+                    nextSceneId: 'beat_paperboy_theft',
+                    actions: [{ type: 'add_flag', payload: { 'paperboy_headline_glanced': true } }]
                 }
             ]
         },
         'beat2_buy_result': {
             id: 'beat2_buy_result',
             characterId: 'narrator',
-            nextSceneId: 'beat3_square'
+            nextSceneId: 'beat3_square',
+            onEnter: [
+                { type: 'modify_relationship', payload: { characterId: 'paperboy', amount: 1 } },
+                { type: 'modify_relationship', payload: { characterId: 'gendarm', amount: 1 } }
+            ]
         },
-        'beat2_glance_result': {
-            id: 'beat2_glance_result',
+
+        'beat_paperboy_theft': {
+            id: 'beat_paperboy_theft',
             characterId: 'narrator',
-            nextSceneId: 'beat3_square'
+            nextSceneId: 'choice_paperboy_fate',
+            onEnter: [{
+                type: 'add_flag',
+                payload: {
+                    'caught_paperboy': true,
+                    'paperboy_theft_seen': true,
+                    'met_fritz_indirect': true,
+                    'met_fritz_direct': false
+                }
+            }]
+        },
+
+        'choice_paperboy_fate': {
+            id: 'choice_paperboy_fate',
+            characterId: 'gendarm',
+            choices: [
+                {
+                    id: 'choice_paperboy_mercy',
+                    nextSceneId: 'beat_fritz_mission', // Merges back
+                    actions: [
+                        {
+                            type: 'add_flag',
+                            payload: {
+                                'paperboy_mercy': true,
+                                'paperboy_reported': false,
+                                'paperboy_fate_mercy': true,
+                                'paperboy_fate_report': false,
+                                'paperboy_fate_resolved': true
+                            }
+                        },
+                        { type: 'modify_relationship', payload: { characterId: 'paperboy', amount: 1 } },
+                        { type: 'modify_relationship', payload: { characterId: 'faction_underground', amount: 5 } }
+                    ]
+                },
+                {
+                    id: 'choice_paperboy_report',
+                    nextSceneId: 'beat_fritz_mission', // Merges back
+                    actions: [
+                        {
+                            type: 'add_flag',
+                            payload: {
+                                'paperboy_reported': true,
+                                'paperboy_mercy': false,
+                                'paperboy_fate_report': true,
+                                'paperboy_fate_mercy': false,
+                                'paperboy_fate_resolved': true
+                            }
+                        },
+                        { type: 'modify_relationship', payload: { characterId: 'paperboy', amount: -1 } },
+                        { type: 'modify_relationship', payload: { characterId: 'gendarm', amount: 1 } }
+                    ]
+                }
+            ]
         },
 
         'beat3_square': {
@@ -98,18 +168,44 @@ export const CASE1_HBF_ARRIVAL_LOGIC: VNScenarioLogic = {
                     voiceId: 'senses',
                     difficulty: 7,
                     isPassive: true,
-                    passiveText: 'Two officers mention a familiar name: Galdermann.',
+                    passiveText: 'The officers mention a familiar name: Galdermann.',
                     passiveFailText: 'Only tram bells and carriage wheels cut through the square.',
                     onSuccess: {
                         actions: [{ type: 'add_flag', payload: { 'clue_galdermann_mention': true } }]
                     }
                 }
             ],
-            nextSceneId: 'beat_fritz_priority'
+            nextSceneId: 'beat_fritz_intro_indirect'
         },
 
-        'beat_fritz_priority': {
-            id: 'beat_fritz_priority',
+        'beat_fritz_intro_direct': {
+            id: 'beat_fritz_intro_direct',
+            characterId: 'gendarm',
+            nextSceneId: 'beat_fritz_mission',
+            onEnter: [{
+                type: 'add_flag',
+                payload: {
+                    'met_fritz_direct': true,
+                    'met_fritz_indirect': false
+                }
+            }]
+        },
+
+        'beat_fritz_intro_indirect': {
+            id: 'beat_fritz_intro_indirect',
+            characterId: 'gendarm',
+            nextSceneId: 'beat_fritz_mission',
+            onEnter: [{
+                type: 'add_flag',
+                payload: {
+                    'met_fritz_indirect': true,
+                    'met_fritz_direct': false
+                }
+            }]
+        },
+
+        'beat_fritz_mission': {
+            id: 'beat_fritz_mission',
             characterId: 'gendarm',
             choices: [
                 {

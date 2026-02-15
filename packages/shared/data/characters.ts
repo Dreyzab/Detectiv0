@@ -45,6 +45,8 @@ export type CharacterId =
     | 'corps_student'
     | 'saccharin_maud'
     | 'narrator'
+    | 'paperboy'
+    | 'faction_underground'
     | 'unknown';
 
 export type CharacterTier = 'major' | 'functional' | 'generic';
@@ -581,6 +583,24 @@ export const CHARACTERS: Record<CharacterId, VNCharacter> = {
         role: 'npc',
         archetypeId: 'narrator_voice'
     },
+    paperboy: {
+        id: 'paperboy',
+        tier: 'generic',
+        name: 'Newsboy',
+        color: '#d4d4d8',
+        role: 'npc',
+        description: 'A sharp-eyed kid selling papers.',
+        archetypeId: 'paperboy_01'
+    },
+    faction_underground: {
+        id: 'faction_underground',
+        tier: 'functional',
+        name: 'The Underground',
+        color: '#dc2626',
+        role: 'service',
+        description: 'The revolutionary current beneath the city.',
+        tags: ['faction']
+    }
 };
 
 export const getCharacter = (id: CharacterId): VNCharacter => CHARACTERS[id];

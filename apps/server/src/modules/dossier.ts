@@ -28,6 +28,15 @@ interface DossierEvidenceSnapshot {
     packId: string;
 }
 
+interface DossierHypothesisSnapshot {
+    deductionId: string;
+    resultId: string;
+    confidence: number;
+    voiceModifiers: Record<string, number>;
+    tier: number;
+    isRedHerring?: boolean;
+}
+
 export interface DossierSnapshot {
     entries: DossierEntrySnapshot[];
     evidence: DossierEvidenceSnapshot[];
@@ -42,6 +51,8 @@ export interface DossierSnapshot {
     traits: string[];
     voiceStats: Record<string, number>;
     voiceXp: Record<string, number>;
+    hypotheses: Record<string, DossierHypothesisSnapshot>;
+    thoughtPoints: number;
 }
 
 export interface DossierSnapshotRow {
@@ -89,7 +100,9 @@ const DEFAULT_DOSSIER_SNAPSHOT: DossierSnapshot = {
     devPoints: 0,
     traits: [],
     voiceStats: INITIAL_VOICE_STATS,
-    voiceXp: INITIAL_VOICE_XP
+    voiceXp: INITIAL_VOICE_XP,
+    hypotheses: {},
+    thoughtPoints: 0
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -179,6 +192,60 @@ const sanitizeVoiceRecord = (value: unknown, fallbackValue: number): Record<stri
     });
 
     return result;
+};
+
+const sanitizeVoiceModifiers = (value: unknown): Record<string, number> => {
+    if (!isRecord(value)) {
+        return {};
+    }
+    const result: Record<string, number> = {};
+    Object.entries(value).forEach(([voiceId, delta]) => {
+        if (typeof delta === 'number' && Number.isFinite(delta)) {
+            result[voiceId] = Math.round(delta);
+        }
+    });
+    return result;
+};
+
+const sanitizeHypotheses = (value: unknown): Record<string, DossierHypothesisSnapshot> => {
+    if (!isRecord(value)) {
+        return {};
+    }
+
+    const result: Record<string, DossierHypothesisSnapshot> = {};
+    Object.entries(value).forEach(([hypothesisId, entry]) => {
+        if (!isRecord(entry)) {
+            return;
+        }
+        if (typeof entry.deductionId !== 'string' || typeof entry.resultId !== 'string') {
+            return;
+        }
+
+        const confidence = typeof entry.confidence === 'number' && Number.isFinite(entry.confidence)
+            ? Math.max(0, Math.min(100, Math.round(entry.confidence)))
+            : 50;
+        const tier = typeof entry.tier === 'number' && Number.isFinite(entry.tier)
+            ? Math.max(0, Math.min(2, Math.floor(entry.tier)))
+            : 1;
+
+        result[hypothesisId] = {
+            deductionId: entry.deductionId,
+            resultId: entry.resultId,
+            confidence,
+            voiceModifiers: sanitizeVoiceModifiers(entry.voiceModifiers),
+            tier,
+            isRedHerring: Boolean(entry.isRedHerring)
+        };
+    });
+
+    return result;
+};
+
+const sanitizeThoughtPoints = (value: unknown): number => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0;
+    }
+    return Math.max(0, Math.floor(value));
 };
 
 const sanitizeEntries = (value: unknown): DossierEntrySnapshot[] => {
@@ -282,7 +349,9 @@ const sanitizeSnapshot = (value: unknown): DossierSnapshot => {
         devPoints,
         traits: sanitizeStringArray(source.traits),
         voiceStats: sanitizeVoiceRecord(source.voiceStats, 1),
-        voiceXp: sanitizeVoiceRecord(source.voiceXp, 0)
+        voiceXp: sanitizeVoiceRecord(source.voiceXp, 0),
+        hypotheses: sanitizeHypotheses(source.hypotheses),
+        thoughtPoints: sanitizeThoughtPoints(source.thoughtPoints)
     };
 };
 

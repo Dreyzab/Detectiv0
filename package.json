@@ -8,6 +8,7 @@
     "build": "bun run --filter '*' build",
     "prepare": "husky",
     "generate": "plop",
+    "validate:deductions": "tsx scripts/validate-deductions.ts",
     "test:bun": "bun test packages/shared apps/server/test",
     "test:web": "bun run --cwd apps/web test",
     "test:e2e:smoke": "bun x playwright test e2e/smoke.spec.ts",
@@ -21,7 +22,8 @@
     "concurrently": "^9.2.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "plop": "^4.0.5"
+    "plop": "^4.0.5",
+    "tsx": "^4.20.6"
   },
   "peerDependencies": {
     "typescript": "^5"

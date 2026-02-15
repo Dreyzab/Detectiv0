@@ -46,11 +46,9 @@ export const SANDBOX_DOG_MAYOR_LOGIC: VNScenarioLogic = {
                 {
                     type: 'add_flag',
                     payload: {
-                        TALKED_MAYOR: true,
-                        DOG_VENDOR_CLUE: true
+                        TALKED_MAYOR: true
                     }
                 },
-                { type: 'unlock_point', payload: 'loc_ka_butcher' },
                 { type: 'set_quest_stage', payload: { questId: 'sandbox_dog', stage: 'client_met' } }
             ],
             choices: [

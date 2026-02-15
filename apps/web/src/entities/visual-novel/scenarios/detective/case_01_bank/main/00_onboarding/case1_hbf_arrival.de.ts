@@ -21,16 +21,29 @@ export const CASE1_HBF_ARRIVAL_DE: VNContentPack = {
             }
         },
         'beat2_buy_result': {
-            text: 'Sie reichen eine Munze. Der Junge wirft Ihnen die Zeitung fast entgegen und weicht schnell zuruck.\n\nDie Schlagzeile brullt: "IMPERIALE BANK AUSGERAUBT - POLIZEI RATLOS". Ein Zeugenname springt ins Auge: Hartmann. Sie falten das Blatt und stecken es ein.'
+            text: 'Sie reichen dem Jungen eine Munze. Er wirkt uberrascht, druckt Ihnen eine Zeitung in die Hand und zieht die Mutze tiefer ins Gesicht.\n\nNoch bevor Sie weiterlesen, fallt ein Schatten uber den Kioskbereich. Fritz Muller beobachtet die Szene mit ruhigem Blick.'
         },
-        'beat2_glance_result': {
-            text: 'Die Schlagzeile ist schon von hier zu lesen: "IMPERIALE BANK AUSGERAUBT". Ganz Freiburg weiss Bescheid. Sie starten ohne den Vorteil der Uberraschung.'
+        'beat_paperboy_theft': {
+            text: 'Sie beugen sich nur kurz zur Schlagzeile, ohne zu zahlen. Der Junge stolpert scheinbar zufallig in Sie hinein.\n\nSeine Hand schnellt nach Ihrer Uhr, doch Sie sind schneller und packen sein Handgelenk.\n\nDie Menge geht einen Schritt zuruck. Fritz Muller tritt heran, die Stimme ruhig, aber unmissverstandlich.'
+        },
+        'choice_paperboy_fate': {
+            text: '"Probleme, Herr Detektiv? Dieser Spatz greift wieder nach fremden Taschen?"\n\nDer Junge windet sich in Ihrem Griff und wartet auf Ihr Urteil.',
+            choices: {
+                'choice_paperboy_mercy': '"Lauf. Und lass dich nicht wieder erwischen." (Gnade)',
+                'choice_paperboy_report': '"Ihr Fall, Schutzmann." (An Fritz ubergeben)'
+            }
         },
         'beat3_square': {
-            text: 'Vor dem Bahnhof klingeln Strassenbahnen, Kutschen schneiden durch nasses Pflaster. Freiburg ist bereits in Bewegung.\n\nZwei Beamte stehen am Brunnen und sprechen gedampft. Einer nennt einen Namen, den Sie sich merken: Galdermann.'
+            text: 'Vor dem Bahnhof klingeln Strassenbahnen, Kutschen schneiden durch nasses Pflaster. Freiburg ist bereits in Bewegung.\n\nAm Brunnen sprechen Beamte leise miteinander. Einer nennt einen Namen, den Sie sich merken: Galdermann.'
         },
-        'beat_fritz_priority': {
-            text: '"Schutzmann Fritz Muller, Freiburger Polizei. Bankhaus Krebs wurde hart getroffen, und Burgermeister Thoma verlangt sofort Antworten. Ihre Entscheidung, Detektiv: zuerst Bank oder zuerst Rathaus?"',
+        'beat_fritz_intro_direct': {
+            text: 'Sie gehen direkt auf den Beamten zu. Fritz erkennt Sie sofort und macht einen Schritt nach vorn.\n\n"Herr Detektiv? Schutzmann Fritz Muller, Freiburger Polizei. Gut, Sie personlich zu treffen."'
+        },
+        'beat_fritz_intro_indirect': {
+            text: 'Sie nahern sich erst nach einem Rundgang durch den Bahnhof. Fritz entlasst seinen jungen Kollegen mit einem knappen Nicken und wendet sich Ihnen zu.\n\n"Sie nehmen sich Zeit, Detektiv. Scharfe Augen. Das konnen wir brauchen."'
+        },
+        'beat_fritz_mission': {
+            text: 'Fritz senkt die Stimme.\n\n"Bankhaus Krebs wurde hart getroffen, und Burgermeister Thoma verlangt sofort Ergebnisse. Ihre Entscheidung: zuerst Bank oder zuerst Rathaus?"',
             choices: {
                 'priority_bank_first': 'Hauptauftrag: Bank. Nebenauftrag: Burgermeister.',
                 'priority_mayor_first': 'Hauptauftrag: Burgermeister. Nebenauftrag: Bank.'
